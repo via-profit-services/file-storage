@@ -1,0 +1,116 @@
+
+extend type Query {
+  fileStorage: FileStorageQuery!
+}
+
+extend type Mutation {
+  fileStorage: FileStorageMutation!
+}
+
+type FileStorageMutation {
+  delete(ids: [ID!]!): Boolean
+  upload(
+    file: FileUpload!
+    info: FileUploadInfo!
+  ): File!
+}
+
+input FileUploadInfo {
+  owner: ID!
+  category: String!
+  description: String
+  metaData: JSON
+}
+
+type FileStorageQuery {
+  """
+  Returns Drivers list bundle
+  """
+  list(
+    first: Int
+    offset: Int
+    after: String
+    orderBy: [FilesOrderBy]
+    filter: FilesListFilter
+  ): FilesListConnection!
+  image(id: ID! transform: ImageTransformInput): Image!
+}
+
+input FilesListFilter {
+  owner: ID
+  category: String
+  mimeType: String
+}
+
+"""
+File adge bundle
+"""
+type FilesEdge implements Edge {
+  node: File!
+  cursor: String!
+}
+
+"""
+Possible data to order list of files
+"""
+input FilesOrderBy {
+  field: FilesOrderField!
+  direction: OrderDirection!
+}
+
+
+"""
+Possible data to sort of files list
+"""
+enum FilesOrderField {
+  category
+  mimeType
+  createdAt
+  updatedAt
+}
+
+enum FileType {
+  image
+  document
+}
+
+"""
+Files list connection
+"""
+type FilesListConnection implements Connection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [FilesEdge]!
+}
+
+
+type File implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  owner: ID!
+  type: FileType!
+  category: String!
+  mimeType: String!
+  url: String!
+  description: String
+  metaData: JSON
+}
+
+type Image implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  owner: ID!
+  type: FileType!
+  category: String!
+  mimeType: String!
+  url: String!
+  description: String
+  metaData: JSON
+}
+
+input ImageTransformInput {
+  width: Int
+  height: Int
+}
