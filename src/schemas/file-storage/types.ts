@@ -1,4 +1,3 @@
-// import Sharp from 'sharp';
 
 export enum FileType {
   image = 'image',

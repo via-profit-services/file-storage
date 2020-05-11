@@ -9,9 +9,10 @@ import {
   TWhereAction,
   ServerError,
 } from '@via-profit-services/core';
+import jimp from 'jimp';
 import mime from 'mime-types';
 import moment from 'moment-timezone';
-import Sharp from 'sharp';
+// import Sharp from 'sharp';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Context } from '../../context';
@@ -190,35 +191,32 @@ class FileStorageService {
         fs.mkdirSync(dirname, { recursive: true });
       }
 
-
-      // let streamToSave;
-      switch (fileInfo.mimeType) {
-        case 'image/png':
-        case 'image/jpg':
-        case 'image/jpeg':
-        case 'image/bmp':
-        case 'image/webp':
-          fileStream.pipe(Sharp().resize({
-            width: imageOptimMaxWidth,
-            height: imageOptimMaxHeight,
-            fit: Sharp.fit.contain,
-            withoutEnlargement: true,
-          }));
-          break;
-
-        default:
-          // nop
-          break;
-      }
-
       fileStream
         .pipe(fs.createWriteStream(absoluteFilename))
         .on('close', () => {
-          resolve({
-            id: newId,
-            absoluteFilename,
-          });
+          if (['image/png', 'image/jpeg'].includes(fileInfo.mimeType)) {
+            jimp.read(absoluteFilename)
+              .then((image) => {
+                return image.scaleToFit(imageOptimMaxWidth, imageOptimMaxHeight);
+              }).then((image) => {
+                return image.writeAsync(absoluteFilename);
+              })
+              .then(() => {
+                return resolve({
+                  id: newId,
+                  absoluteFilename,
+                });
+              });
+          } else {
+            resolve({
+              id: newId,
+              absoluteFilename,
+            });
+          }
         });
+
+
+      // const buffer = Buffer.from(fileStream);
     });
   }
 
