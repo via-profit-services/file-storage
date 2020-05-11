@@ -9,7 +9,6 @@ import {
   TWhereAction,
   ServerError,
 } from '@via-profit-services/core';
-import jimp from 'jimp';
 import mime from 'mime-types';
 import moment from 'moment-timezone';
 // import Sharp from 'sharp';
@@ -158,7 +157,7 @@ class FileStorageService {
     fileInfo: IFileBagTableInput,
   ): Promise<{id: string; absoluteFilename: string; }> {
     const { knex, timezone } = this.props.context;
-    const { storageAbsolutePath, imageOptimMaxWidth, imageOptimMaxHeight } = getParams();
+    const { storageAbsolutePath } = getParams();
 
     const id = fileInfo.id || uuidv4();
     const ext = FileStorageService.getExtensionByMimeType(fileInfo.mimeType);
@@ -194,25 +193,30 @@ class FileStorageService {
       fileStream
         .pipe(fs.createWriteStream(absoluteFilename))
         .on('close', () => {
-          if (['image/png', 'image/jpeg'].includes(fileInfo.mimeType)) {
-            jimp.read(absoluteFilename)
-              .then((image) => {
-                return image.scaleToFit(imageOptimMaxWidth, imageOptimMaxHeight);
-              }).then((image) => {
-                return image.writeAsync(absoluteFilename);
-              })
-              .then(() => {
-                return resolve({
-                  id: newId,
-                  absoluteFilename,
-                });
-              });
-          } else {
-            resolve({
-              id: newId,
-              absoluteFilename,
-            });
-          }
+          // if (['image/png', 'image/jpeg'].includes(fileInfo.mimeType)) {
+          //   jimp.read(absoluteFilename)
+          //     .then((image) => {
+          //       return image.scaleToFit(imageOptimMaxWidth, imageOptimMaxHeight);
+          //     }).then((image) => {
+          //       return image.writeAsync(absoluteFilename);
+          //     })
+          //     .then(() => {
+          //       return resolve({
+          //         id: newId,
+          //         absoluteFilename,
+          //       });
+          //     });
+          // } else {
+          //   resolve({
+          //     id: newId,
+          //     absoluteFilename,
+          //   });
+          // }
+
+          resolve({
+            id: newId,
+            absoluteFilename,
+          });
         });
 
 
