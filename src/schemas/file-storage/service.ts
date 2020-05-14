@@ -1,3 +1,4 @@
+/* eslint-disable import/max-dependencies */
 /* eslint-disable class-methods-use-this */
 import fs, { ReadStream } from 'fs';
 import path from 'path';
@@ -9,15 +10,22 @@ import {
   TWhereAction,
   ServerError,
 } from '@via-profit-services/core';
+import imagemin from 'imagemin';
+import imageminMozjpeg from 'imagemin-mozjpeg';
+import imageminOptipng from 'imagemin-optipng';
+import imageminPngquant from 'imagemin-pngquant';
+import Jimp from 'jimp';
+import Jwt from 'jsonwebtoken';
 import mime from 'mime-types';
 import moment from 'moment-timezone';
-// import Sharp from 'sharp';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Context } from '../../context';
+import { REDIS_CACHE_NAME } from './constants';
 import { getParams } from './paramsBuffer';
 import {
-  IFileBag, IFileBagTable, IFileBagTableInput, FileType,
+  IFileBag, IFileBagTable, IFileBagTableInput, FileType, IImageTransform, ITransformUrlPayload,
+  IImgeData,
 } from './types';
 
 interface IProps {
@@ -29,6 +37,109 @@ class FileStorageService {
 
   public constructor(props: IProps) {
     this.props = props;
+  }
+
+  public async checkFileInCache(imageDataHash: string) {
+    const { redis } = this.props.context;
+    const res = await redis.get(`${REDIS_CACHE_NAME}:${imageDataHash}`);
+    return res;
+  }
+
+  // public async setImageFilenameIntoTheCache(imageDataHash: string) {
+  //   const { redis } = this.props.context;
+  //   const staticPath = FileStorageService.getFilenameFromUuid(uuidv4());
+  //   const res = await redis.set(`${REDIS_CACHE_NAME}:${imageDataHash}`, staticPath);
+  //   return res;
+  // }
+
+  public async saveImageIntoTheCache(imageData: IImgeData, imageBuffer: Buffer) {
+    const { redis } = this.props.context;
+    const { payload, token } = imageData;
+    const { storageAbsolutePath } = getParams();
+
+    const filename = FileStorageService.getPathFromUuid(uuidv4());
+    const pathToSave = path.join(storageAbsolutePath, 'cache', filename);
+    const absoluteFilename = `${pathToSave}.${payload.ext}`;
+    const dirname = path.dirname(pathToSave);
+
+
+    if (!fs.existsSync(dirname)) {
+      fs.mkdirSync(dirname, { recursive: true });
+    }
+    fs.writeFileSync(absoluteFilename, imageBuffer);
+    await redis.set(`${REDIS_CACHE_NAME}:${token}`, `${absoluteFilename}`);
+  }
+
+  public getUrlWithTransform(
+    imageData: Pick<IFileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>,
+    transform: IImageTransform,
+  ) {
+    const { jwt } = this.props.context;
+
+
+    const {
+      url, id, mimeType, isLocalFile,
+    } = imageData;
+    const {
+      ssl, host, staticPrefix, transformDelimiter,
+    } = getParams();
+
+    const ext = FileStorageService.getExtensionByMimeType(mimeType);
+
+    const hashPayload: ITransformUrlPayload = {
+      id,
+      ext,
+      mimeType,
+      transform,
+    };
+
+    if (!isLocalFile) {
+      hashPayload.url = url;
+    }
+
+
+    const privatKey = fs.readFileSync(jwt.privateKey);
+    const imageUrlHash = Jwt.sign(hashPayload, privatKey, {
+      algorithm: jwt.algorithm,
+    });
+
+    return [
+      `http${ssl ? 's' : ''}://${host}${staticPrefix}`,
+      transformDelimiter,
+      `${imageUrlHash}.${ext}`,
+    ].join('/');
+  }
+
+  public getImageDataFromTransformUrl(transformUrl: string): IImgeData {
+    const { jwt } = this.props.context;
+    const { transformDelimiter } = getParams();
+    const data = transformUrl.split('/');
+
+    if (data.length < 4) {
+      throw new ServerError('Incorrect URL');
+    }
+
+    const delimiter = data[2];
+    const token = data[3].split('.').slice(0, -1).join('.');
+
+    if (delimiter !== transformDelimiter) {
+      throw new ServerError('Incorrect transform delimiter URL', { delimiter });
+    }
+
+    if (!token) {
+      throw new ServerError('Incorrect data or extension in URL', { token });
+    }
+    const privateKey = fs.readFileSync(jwt.publicKey);
+
+    try {
+      const payload = Jwt.verify(String(token), privateKey) as ITransformUrlPayload;
+      return {
+        payload,
+        token,
+      };
+    } catch (err) {
+      throw new ServerError('Failed to URL decode', { err });
+    }
   }
 
   /**
@@ -50,6 +161,7 @@ class FileStorageService {
     const localPath = FileStorageService.getPathFromUuid(guid);
     return path.join('/', storagePath, localPath);
   }
+
 
   public static getFileTypeByMimeType(mimeType: string): FileType {
     switch (mimeType) {
@@ -157,7 +269,7 @@ class FileStorageService {
     fileInfo: IFileBagTableInput,
   ): Promise<{id: string; absoluteFilename: string; }> {
     const { knex, timezone } = this.props.context;
-    const { storageAbsolutePath } = getParams();
+    const { storageAbsolutePath, compressionOptions } = getParams();
 
     const id = fileInfo.id || uuidv4();
     const ext = FileStorageService.getExtensionByMimeType(fileInfo.mimeType);
@@ -193,34 +305,39 @@ class FileStorageService {
       fileStream
         .pipe(fs.createWriteStream(absoluteFilename))
         .on('close', () => {
-          // if (['image/png', 'image/jpeg'].includes(fileInfo.mimeType)) {
-          //   jimp.read(absoluteFilename)
-          //     .then((image) => {
-          //       return image.scaleToFit(imageOptimMaxWidth, imageOptimMaxHeight);
-          //     }).then((image) => {
-          //       return image.writeAsync(absoluteFilename);
-          //     })
-          //     .then(() => {
-          //       return resolve({
-          //         id: newId,
-          //         absoluteFilename,
-          //       });
-          //     });
-          // } else {
-          //   resolve({
-          //     id: newId,
-          //     absoluteFilename,
-          //   });
-          // }
-
-          resolve({
-            id: newId,
-            absoluteFilename,
-          });
+          if (['image/png', 'image/jpeg'].includes(fileInfo.mimeType)) {
+            const { imageOptimMaxWidth, imageOptimMaxHeight } = getParams();
+            Jimp.read(absoluteFilename)
+              .then((image) => {
+                return image.scaleToFit(imageOptimMaxWidth, imageOptimMaxHeight);
+              })
+              .then((image) => {
+                return image.writeAsync(absoluteFilename);
+              })
+              .then(async () => {
+                const optiRes = await imagemin([dirname], {
+                  plugins: [
+                    imageminMozjpeg(compressionOptions.mozJpeg),
+                    imageminPngquant(compressionOptions.pngQuant),
+                    imageminOptipng(compressionOptions.optiPng),
+                  ],
+                });
+                const { data } = optiRes[0];
+                fs.writeFileSync(absoluteFilename, data);
+              })
+              .then(() => {
+                return resolve({
+                  id: newId,
+                  absoluteFilename,
+                });
+              });
+          } else {
+            resolve({
+              id: newId,
+              absoluteFilename,
+            });
+          }
         });
-
-
-      // const buffer = Buffer.from(fileStream);
     });
   }
 

@@ -19,7 +19,12 @@ const paramsBuffer: IParamsBuffer = {
     imageOptimMaxWidth: 800,
     imageOptimMaxHeight: 600,
     staticDelimiter: 's',
-    genericDelimiter: 'g',
+    transformDelimiter: 't',
+    compressionOptions: {
+      mozJpeg: { quality: 70 },
+      pngQuant: { quality: [0.8, 0.8] },
+      optiPng: { optimizationLevel: 3 },
+    },
   },
 };
 

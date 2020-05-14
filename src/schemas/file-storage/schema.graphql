@@ -32,8 +32,9 @@ type FileStorageQuery {
     after: String
     orderBy: [FilesOrderBy]
     filter: FilesListFilter
+    transform: ImageTransformInput
   ): FilesListConnection!
-  image(id: ID! transform: ImageTransformInput): Image!
+  image(id: ID! transform: ImageTransformInput): File!
 }
 
 input FilesListFilter {
@@ -97,20 +98,33 @@ type File implements Node {
   metaData: JSON
 }
 
-type Image implements Node {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  owner: ID!
-  type: FileType!
-  category: String!
-  mimeType: String!
-  url: String!
-  description: String
-  metaData: JSON
+input ImageTransformInput {
+  resize: ImageTransformInputResize
+  cover: ImageTransformInputCover
+  contain: ImageTransformInputContain
+  scaleToFit: ImageTransformInputScaleToFit
+  gaussian: Int
+  blur: Int
+  quality: Int
+  greyscale: Boolean
 }
 
-input ImageTransformInput {
-  width: Int
-  height: Int
+input ImageTransformInputResize {
+  width: Int!
+  height: Int!
+}
+
+input ImageTransformInputCover {
+  width: Int!
+  height: Int!
+}
+
+input ImageTransformInputContain {
+  width: Int!
+  height: Int!
+}
+
+input ImageTransformInputScaleToFit {
+  width: Int!
+  height: Int!
 }

@@ -1,3 +1,6 @@
+import { Options as ImagenimMozjpegOption } from 'imagemin-mozjpeg';
+import { Options as ImagenimOptiPngOption } from 'imagemin-optipng';
+import { Options as ImagenimPngQuantOption } from 'imagemin-pngquant';
 
 export enum FileType {
   image = 'image',
@@ -16,6 +19,10 @@ export interface IFileBag {
   isLocalFile?: boolean;
   metaData?: Object | Array<any>;
   description?: string;
+
+  /** Only for images */
+  width?: number;
+  height?: number;
 }
 
 export type IFileBagTable = IFileBag & {
@@ -67,6 +74,11 @@ export interface IFileStorageInitialProps {
   /** Image maximum height */
   imageOptimMaxHeight: number;
 
+  compressionOptions?: {
+    mozJpeg?: ImagenimMozjpegOption;
+    pngQuant?: ImagenimPngQuantOption;
+    optiPng?: ImagenimOptiPngOption;
+  }
 }
 
 
@@ -79,12 +91,54 @@ export type IFileStorageParams = IFileStorageInitialProps & {
   /** URL delimeter of static content */
   staticDelimiter: string;
 
-  /** URL delimeter of generic content */
-  genericDelimiter: string;
+  /** URL delimiter for transform content */
+  transformDelimiter: string;
 }
 
 
 export interface IImageTransform {
-  width?: number;
-  height?: number;
+  resize: {
+    width: number;
+    height: number;
+  };
+  cover: {
+    width: number;
+    height: number;
+  };
+  contain: {
+    width: number;
+    height: number;
+  };
+  scaleToFit: {
+    width: number;
+    height: number;
+  };
+  gaussian: number;
+  blur: number;
+  greyscale: boolean;
+}
+
+export interface ITransformUrlPayload {
+
+  /** File extension */
+  ext: string;
+
+  mimeType: string;
+
+  /** File original ID */
+  id: string;
+
+  /** Image transform options */
+  transform: IImageTransform;
+
+  /** Image remote URL */
+  url?: string;
+
+
+}
+
+
+export interface IImgeData {
+  payload: ITransformUrlPayload;
+  token: string;
 }
