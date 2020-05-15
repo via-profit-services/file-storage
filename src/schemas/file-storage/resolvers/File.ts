@@ -1,3 +1,4 @@
+import { ServerError } from '@via-profit-services/core';
 import { IResolverObject, IFieldResolver } from 'graphql-tools';
 
 import { Context } from '../../../context';
@@ -18,6 +19,7 @@ const FileResolver: IResolverObject<IParent, Context, any> = new Proxy({
   category: () => ({}),
   mimeType: () => ({}),
   url: () => ({}),
+  type: () => ({}),
   description: () => ({}),
   metaData: () => ({}),
 }, {
@@ -29,6 +31,11 @@ const FileResolver: IResolverObject<IParent, Context, any> = new Proxy({
       const loaders = createDataloaders(context);
       const file = await loaders.files.load(id);
 
+      if (!file) {
+        throw new ServerError(
+          `File with id ${id} not found`, { id },
+        );
+      }
       // if is image
       if (file.type === FileType.image) {
         if (prop === 'url' && transform) {

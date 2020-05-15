@@ -45,6 +45,7 @@ declare namespace NodeJS {
 
     STATIC_DIR_PREFIX: string;
     STATIC_DIR: string;
+    CACHE_DIR: string;
     STATIC_HOST: string;
     STATIC_USE_SSL: string;
 

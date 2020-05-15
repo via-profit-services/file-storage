@@ -5,7 +5,7 @@ import * as Knex from 'knex';
 export async function up(knex: Knex): Promise<any> {
   return knex.raw(`
 
-    drop type if exists "fileStorageType";
+    drop type if exists "fileStorageType" cascade;
 
     create type "fileStorageType" as enum (
       'image',
@@ -36,6 +36,7 @@ export async function up(knex: Knex): Promise<any> {
 
 export async function down(knex: Knex): Promise<any> {
   return knex.raw(`
-    drop table if exists "fileStorage";
+    drop table if exists "fileStorage" cascade;
+    drop type if exists "fileStorageType" cascade;
   `);
 }

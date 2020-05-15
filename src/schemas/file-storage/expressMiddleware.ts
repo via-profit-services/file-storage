@@ -1,11 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 import {
-  IExpressMidlewareContainer, Express, IContext,
+  IExpressMidlewareContainer, Express, IContext, CronJobManager,
 } from '@via-profit-services/core';
 import Jimp from 'jimp';
 
 import { Context } from '../../context';
+import { CRON_JOB_CLEAR_CACHE_NAME } from './constants';
 import { getParams } from './paramsBuffer';
 import FileStorageService from './service';
 import { IFileStorageInitialProps, ITransformUrlPayload, IImageTransform } from './types';
@@ -18,20 +19,38 @@ const expressMiddlewareFactory = (props: IFileStorageInitialProps): IExpressMidl
     const { logger } = context;
     const {
       storageAbsolutePath, staticDelimiter, transformDelimiter, rootPath,
+      cacheAbsolutePath, cacheDelimiter, clearCacheCronJob,
     } = getParams();
     const fileStorage = new FileStorageService({ context });
-
-    logger.fileStorage.info(
-      `Registered static directory in [${storageAbsolutePath}] with static prefix [${staticPrefix}]`,
-    );
-
     const router = Express.Router();
 
-    // express static
-    router.use(`${staticPrefix}/${staticDelimiter}`, Express.static(storageAbsolutePath));
-    router.use(`${staticPrefix}/c`, Express.static(path.join(storageAbsolutePath, 'cache')));
+    // clear cache cron job
+    CronJobManager.addJob(CRON_JOB_CLEAR_CACHE_NAME, {
+      cronTime: clearCacheCronJob,
+      onTick: () => fileStorage.clearCache(),
+      start: true,
+    });
 
-    // transforms
+    logger.fileStorage.info(
+      `Cron job for clear cache was created at «${clearCacheCronJob}»`,
+    );
+
+
+    // express static for simple static directory
+    router.use(`${staticPrefix}/${staticDelimiter}`, Express.static(storageAbsolutePath));
+    logger.fileStorage.info(
+      `Registered static directory in «${storageAbsolutePath}» with static prefix «${staticPrefix}»`,
+    );
+
+
+    // express static for the cache static directory
+    router.use(`${staticPrefix}/${cacheDelimiter}`, Express.static(cacheAbsolutePath));
+    logger.fileStorage.info(
+      `Registered static cache directory in «${cacheAbsolutePath}»`,
+    );
+    // transforms middleware
+    // This middleware should create new file ин applying transform params and put
+    // created file into the static cache
     router.use(`${staticPrefix}/${transformDelimiter}`, async (req, res) => {
       let fileData: {payload: ITransformUrlPayload; token: string};
       try {

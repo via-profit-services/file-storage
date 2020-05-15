@@ -56,27 +56,71 @@ export interface IUploadFileInput {
 
 
 export interface IFileStorageInitialProps {
-  /** Prefix path (e.g. `/static`) @see https://expressjs.com/ru/starter/static-files.html */
-  staticPrefix: string;
+  /**
+   * Prefix path (e.g. `/static`)
+   * @see https://expressjs.com/ru/starter/static-files.html
+   */
+  staticPrefix?: string;
 
-  /** Static `relative` path (e.g. `/public`). Do not set absolute path! @see https://expressjs.com/ru/starter/static-files.html */
-  storagePath: string;
+  /**
+   * Static `relative` path (e.g. `./public/fileStorage/files`).
+   * Do not set absolute path!
+   * @see https://expressjs.com/ru/starter/static-files.html
+   */
+  storagePath?: string;
 
-  /** Host or hostname without protocol ang schema (`www.example.com`) */
-  host: string;
+  /**
+   * Storage cache directory (e.g. `./public/fileStorage/cache`).
+   * Do not set absolute path!
+   */
+  cachePath?: string;
 
-  /** (http or https) If is true then full URL address will be `https://www.example.com` */
+  /**
+   * Host or hostname without protocol ang schema (`www.example.com`)
+   */
+  host?: string;
+
+  /**
+   * (http or https) If is true then full URL address will be `https://www.example.com`
+   */
   ssl?: boolean;
 
-  /** Image maximum width */
-  imageOptimMaxWidth: number;
+  /**
+   * JS Crontime while cache will be cleared
+   */
+  clearCacheCronJob?: string;
 
-  /** Image maximum height */
-  imageOptimMaxHeight: number;
+  /**
+   * Image maximum width
+   */
+  imageOptimMaxWidth?: number;
 
+  /**
+   * Image maximum height
+   */
+  imageOptimMaxHeight?: number;
+
+  /**
+   * Imagemin plugins options
+   */
   compressionOptions?: {
+
+    /**
+     * Imagemin MozJpeg plugin settings
+     * @see https://github.com/imagemin/imagemin-mozjpeg#readme
+     */
     mozJpeg?: ImagenimMozjpegOption;
+
+    /**
+     * Imagemin OptiPng settings
+     * @see https://github.com/imagemin/imagemin-optipng#readme
+     */
     pngQuant?: ImagenimPngQuantOption;
+
+    /**
+     * Imagemin PngQuant settings
+     * @see https://github.com/imagemin/imagemin-pngquant#readme
+     */
     optiPng?: ImagenimOptiPngOption;
   }
 }
@@ -85,6 +129,7 @@ export interface IFileStorageInitialProps {
 export type IFileStorageParams = IFileStorageInitialProps & {
   staticPrefixAbsolutePath: string;
   storageAbsolutePath: string;
+  cacheAbsolutePath: string;
   rootPath: string;
 
 
@@ -93,6 +138,10 @@ export type IFileStorageParams = IFileStorageInitialProps & {
 
   /** URL delimiter for transform content */
   transformDelimiter: string;
+
+  /** URL delimiter for cached content */
+  cacheDelimiter: string;
+
 }
 
 

@@ -22,6 +22,7 @@ const resolvers: IResolvers<any, Context> = {
     upload: UploadFiles,
   },
   File,
+  Image: File,
 };
 
 export default resolvers;

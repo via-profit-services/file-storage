@@ -54,6 +54,7 @@
         "mime-types": "^2.1.27",
         "moment": "^2.25.1",
         "moment-timezone": "^0.5.28",
+        "rimraf": "^3.0.2",
         "uuid": "^7.0.2",
         "winston": "^3.2.1",
         "winston-daily-rotate-file": "^4.4.2"
@@ -74,6 +75,7 @@
         "@types/minimist": "^1.2.0",
         "@types/moment-timezone": "^0.5.12",
         "@types/node": "^13.13.5",
+        "@types/rimraf": "^3.0.0",
         "@types/supertest": "^2.0.8",
         "@types/uuid": "^7.0.0",
         "@types/webpack": "^4.41.2",
@@ -99,6 +101,7 @@
         "eslint-plugin-standard": "^4.0.1",
         "faker": "^4.1.0",
         "filemanager-webpack-plugin": "^2.0.5",
+        "form-data": "^3.0.0",
         "husky": "^4.2.3",
         "jest": "^24.9.0",
         "jest-transform-graphql": "^2.1.0",

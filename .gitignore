@@ -17,4 +17,5 @@ dump.rdb
 
 /files
 /upload.sh
+/uploadMultiple.sh
 /public

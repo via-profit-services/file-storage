@@ -18,6 +18,7 @@ import Jimp from 'jimp';
 import Jwt from 'jsonwebtoken';
 import mime from 'mime-types';
 import moment from 'moment-timezone';
+import rimraf from 'rimraf';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Context } from '../../context';
@@ -39,26 +40,38 @@ class FileStorageService {
     this.props = props;
   }
 
-  public async checkFileInCache(imageDataHash: string) {
-    const { redis } = this.props.context;
-    const res = await redis.get(`${REDIS_CACHE_NAME}:${imageDataHash}`);
-    return res;
+  public async clearCache() {
+    const { cacheAbsolutePath, rootPath } = getParams();
+    const { redis, logger } = this.props.context;
+
+    if (cacheAbsolutePath !== rootPath && fs.existsSync(cacheAbsolutePath)) {
+      // clear Redis data
+      await redis.del(REDIS_CACHE_NAME);
+
+      // remove cache dir
+      rimraf(`${cacheAbsolutePath}/*`, (err) => {
+        if (err) {
+          logger.fileStorage.error('Failed to remove cache directory', { err });
+        }
+      });
+
+      logger.fileStorage.info(`Cache was cleared in «${cacheAbsolutePath}»`);
+    }
   }
 
-  // public async setImageFilenameIntoTheCache(imageDataHash: string) {
-  //   const { redis } = this.props.context;
-  //   const staticPath = FileStorageService.getFilenameFromUuid(uuidv4());
-  //   const res = await redis.set(`${REDIS_CACHE_NAME}:${imageDataHash}`, staticPath);
-  //   return res;
-  // }
+  public async checkFileInCache(imageDataHash: string) {
+    const { redis } = this.props.context;
+    const res = await redis.hget(REDIS_CACHE_NAME, imageDataHash);
+    return res;
+  }
 
   public async saveImageIntoTheCache(imageData: IImgeData, imageBuffer: Buffer) {
     const { redis } = this.props.context;
     const { payload, token } = imageData;
-    const { storageAbsolutePath } = getParams();
+    const { cacheAbsolutePath } = getParams();
 
     const filename = FileStorageService.getPathFromUuid(uuidv4());
-    const pathToSave = path.join(storageAbsolutePath, 'cache', filename);
+    const pathToSave = path.join(cacheAbsolutePath, filename);
     const absoluteFilename = `${pathToSave}.${payload.ext}`;
     const dirname = path.dirname(pathToSave);
 
@@ -67,7 +80,7 @@ class FileStorageService {
       fs.mkdirSync(dirname, { recursive: true });
     }
     fs.writeFileSync(absoluteFilename, imageBuffer);
-    await redis.set(`${REDIS_CACHE_NAME}:${token}`, `${absoluteFilename}`);
+    await redis.hset(REDIS_CACHE_NAME, token, absoluteFilename);
   }
 
   public getUrlWithTransform(
@@ -75,7 +88,6 @@ class FileStorageService {
     transform: IImageTransform,
   ) {
     const { jwt } = this.props.context;
-
 
     const {
       url, id, mimeType, isLocalFile,
@@ -315,7 +327,7 @@ class FileStorageService {
                 return image.writeAsync(absoluteFilename);
               })
               .then(async () => {
-                const optiRes = await imagemin([dirname], {
+                const optiRes = await imagemin([absoluteFilename], {
                   plugins: [
                     imageminMozjpeg(compressionOptions.mozJpeg),
                     imageminPngquant(compressionOptions.pngQuant),
@@ -383,11 +395,6 @@ class FileStorageService {
       .del()
       .whereIn('id', ids)
       .returning('id');
-
-    results.forEach((fileUuid) => {
-      const filename = FileStorageService.getFilenameFromUuid(fileUuid);
-      console.log(`remove file from path ${filename}`);
-    });
 
     return results;
   }
