@@ -8,12 +8,13 @@ import { IUploadFileInput } from '../types';
 interface TArgs {
   files: IFile[];
   info: IUploadFileInput[];
+  noCompress?: boolean;
 }
 
 const UploadFilesResolver: IFieldResolver<any, Context, TArgs> = async (
   parent, args, context,
 ) => {
-  const { files, info } = args;
+  const { files, info, noCompress } = args;
   const { logger, token } = context;
   const { uuid } = token;
 
@@ -30,7 +31,7 @@ const UploadFilesResolver: IFieldResolver<any, Context, TArgs> = async (
       const createdFile = await fileService.createFile(createReadStream(), {
         mimeType,
         ...info[index],
-      });
+      }, noCompress);
 
       logger.fileStorage.info(
         `File uploaded successfully in [${createdFile.absoluteFilename}]`, { uuid, mimeType },

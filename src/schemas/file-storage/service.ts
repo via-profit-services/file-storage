@@ -177,9 +177,9 @@ class FileStorageService {
 
   public static getFileTypeByMimeType(mimeType: string): FileType {
     switch (mimeType) {
+      case 'image/tiff':
       case 'image/png':
       case 'image/jpeg':
-      case 'image/webp':
       case 'image/gif':
       case 'image/svg':
         return FileType.image;
@@ -279,6 +279,7 @@ class FileStorageService {
   public async createFile(
     fileStream: ReadStream,
     fileInfo: IFileBagTableInput,
+    noCompress?: boolean,
   ): Promise<{id: string; absoluteFilename: string; }> {
     const { knex, timezone } = this.props.context;
     const { storageAbsolutePath, compressionOptions } = getParams();
@@ -327,6 +328,10 @@ class FileStorageService {
                 return image.writeAsync(absoluteFilename);
               })
               .then(async () => {
+                if (noCompress) {
+                  return;
+                }
+
                 const optiRes = await imagemin([absoluteFilename], {
                   plugins: [
                     imageminMozjpeg(compressionOptions.mozJpeg),
