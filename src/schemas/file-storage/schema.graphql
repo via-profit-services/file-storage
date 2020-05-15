@@ -28,6 +28,12 @@ type FileStorageMutation {
     """
     files: [FileUpload!]!
     info: [FileUploadInfo!]!
+    
+    """
+    Only for images.
+    If true, the image will not be compressed
+    """
+    noCompress: Boolean
   ): [File!]
 }
 

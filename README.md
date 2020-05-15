@@ -4,12 +4,19 @@
 
 > Via Profit services / **File-Storage** - это пакет, который является частью сервиса, базирующегося на `via-profit-services` и представляет собой реализацию схемы для хранения каких-либо файлов, изображений и прочих документов.
 
+
 ## Содержание
 
+- [Зависимости](#dependencies)
 - [Установка и настройка](#setup)
 - [Как использовать](#how-to-use)
 - [Подключение](#integration)
 - [Параметры](#options)
+
+## <a name="dependencies"></a> Зависимости
+
+ - [Jimp](https://www.npmjs.com/package/jimp) - Трансформации с изображениями
+ - [Imagemin](https://github.com/imagemin/imagemin) - Сжатие изображений
 
 ## <a name="setup"></a> Установка и настройка
 
