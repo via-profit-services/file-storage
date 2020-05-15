@@ -4,7 +4,6 @@ import { Context } from '../../../context';
 import DeleteFiles from './DeleteFiles';
 import File from './File';
 import FilesListConnection from './FilesListConnection';
-import Image from './Image';
 import UploadFiles from './UploadFiles';
 
 const resolvers: IResolvers<any, Context> = {
@@ -23,7 +22,7 @@ const resolvers: IResolvers<any, Context> = {
     upload: UploadFiles,
   },
   File,
-  Image,
+  Image: File,
 };
 
 export default resolvers;

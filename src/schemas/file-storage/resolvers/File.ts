@@ -1,11 +1,14 @@
+import { ServerError } from '@via-profit-services/core';
 import { IResolverObject, IFieldResolver } from 'graphql-tools';
 
 import { Context } from '../../../context';
 import createDataloaders from '../loaders';
-import { IFileBag } from '../types';
+import FileStorageService from '../service';
+import { IFileBag, IImageTransform, FileType } from '../types';
 
 interface IParent {
   id: string;
+  transform?: IImageTransform;
 }
 
 const FileResolver: IResolverObject<IParent, Context, any> = new Proxy({
@@ -16,16 +19,32 @@ const FileResolver: IResolverObject<IParent, Context, any> = new Proxy({
   category: () => ({}),
   mimeType: () => ({}),
   url: () => ({}),
+  type: () => ({}),
   description: () => ({}),
   metaData: () => ({}),
 }, {
   get: (target: IFileBag | any, prop: keyof IFileBag) => {
     const resolver: IFieldResolver<IParent, Context, any> = async (parent, args, context) => {
-      const { id } = parent;
-      const loaders = createDataloaders(context);
-      const data = await loaders.files.load(id);
+      const { id, transform } = parent;
+      const fileStorage = new FileStorageService({ context });
 
-      return data[prop];
+      const loaders = createDataloaders(context);
+      const file = await loaders.files.load(id);
+
+      if (!file) {
+        throw new ServerError(
+          `File with id ${id} not found`, { id },
+        );
+      }
+      // if is image
+      if (file.type === FileType.image) {
+        if (prop === 'url' && transform) {
+          return fileStorage.getUrlWithTransform(file, transform);
+        }
+      }
+
+
+      return file[prop];
     };
 
     return resolver;

@@ -9,29 +9,41 @@ const rootPath = path.join(__dirname, '..', '..', '..');
 
 const paramsBuffer: IParamsBuffer = {
   params: {
-    storagePath: '',
-    staticPrefix: '',
+    storagePath: './public/fileStorage/files',
+    cachePath: './public/fileStorage/cache',
+    staticPrefix: '/static',
     ssl: false,
     host: 'localhost',
+    clearCacheCronJob: '* 30 04 * * */6',
     staticPrefixAbsolutePath: '',
     storageAbsolutePath: '',
+    cacheAbsolutePath: '',
     rootPath,
     imageOptimMaxWidth: 800,
     imageOptimMaxHeight: 600,
     staticDelimiter: 's',
-    genericDelimiter: 'g',
+    transformDelimiter: 't',
+    cacheDelimiter: 'c',
+    compressionOptions: {
+      mozJpeg: { quality: 70 },
+      pngQuant: { quality: [0.8, 0.8] },
+      optiPng: { optimizationLevel: 3 },
+    },
   },
 };
 
-export const setParams = (params: Partial<IFileStorageInitialProps>) => {
-  const staticPrefixAbsolutePath = path.resolve(rootPath, params.staticPrefix);
-  const storageAbsolutePath = path.resolve(rootPath, params.storagePath);
-
+export const setParams = (params?: Partial<IFileStorageInitialProps>) => {
+  // merge options with defaults
   paramsBuffer.params = {
     ...paramsBuffer.params,
     ...params,
-    staticPrefixAbsolutePath,
-    storageAbsolutePath,
+  };
+
+  paramsBuffer.params = {
+    ...paramsBuffer.params,
+    staticPrefixAbsolutePath: path.resolve(rootPath, paramsBuffer.params.staticPrefix),
+    storageAbsolutePath: path.resolve(rootPath, paramsBuffer.params.storagePath),
+    cacheAbsolutePath: path.resolve(rootPath, paramsBuffer.params.cachePath),
   };
 };
 

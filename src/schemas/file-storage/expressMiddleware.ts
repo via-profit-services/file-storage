@@ -1,98 +1,151 @@
 import fs from 'fs';
-import https from 'https';
 import path from 'path';
 import {
-  IExpressMidlewareContainer, Express, IContext, ServerError,
+  IExpressMidlewareContainer, Express, IContext, CronJobManager,
 } from '@via-profit-services/core';
-import Sharp from 'sharp';
+import Jimp from 'jimp';
 
 import { Context } from '../../context';
+import { CRON_JOB_CLEAR_CACHE_NAME } from './constants';
 import { getParams } from './paramsBuffer';
 import FileStorageService from './service';
-import { IFileStorageInitialProps } from './types';
+import { IFileStorageInitialProps, ITransformUrlPayload, IImageTransform } from './types';
 
 
 const expressMiddlewareFactory = (props: IFileStorageInitialProps): IExpressMidlewareContainer => {
-  return ({ context }) => {
+  return (middlewareProps) => {
+    const context = middlewareProps.context as IContext & Context;
     const { staticPrefix } = props;
-    const { logger } = context as IContext & Context;
+    const { logger } = context;
     const {
-      storageAbsolutePath, genericDelimiter, staticDelimiter, rootPath,
+      storageAbsolutePath, staticDelimiter, transformDelimiter, rootPath,
+      cacheAbsolutePath, cacheDelimiter, clearCacheCronJob,
     } = getParams();
-
-
-    logger.fileStorage.info(
-      `Registered static directory in [${storageAbsolutePath}] with static prefix [${staticPrefix}]`,
-    );
-
+    const fileStorage = new FileStorageService({ context });
     const router = Express.Router();
-    router.use(`${staticPrefix}/${staticDelimiter}`, Express.static(storageAbsolutePath));
 
-    router.use(`${staticPrefix}/r`, async (req, res, next) => {
-      const { originalUrl } = req;
-      const urlArray = originalUrl.split(staticPrefix);
-      if (urlArray.length === 2) {
-        const genericParams = urlArray[1].split('/').splice(1);
-        if (genericParams.length === 4) {
-          if (genericParams[0] === 'r' && genericParams[2] === 't') {
-            const imgJson = Buffer.from(genericParams[1], 'base64').toString('utf8');
-            const transform = Buffer.from(genericParams[3], 'base64').toString('utf8');
-
-
-            let transformOptions: any;
-            let imageData: any;
-            try {
-              transformOptions = JSON.parse(String(transform));
-              imageData = JSON.parse(String(imgJson));
-            } catch (err) {
-              throw new ServerError('Failed to transform image', { err });
-            }
-
-            const filename = FileStorageService.getFilenameFromUuid(imageData.id);
-            const absolutefilename = path.resolve(path.join(rootPath, `${filename}.${imageData.ext}`));
-            const fileStream = fs.createReadStream(absolutefilename);
-            const metaReader = Sharp().resize(transformOptions);
-            metaReader.metadata()
-              .catch((err) => {
-                throw new ServerError('Failed to transform image', { err });
-              });
-            return fileStream.pipe(metaReader).pipe(res);
-          }
-        }
-      }
-      return next();
+    // clear cache cron job
+    CronJobManager.addJob(CRON_JOB_CLEAR_CACHE_NAME, {
+      cronTime: clearCacheCronJob,
+      onTick: () => fileStorage.clearCache(),
+      start: true,
     });
 
-    router.use(`${staticPrefix}/${genericDelimiter}`, (req, res, next) => {
-      const { originalUrl } = req;
-      const urlArray = originalUrl.split(staticPrefix);
-      if (urlArray.length === 2) {
-        const genericParams = urlArray[1].split('/').splice(1);
-        if (genericParams.length === 4) {
-          if (genericParams[0] === genericDelimiter && genericParams[2] === 't') {
-            const url = Buffer.from(genericParams[1], 'base64').toString('utf8');
-            const transform = Buffer.from(genericParams[3], 'base64').toString('utf8');
+    logger.fileStorage.info(
+      `Cron job for clear cache was created at «${clearCacheCronJob}»`,
+    );
 
-            let transformOptions: any;
-            try {
-              transformOptions = JSON.parse(String(transform));
-            } catch (err) {
-              throw new ServerError('Failed to transform image', { err });
-            }
 
-            return https.get(url, (fileStream) => {
-              const metaReader = Sharp().resize(transformOptions);
-              metaReader.metadata()
-                .catch((err) => {
-                  throw new ServerError('Failed to transform image', { err });
-                });
+    // express static for simple static directory
+    router.use(`${staticPrefix}/${staticDelimiter}`, Express.static(storageAbsolutePath));
+    logger.fileStorage.info(
+      `Registered static directory in «${storageAbsolutePath}» with static prefix «${staticPrefix}»`,
+    );
 
-              fileStream.pipe(metaReader).pipe(res);
-            });
-          }
+
+    // express static for the cache static directory
+    router.use(`${staticPrefix}/${cacheDelimiter}`, Express.static(cacheAbsolutePath));
+    logger.fileStorage.info(
+      `Registered static cache directory in «${cacheAbsolutePath}»`,
+    );
+    // transforms middleware
+    // This middleware should create new file ин applying transform params and put
+    // created file into the static cache
+    router.use(`${staticPrefix}/${transformDelimiter}`, async (req, res) => {
+      let fileData: {payload: ITransformUrlPayload; token: string};
+      try {
+        fileData = fileStorage.getImageDataFromTransformUrl(req.originalUrl);
+      } catch (err) {
+        logger.fileStorage.error('Failed to URL decode');
+        return res.status(400).end();
+      }
+
+      const { payload, token } = fileData;
+
+      // check to cache
+      const filenameInCache = await fileStorage.checkFileInCache(token);
+      if (filenameInCache) {
+        if (fs.existsSync(filenameInCache)) {
+          return res.sendFile(filenameInCache);
         }
       }
-      return next();
+
+
+      let jimpHandle: Jimp;
+
+      try {
+        jimpHandle = await Jimp.read(
+          payload.url
+            ? payload.url
+            : `${path.resolve(path.join(rootPath, FileStorageService.getFilenameFromUuid(payload.id)))}.${payload.ext}`,
+        );
+      } catch (err) {
+        logger.fileStorage.error('Failed to read image', { err });
+        return res.status(400).end();
+      }
+
+      const mimeType = FileStorageService.getMimeTypeByExtension(payload.ext);
+      const { transform } = payload;
+
+
+      Object.entries(transform).forEach(([method, options]) => {
+        // Resize
+        if (method === 'resize') {
+          const { width, height } = options as IImageTransform['resize'];
+          jimpHandle = jimpHandle.resize(width, height);
+        }
+
+        if (method === 'cover') {
+          const { width, height } = options as IImageTransform['cover'];
+          jimpHandle = jimpHandle.cover(width, height);
+        }
+
+        if (method === 'contain') {
+          const { width, height } = options as IImageTransform['contain'];
+          jimpHandle = jimpHandle.contain(width, height);
+        }
+
+        if (method === 'scaleToFit') {
+          const { width, height } = options as IImageTransform['scaleToFit'];
+          jimpHandle = jimpHandle.scaleToFit(width, height);
+        }
+
+        if (method === 'gaussian') {
+          const gaussian = options as IImageTransform['gaussian'];
+          jimpHandle = jimpHandle.gaussian(gaussian);
+        }
+
+        if (method === 'blur') {
+          const blur = options as IImageTransform['blur'];
+          jimpHandle = jimpHandle.gaussian(blur);
+        }
+
+        if (method === 'greyscale') {
+          const greyscale = options as IImageTransform['greyscale'];
+          if (greyscale === true) {
+            jimpHandle = jimpHandle.grayscale();
+          }
+        }
+      });
+
+
+      try {
+        const buffer = await jimpHandle.getBufferAsync(mimeType);
+
+        // save into the cache
+        fileStorage.saveImageIntoTheCache(fileData, buffer);
+
+        res.writeHead(200, {
+          'Content-Type': mimeType,
+        });
+
+        res.end(buffer, 'binary');
+      } catch (err) {
+        logger.fileStorage.error('Failed to get image buffer');
+        return res.status(400).end();
+      }
+
+      return res.status(400).end();
     });
     return router;
   };

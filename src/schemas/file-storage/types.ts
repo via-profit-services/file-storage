@@ -1,4 +1,6 @@
-// import Sharp from 'sharp';
+import { Options as ImagenimMozjpegOption } from 'imagemin-mozjpeg';
+import { Options as ImagenimOptiPngOption } from 'imagemin-optipng';
+import { Options as ImagenimPngQuantOption } from 'imagemin-pngquant';
 
 export enum FileType {
   image = 'image',
@@ -17,6 +19,10 @@ export interface IFileBag {
   isLocalFile?: boolean;
   metaData?: Object | Array<any>;
   description?: string;
+
+  /** Only for images */
+  width?: number;
+  height?: number;
 }
 
 export type IFileBagTable = IFileBag & {
@@ -50,42 +56,138 @@ export interface IUploadFileInput {
 
 
 export interface IFileStorageInitialProps {
-  /** Prefix path (e.g. `/static`) @see https://expressjs.com/ru/starter/static-files.html */
-  staticPrefix: string;
+  /**
+   * Prefix path (e.g. `/static`)
+   * @see https://expressjs.com/ru/starter/static-files.html
+   */
+  staticPrefix?: string;
 
-  /** Static `relative` path (e.g. `/public`). Do not set absolute path! @see https://expressjs.com/ru/starter/static-files.html */
-  storagePath: string;
+  /**
+   * Static `relative` path (e.g. `./public/fileStorage/files`).
+   * Do not set absolute path!
+   * @see https://expressjs.com/ru/starter/static-files.html
+   */
+  storagePath?: string;
 
-  /** Host or hostname without protocol ang schema (`www.example.com`) */
-  host: string;
+  /**
+   * Storage cache directory (e.g. `./public/fileStorage/cache`).
+   * Do not set absolute path!
+   */
+  cachePath?: string;
 
-  /** (http or https) If is true then full URL address will be `https://www.example.com` */
+  /**
+   * Host or hostname without protocol ang schema (`www.example.com`)
+   */
+  host?: string;
+
+  /**
+   * (http or https) If is true then full URL address will be `https://www.example.com`
+   */
   ssl?: boolean;
 
-  /** Image maximum width */
-  imageOptimMaxWidth: number;
+  /**
+   * JS Crontime while cache will be cleared
+   */
+  clearCacheCronJob?: string;
 
-  /** Image maximum height */
-  imageOptimMaxHeight: number;
+  /**
+   * Image maximum width
+   */
+  imageOptimMaxWidth?: number;
 
+  /**
+   * Image maximum height
+   */
+  imageOptimMaxHeight?: number;
+
+  /**
+   * Imagemin plugins options
+   */
+  compressionOptions?: {
+
+    /**
+     * Imagemin MozJpeg plugin settings
+     * @see https://github.com/imagemin/imagemin-mozjpeg#readme
+     */
+    mozJpeg?: ImagenimMozjpegOption;
+
+    /**
+     * Imagemin OptiPng settings
+     * @see https://github.com/imagemin/imagemin-optipng#readme
+     */
+    pngQuant?: ImagenimPngQuantOption;
+
+    /**
+     * Imagemin PngQuant settings
+     * @see https://github.com/imagemin/imagemin-pngquant#readme
+     */
+    optiPng?: ImagenimOptiPngOption;
+  }
 }
 
 
 export type IFileStorageParams = IFileStorageInitialProps & {
   staticPrefixAbsolutePath: string;
   storageAbsolutePath: string;
+  cacheAbsolutePath: string;
   rootPath: string;
 
 
   /** URL delimeter of static content */
   staticDelimiter: string;
 
-  /** URL delimeter of generic content */
-  genericDelimiter: string;
+  /** URL delimiter for transform content */
+  transformDelimiter: string;
+
+  /** URL delimiter for cached content */
+  cacheDelimiter: string;
+
 }
 
 
 export interface IImageTransform {
-  width?: number;
-  height?: number;
+  resize: {
+    width: number;
+    height: number;
+  };
+  cover: {
+    width: number;
+    height: number;
+  };
+  contain: {
+    width: number;
+    height: number;
+  };
+  scaleToFit: {
+    width: number;
+    height: number;
+  };
+  gaussian: number;
+  blur: number;
+  greyscale: boolean;
+}
+
+export interface ITransformUrlPayload {
+
+  /** File extension */
+  ext: string;
+
+  mimeType: string;
+
+  /** File original ID */
+  id: string;
+
+  /** Image transform options */
+  transform: IImageTransform;
+
+  /** Image remote URL */
+  url?: string;
+
+
+}
+
+
+export interface IImgeData {
+  payload: ITransformUrlPayload;
+  token: string;
 }

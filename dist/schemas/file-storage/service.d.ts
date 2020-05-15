@@ -2,13 +2,17 @@
 import { ReadStream } from 'fs';
 import { IListResponse, TOutputFilter } from '@via-profit-services/core';
 import { Context } from '../../context';
-import { IFileBag, IFileBagTableInput, FileType } from './types';
+import { IFileBag, IFileBagTableInput, FileType, IImageTransform, IImgeData } from './types';
 interface IProps {
     context: Context;
 }
 declare class FileStorageService {
     props: IProps;
     constructor(props: IProps);
+    checkFileInCache(imageDataHash: string): Promise<string>;
+    saveImageIntoTheCache(imageData: IImgeData, imageBuffer: Buffer): Promise<void>;
+    getUrlWithTransform(imageData: Pick<IFileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>, transform: IImageTransform): string;
+    getImageDataFromTransformUrl(transformUrl: string): IImgeData;
     /**
      * Returns Full filename without extension (e.g. /path/to/file)
      */

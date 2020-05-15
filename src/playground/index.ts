@@ -6,30 +6,23 @@ import { v4 as uuidv4 } from 'uuid';
 import { makeSchema } from '../schemas/file-storage';
 import { configureApp } from '../utils/configureApp';
 
-
-const {
-  typeDefs, resolvers, permissions, expressMiddleware,
-} = makeSchema({
-  staticPrefix: process.env.STATIC_DIR_PREFIX,
-  storagePath: process.env.STATIC_DIR,
-  host: process.env.STATIC_HOST,
-  ssl: process.env.STATIC_USE_SSL === 'true',
-  imageOptimMaxWidth: Number(process.env.OPTIM_IMAGE_MAX_WIDTH),
-  imageOptimMaxHeight: Number(process.env.OPTIM_IMAGE_MAX_HEIGHT),
-});
+const fileStorage = makeSchema();
 
 const config = configureApp({
   typeDefs: [
-    typeDefs,
+    fileStorage.typeDefs,
   ],
   permissions: [
-    permissions,
+    fileStorage.permissions,
   ],
   resolvers: [
-    resolvers,
+    fileStorage.resolvers,
   ],
-  expressMiddlewares: [expressMiddleware],
+  expressMiddlewares: [
+    fileStorage.expressMiddleware,
+  ],
 });
+
 const app = new App(config);
 const AuthService = schemas.auth.service;
 
