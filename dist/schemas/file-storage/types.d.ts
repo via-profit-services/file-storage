@@ -67,11 +67,7 @@ export interface IFileStorageInitialProps {
     /**
      * Host or hostname without protocol ang schema (`www.example.com`)
      */
-    host?: string;
-    /**
-     * (http or https) If is true then full URL address will be `https://www.example.com`
-     */
-    ssl?: boolean;
+    hostname?: string;
     /**
      * JS Crontime while cache will be cleared
      */
