@@ -1,10 +1,11 @@
 import { ServerError } from '@via-profit-services/core';
 import { IResolverObject, IFieldResolver } from 'graphql-tools';
 
-import { Context } from '../../../context';
 import createDataloaders from '../loaders';
 import FileStorageService from '../service';
-import { IFileBag, IImageTransform, FileType } from '../types';
+import {
+  IFileBag, IImageTransform, FileType, Context,
+} from '../types';
 
 interface IParent {
   id: string;

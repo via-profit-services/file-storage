@@ -1,14 +1,14 @@
 /// <reference types="node" />
 import { ReadStream } from 'fs';
 import { IListResponse, TOutputFilter } from '@via-profit-services/core';
-import { Context } from '../../context';
-import { IFileBag, IFileBagTableInput, FileType, IImageTransform, IImgeData } from './types';
+import { IFileBag, IFileBagTableInput, FileType, IImageTransform, IImgeData, Context } from './types';
 interface IProps {
     context: Context;
 }
 declare class FileStorageService {
     props: IProps;
     constructor(props: IProps);
+    clearCache(): Promise<void>;
     checkFileInCache(imageDataHash: string): Promise<string>;
     saveImageIntoTheCache(imageData: IImgeData, imageBuffer: Buffer): Promise<void>;
     getUrlWithTransform(imageData: Pick<IFileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>, transform: IImageTransform): string;
@@ -30,7 +30,7 @@ declare class FileStorageService {
     getFilesByIds(ids: string[]): Promise<IFileBag[]>;
     getDriver(id: string): Promise<IFileBag | false>;
     updateFile(id: string, fileData: Partial<IFileBagTableInput>): Promise<void>;
-    createFile(fileStream: ReadStream, fileInfo: IFileBagTableInput): Promise<{
+    createFile(fileStream: ReadStream, fileInfo: IFileBagTableInput, noCompress?: boolean): Promise<{
         id: string;
         absoluteFilename: string;
     }>;

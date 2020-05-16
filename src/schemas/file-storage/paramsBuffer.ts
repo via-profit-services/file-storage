@@ -5,15 +5,17 @@ interface IParamsBuffer {
   params: IFileStorageParams;
 }
 
-const rootPath = path.join(__dirname, '..', '..', '..');
+const isDev = process.env.NODE_ENV === 'development';
+const rootPath = isDev
+  ? path.resolve(path.dirname(process.argv[1]), '..')
+  : path.resolve(path.dirname(process.argv[1]));
 
 const paramsBuffer: IParamsBuffer = {
   params: {
     storagePath: './public/fileStorage/files',
     cachePath: './public/fileStorage/cache',
     staticPrefix: '/static',
-    ssl: false,
-    host: 'localhost',
+    hostname: 'http://localhost:80',
     clearCacheCronJob: '* 30 04 * * */6',
     staticPrefixAbsolutePath: '',
     storageAbsolutePath: '',

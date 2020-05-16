@@ -1,6 +1,5 @@
 import { IResolverObject } from 'graphql-tools';
-import { Context } from '../../../context';
-import { IImageTransform } from '../types';
+import { IImageTransform, Context } from '../types';
 interface IParent {
     id: string;
     transform?: IImageTransform;

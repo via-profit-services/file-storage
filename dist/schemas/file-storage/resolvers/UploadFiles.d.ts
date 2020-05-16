@@ -1,10 +1,9 @@
-import { IFile } from '@via-profit-services/core';
 import { IFieldResolver } from 'graphql-tools';
-import { Context } from '../../../context';
-import { IUploadFileInput } from '../types';
+import { IUploadFileInput, Context, IFile } from '../types';
 interface TArgs {
-    file: IFile;
-    info: IUploadFileInput;
+    files: IFile[];
+    info: IUploadFileInput[];
+    noCompress?: boolean;
 }
 declare const UploadFilesResolver: IFieldResolver<any, Context, TArgs>;
 export default UploadFilesResolver;

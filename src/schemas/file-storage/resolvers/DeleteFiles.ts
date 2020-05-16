@@ -1,9 +1,9 @@
 import { ServerError } from '@via-profit-services/core';
 import { IFieldResolver } from 'graphql-tools';
 
-import { Context } from '../../../context';
 import createLoaders from '../loaders';
 import FileStorageService from '../service';
+import { Context } from '../types';
 
 interface TArgs {
   ids: string[];

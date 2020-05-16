@@ -1,5 +1,5 @@
 import { IFieldResolver } from 'graphql-tools';
-import { Context } from '../../../context';
+import { Context } from '../types';
 interface TArgs {
     ids: string[];
 }

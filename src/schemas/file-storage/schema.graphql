@@ -192,3 +192,8 @@ input ImageTransformInputScaleToFit {
   width: Int!
   height: Int!
 }
+
+"""
+A GraphQL `FileUpload` scalar as specified GraphQL multipart request specification: https://github.com/jaydenseric/graphql-multipart-request-spec#graphql-multipart-request-specification
+"""
+scalar FileUpload

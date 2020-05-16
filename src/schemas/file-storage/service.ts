@@ -21,12 +21,11 @@ import moment from 'moment-timezone';
 import rimraf from 'rimraf';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Context } from '../../context';
 import { REDIS_CACHE_NAME } from './constants';
 import { getParams } from './paramsBuffer';
 import {
   IFileBag, IFileBagTable, IFileBagTableInput, FileType, IImageTransform, ITransformUrlPayload,
-  IImgeData,
+  IImgeData, Context,
 } from './types';
 
 interface IProps {
@@ -93,7 +92,7 @@ class FileStorageService {
       url, id, mimeType, isLocalFile,
     } = imageData;
     const {
-      ssl, host, staticPrefix, transformDelimiter,
+      hostname, staticPrefix, transformDelimiter,
     } = getParams();
 
     const ext = FileStorageService.getExtensionByMimeType(mimeType);
@@ -116,7 +115,7 @@ class FileStorageService {
     });
 
     return [
-      `http${ssl ? 's' : ''}://${host}${staticPrefix}`,
+      `${hostname}${staticPrefix}`,
       transformDelimiter,
       `${imageUrlHash}.${ext}`,
     ].join('/');
@@ -209,7 +208,7 @@ class FileStorageService {
     const { context } = this.props;
     const { knex } = context;
     const {
-      staticPrefix, host, ssl, staticDelimiter,
+      staticPrefix, hostname, staticDelimiter,
     } = getParams();
     const {
       limit, offset, orderBy, where,
@@ -232,7 +231,7 @@ class FileStorageService {
           return {
             ...nodeData,
             url: nodeData.isLocalFile
-              ? `http${ssl ? 's' : ''}://${host}${staticPrefix}/${staticDelimiter}/${url}`
+              ? `${hostname}${staticPrefix}/${staticDelimiter}/${url}`
               : url,
           };
         }),
