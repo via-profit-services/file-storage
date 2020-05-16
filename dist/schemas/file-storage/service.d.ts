@@ -1,8 +1,7 @@
 /// <reference types="node" />
 import { ReadStream } from 'fs';
 import { IListResponse, TOutputFilter } from '@via-profit-services/core';
-import { Context } from '../../context';
-import { IFileBag, IFileBagTableInput, FileType, IImageTransform, IImgeData } from './types';
+import { IFileBag, IFileBagTableInput, FileType, IImageTransform, IImgeData, Context } from './types';
 interface IProps {
     context: Context;
 }

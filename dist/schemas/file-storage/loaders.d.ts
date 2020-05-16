@@ -1,6 +1,5 @@
 import { Node, DataLoader } from '@via-profit-services/core';
-import { Context } from '../../context';
-import { IFileBag } from './types';
+import { IFileBag, Context } from './types';
 interface Loaders {
     files: DataLoader<string, Node<IFileBag>>;
 }

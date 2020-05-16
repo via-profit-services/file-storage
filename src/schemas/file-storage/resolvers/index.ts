@@ -1,6 +1,7 @@
 import { IResolvers } from 'graphql-tools';
 
-import { Context } from '../../../context';
+import FileUpload from '../FileUploadScalar';
+import { Context } from '../types';
 import DeleteFiles from './DeleteFiles';
 import File from './File';
 import FilesListConnection from './FilesListConnection';
@@ -23,6 +24,9 @@ const resolvers: IResolvers<any, Context> = {
   },
   File,
   Image: File,
+
+  // scalar
+  FileUpload,
 };
 
 export default resolvers;

@@ -86,26 +86,29 @@ filesList.forEach((filename, index) => {
   formData.append(index, fs.createReadStream(path.resolve(filename)));
 });
 
+try {
+  formData.submit({
+    host: 'localhost',
+    port,
+    path: '/graphql',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }, (error, response) => {
+    if (error) {
+      console.log(error);
+      return;
+    }
 
-formData.submit({
-  host: 'localhost',
-  port,
-  path: '/graphql',
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-}, (error, response) => {
-  if (error) {
-    console.log(error);
-    return;
-  }
-
-  let body = '';
-  response.on('data', (chunk) => {
-    body += chunk;
+    let body = '';
+    response.on('data', (chunk) => {
+      body += chunk;
+    });
+    response.on('end', () => {
+      const parsedBody = JSON.parse(body);
+      console.log(parsedBody.data.fileStorage.upload);
+    });
   });
-  response.on('end', () => {
-    const parsedBody = JSON.parse(body);
-    console.log(parsedBody.data.fileStorage.upload);
-  });
-});
+} catch (err) {
+  console.log('Error', err);
+}

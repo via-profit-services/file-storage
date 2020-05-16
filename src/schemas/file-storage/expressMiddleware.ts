@@ -5,24 +5,26 @@ import {
 } from '@via-profit-services/core';
 import Jimp from 'jimp';
 
-import { Context } from '../../context';
 import { CRON_JOB_CLEAR_CACHE_NAME } from './constants';
 import { getParams } from './paramsBuffer';
 import FileStorageService from './service';
-import { IFileStorageInitialProps, ITransformUrlPayload, IImageTransform } from './types';
-
+import {
+  IFileStorageInitialProps, ITransformUrlPayload, IImageTransform, Context,
+} from './types';
+import uploadMiddleware from './uploadMiddleware';
 
 const expressMiddlewareFactory = (props: IFileStorageInitialProps): IExpressMidlewareContainer => {
   return (middlewareProps) => {
     const context = middlewareProps.context as IContext & Context;
     const { staticPrefix } = props;
-    const { logger } = context;
+    const { logger, endpoint } = context;
     const {
       storageAbsolutePath, staticDelimiter, transformDelimiter, rootPath,
       cacheAbsolutePath, cacheDelimiter, clearCacheCronJob,
     } = getParams();
     const fileStorage = new FileStorageService({ context });
     const router = Express.Router();
+
 
     // clear cache cron job
     CronJobManager.addJob(CRON_JOB_CLEAR_CACHE_NAME, {
@@ -35,6 +37,8 @@ const expressMiddlewareFactory = (props: IFileStorageInitialProps): IExpressMidl
       `Cron job for clear cache was created at «${clearCacheCronJob}»`,
     );
 
+
+    router.use(endpoint, uploadMiddleware({ context }));
 
     // express static for simple static directory
     router.use(`${staticPrefix}/${staticDelimiter}`, Express.static(storageAbsolutePath));

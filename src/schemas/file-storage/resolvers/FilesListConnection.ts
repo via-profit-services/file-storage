@@ -6,10 +6,9 @@ import {
 } from '@via-profit-services/core';
 import { IFieldResolver } from 'graphql-tools';
 
-import { Context } from '../../../context';
 import createLoaders from '../loaders';
 import FileStorageService from '../service';
-import { IImageTransform } from '../types';
+import { IImageTransform, Context } from '../types';
 
 const FilesListConnectionResolver: IFieldResolver<any, Context, TArgs> = async (
   parent, args, context,

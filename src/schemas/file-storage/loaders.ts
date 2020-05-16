@@ -2,9 +2,8 @@ import {
   Node, DataLoader, collateForDataloader,
 } from '@via-profit-services/core';
 
-import { Context } from '../../context';
 import FileStorageService from './service';
-import { IFileBag } from './types';
+import { IFileBag, Context } from './types';
 
 interface Loaders {
   files: DataLoader<string, Node<IFileBag>>;

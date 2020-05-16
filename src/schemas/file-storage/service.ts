@@ -21,12 +21,11 @@ import moment from 'moment-timezone';
 import rimraf from 'rimraf';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Context } from '../../context';
 import { REDIS_CACHE_NAME } from './constants';
 import { getParams } from './paramsBuffer';
 import {
   IFileBag, IFileBagTable, IFileBagTableInput, FileType, IImageTransform, ITransformUrlPayload,
-  IImgeData,
+  IImgeData, Context,
 } from './types';
 
 interface IProps {

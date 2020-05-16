@@ -1,7 +1,5 @@
-import { IFile } from '@via-profit-services/core';
 import { IFieldResolver } from 'graphql-tools';
-import { Context } from '../../../context';
-import { IUploadFileInput } from '../types';
+import { IUploadFileInput, Context, IFile } from '../types';
 interface TArgs {
     files: IFile[];
     info: IUploadFileInput[];

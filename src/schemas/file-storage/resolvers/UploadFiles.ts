@@ -1,9 +1,7 @@
-import { ServerError, IFile } from '@via-profit-services/core';
 import { IFieldResolver } from 'graphql-tools';
 
-import { Context } from '../../../context';
 import FileStorageService from '../service';
-import { IUploadFileInput } from '../types';
+import { IUploadFileInput, Context, IFile } from '../types';
 
 interface TArgs {
   files: IFile[];
@@ -21,28 +19,26 @@ const UploadFilesResolver: IFieldResolver<any, Context, TArgs> = async (
   const fileService = new FileStorageService({ context });
 
 
+  const filesData = await Promise.all(files);
   const returnDataArray: any[] = [];
-  await files.reduce(async (previousPromise, currentFile, index) => {
-    await previousPromise;
-    const { createReadStream, filename } = await currentFile;
-    const mimeType = FileStorageService.getMimeTypeByFilename(filename);
 
-    try {
-      const createdFile = await fileService.createFile(createReadStream(), {
-        mimeType,
-        ...info[index],
-      }, noCompress);
+  filesData.map(async (file, index) => {
+    const { createReadStream, mimeType, filename } = file;
 
-      logger.fileStorage.info(
-        `File uploaded successfully in [${createdFile.absoluteFilename}]`, { uuid, mimeType },
-      );
-      returnDataArray[index] = { id: createdFile.id };
-    } catch (err) {
-      logger.fileStorage.error('Failed to Upload files', { err, uuid });
-      throw new ServerError('Failed to Upload files', { err, uuid });
-    }
-  }, Promise.resolve());
+    const createdFile = await fileService.createFile(createReadStream(), {
+      mimeType,
+      ...info[index],
+    }, noCompress);
 
+    logger.fileStorage.info(
+      `File «${filename}» uploaded successfully as «${createdFile.absoluteFilename}»`,
+      { uuid, mimeType },
+    );
+
+    returnDataArray[index] = {
+      id: createdFile.id,
+    };
+  });
 
   return returnDataArray;
 };

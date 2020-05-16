@@ -39,7 +39,9 @@
     "author": "Via Profit <promo@via-profit.ru>",
     "license": "MIT",
     "dependencies": {
-        "@via-profit-services/core": "ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.18.1",
+        "@via-profit-services/core": "ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.21.0",
+        "busboy": "^0.3.1",
+        "fs-capacitor": "^6.1.0",
         "graphql": "^14.6.0",
         "graphql-import-node": "^0.0.4",
         "graphql-shield": "^7.2.2",
@@ -61,9 +63,11 @@
     },
     "devDependencies": {
         "@jagi/jest-transform-graphql": "^1.0.2",
+        "@types/busboy": "^0.2.3",
         "@types/express": "^4.17.6",
         "@types/express-serve-static-core": "^4.17.2",
         "@types/faker": "^4.1.10",
+        "@types/fs-capacitor": "^2.0.0",
         "@types/imagemin": "^7.0.0",
         "@types/imagemin-mozjpeg": "^8.0.0",
         "@types/imagemin-optipng": "^5.2.0",

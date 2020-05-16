@@ -1,10 +1,20 @@
+/// <reference types="node" />
+import { ReadStream } from 'fs';
+import { IContext, ILoggerCollection } from '@via-profit-services/core';
+import { WriteStream } from 'fs-capacitor';
 import { Options as ImagenimMozjpegOption } from 'imagemin-mozjpeg';
 import { Options as ImagenimOptiPngOption } from 'imagemin-optipng';
 import { Options as ImagenimPngQuantOption } from 'imagemin-pngquant';
+import { Logger } from 'winston';
 export declare enum FileType {
     image = "image",
     document = "document"
 }
+export declare type Context = Pick<IContext, 'knex' | 'timezone' | 'token' | 'jwt' | 'redis'> & {
+    logger: ILoggerCollection & {
+        fileStorage: Logger;
+    };
+};
 export interface IFileBag {
     id: string;
     owner: string;
@@ -148,4 +158,21 @@ export interface ITransformUrlPayload {
 export interface IImgeData {
     payload: ITransformUrlPayload;
     token: string;
+}
+export interface IFilePayload {
+    filename: string;
+    mimeType: string;
+    encoding: string;
+    capacitor: WriteStream;
+    createReadStream: (name?: string) => ReadStream;
+}
+export declare type IFile = Promise<IFilePayload>;
+export interface IUploadLimits {
+    maxFieldSize: number;
+    maxFileSize: number;
+    maxFiles: number;
+}
+export interface IUploadExpressMiddlewareProps {
+    context: Context;
+    limits?: Partial<IUploadLimits>;
 }
