@@ -20,9 +20,8 @@ const UploadFilesResolver: IFieldResolver<any, Context, TArgs> = async (
 
 
   const filesData = await Promise.all(files);
-  const returnDataArray: any[] = [];
 
-  filesData.map(async (file, index) => {
+  const savePromises = filesData.map(async (file, index) => {
     const { createReadStream, mimeType, filename } = file;
 
     const createdFile = await fileService.createFile(createReadStream(), {
@@ -35,12 +34,12 @@ const UploadFilesResolver: IFieldResolver<any, Context, TArgs> = async (
       { uuid, mimeType },
     );
 
-    returnDataArray[index] = {
+    return {
       id: createdFile.id,
     };
   });
 
-  return returnDataArray;
+  return Promise.all(savePromises);
 };
 
 export default UploadFilesResolver;
