@@ -22,7 +22,7 @@
 ### Установка
 
 ```bash
-yarn add ssh://git@gitlab.com:via-profit-services/file-storage.git#semver:^0.4.0
+yarn add ssh://git@gitlab.com:via-profit-services/file-storage.git#semver:^0.5.0
 ```
 
 Список версий [см. здесь](https://gitlab.com/via-profit-services/file-storage/-/tags)
