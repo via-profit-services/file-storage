@@ -5,7 +5,10 @@ interface IParamsBuffer {
   params: IFileStorageParams;
 }
 
-const rootPath = path.join(__dirname, '..', '..', '..');
+const isDev = process.env.NODE_ENV === 'development';
+const rootPath = isDev
+  ? path.resolve(path.dirname(process.argv[1]), '..')
+  : path.resolve(path.dirname(process.argv[1]));
 
 const paramsBuffer: IParamsBuffer = {
   params: {

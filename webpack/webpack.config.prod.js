@@ -14,6 +14,7 @@ module.exports = merge(baseConfig, {
     filename: '[name].js',
     libraryTarget: 'commonjs2',
   },
+  devtool: 'inline-source-map',
   mode: 'production',
   plugins: [
     new ProgressPlugin(),
