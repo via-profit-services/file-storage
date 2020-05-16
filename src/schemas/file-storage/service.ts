@@ -93,7 +93,7 @@ class FileStorageService {
       url, id, mimeType, isLocalFile,
     } = imageData;
     const {
-      ssl, host, staticPrefix, transformDelimiter,
+      hostname, staticPrefix, transformDelimiter,
     } = getParams();
 
     const ext = FileStorageService.getExtensionByMimeType(mimeType);
@@ -116,7 +116,7 @@ class FileStorageService {
     });
 
     return [
-      `http${ssl ? 's' : ''}://${host}${staticPrefix}`,
+      `${hostname}${staticPrefix}`,
       transformDelimiter,
       `${imageUrlHash}.${ext}`,
     ].join('/');
@@ -209,7 +209,7 @@ class FileStorageService {
     const { context } = this.props;
     const { knex } = context;
     const {
-      staticPrefix, host, ssl, staticDelimiter,
+      staticPrefix, hostname, staticDelimiter,
     } = getParams();
     const {
       limit, offset, orderBy, where,
@@ -232,7 +232,7 @@ class FileStorageService {
           return {
             ...nodeData,
             url: nodeData.isLocalFile
-              ? `http${ssl ? 's' : ''}://${host}${staticPrefix}/${staticDelimiter}/${url}`
+              ? `${hostname}${staticPrefix}/${staticDelimiter}/${url}`
               : url,
           };
         }),

@@ -6,7 +6,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { makeSchema } from '../schemas/file-storage';
 import { configureApp } from '../utils/configureApp';
 
-const fileStorage = makeSchema();
+const fileStorage = makeSchema({
+  hostname: `http://localhost:${process.env.PORT}`,
+});
 
 const config = configureApp({
   typeDefs: [
