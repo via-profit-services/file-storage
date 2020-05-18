@@ -13,6 +13,7 @@ const graphqlUploadExpress = (props: IUploadExpressMiddlewareProps) => {
   return async (request: Express.Request, response: any, next: Express.NextFunction) => {
     if (!request.is('multipart/form-data')) {
       next();
+      return;
     }
 
 
