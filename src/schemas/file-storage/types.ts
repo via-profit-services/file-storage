@@ -13,7 +13,9 @@ export enum FileType {
 }
 
 
-export type Context = Pick<IContext, 'knex' | 'timezone' | 'token' | 'jwt' | 'redis'> & {
+export type Context = Pick<IContext, 'knex' | 'timezone' | 'token' | 'jwt' | 'redis' | 'endpoint'>;
+
+export interface ExtendedContext extends Context {
   logger: ILoggerCollection & {
     fileStorage: Logger;
   };

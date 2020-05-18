@@ -1,5 +1,5 @@
 import makeSchema from './makeSchema';
-import service from './service';
+import FileStorage from './service';
 export * from './types';
 export * from './logger';
-export { service, makeSchema, };
+export { FileStorage, makeSchema, };

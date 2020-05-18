@@ -1,7 +1,7 @@
 import { IFieldResolver } from 'graphql-tools';
-import { Context } from '../types';
+import { ExtendedContext } from '../types';
 interface TArgs {
     ids: string[];
 }
-declare const DeleteFilesResolver: IFieldResolver<any, Context, TArgs>;
+declare const DeleteFilesResolver: IFieldResolver<any, ExtendedContext, TArgs>;
 export default DeleteFilesResolver;

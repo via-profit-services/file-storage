@@ -2,7 +2,7 @@
     "name": "@via-profit-services/file-storage",
     "private": true,
     "support": "https://via-profit.ru",
-    "version": "0.5.2",
+    "version": "0.5.4",
     "description": "Via Profit File Storage Schema",
     "main": "dist/index.js",
     "scripts": {

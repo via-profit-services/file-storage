@@ -1,7 +1,7 @@
 import { IFieldResolver } from 'graphql-tools';
 
 import FileStorageService from '../service';
-import { IUploadFileInput, Context, IFile } from '../types';
+import { IUploadFileInput, ExtendedContext, IFile } from '../types';
 
 interface TArgs {
   files: IFile[];
@@ -9,7 +9,7 @@ interface TArgs {
   noCompress?: boolean;
 }
 
-const UploadFilesResolver: IFieldResolver<any, Context, TArgs> = async (
+const UploadFilesResolver: IFieldResolver<any, ExtendedContext, TArgs> = async (
   parent, args, context,
 ) => {
   const { files, info, noCompress } = args;

@@ -22,7 +22,7 @@
 ### Установка
 
 ```bash
-yarn add ssh://git@gitlab.com:via-profit-services/file-storage.git#semver:^0.5.2
+yarn add ssh://git@gitlab.com:via-profit-services/file-storage.git#semver:^0.5.4
 ```
 
 Список версий [см. здесь](https://gitlab.com/via-profit-services/file-storage/-/tags)
@@ -45,31 +45,28 @@ yarn knex:migrate:latest
  - mimeType - Тип файла
  - filename - Имя файла
 
-Для чтения файла необходимо вызвать функцию `createReadStream` полученную из промиса. Функция вернет ReadStram, расширенный от [NodeJS ReadStream](https://nodejs.org/api/stream.html#stream_new_stream_readable_options) 
+Для чтения файла необходимо вызвать функцию `createReadStream` полученную из промиса. Функция вернет ReadStram, расширенный от [NodeJS ReadStream](https://nodejs.org/api/stream.html#stream_new_stream_readable_options)
 
+Полученный файл можно записать на диск самостоятельно, либо использовать метод `createFile` класса `FileStorage`.
 
-Пример использования `FileUpload`:
+Пример загрузки файлов:
 
 _./schema.graphql_
 
 ```graphql
 extend type Mutation {
-  upload: UploadMutation!
-}
-
-type UploadMutation {
   upload(files: [FileUpload!]!): File!
 }
+
 ```
 
 _./resolvers.ts_
 
 ```ts
 import { IResolvers } from 'graphql-tools';
-import { createWriteStream } from 'fs';
 import path from 'path';
 import { IContext } from '@via-profit-services/core';
-import { IFilePayload } from 'via-profit-services/file-storage';
+import { IFile, FileStorage } from '@via-profit-services/file-storage';
 
 interface UploadArgs {
   files: IFilePayload[];
@@ -77,25 +74,19 @@ interface UploadArgs {
 
 const resolvers: IResolvers<any, IContext> = {
   Mutation: {
-    upload: () => ({}),
-  },
-  UploadMutation: {
-    upload: async (parent, args: UploadArgs) => {
+    upload: async (parent, args: UploadArgs, context) => {
       const { files } = args;
-      const filesData = await Promise.all(files); // load all files
+      const filesData = await Promise.all(files);
+      const fileStorage = new FileStorage({ context });
 
-      filesData.map(file => {
-        const { createReadStream, mimeType, filename } = file;
-        const stream = createReadStream(); // get read stream
-
-        const saveToFile = path.resolve(__dirname, `./path/to/save/${filename}`);
-
-        return stream.pipe(createWriteStream(saveToFile)).on('close', () => {
-          console.log(`filename ${filename}`);
-          console.log(`mimeType ${mimeType}`);
-
-          return true;
+      filesData.map(async (file) => {
+        const { createReadStream, mimeType } = file;
+        const fileData = await fileStorage.createFile(createReadStream(), {
+          category: 'photo',
+          mimeType,
         });
+
+        console.log('files was saved as', fileData);
       });
     },
   },
@@ -110,8 +101,8 @@ _./curl.sh_
 #!/bin/bash
 
 curl http://localhost:3005/graphql \
-  -F operations='{ "query": "mutation ($file: FileUpload!){upload{upload(file: $file)}}", "variables": { "file": null } }' \
-  -F map='{ "0": ["variables.file"] }' \
+  -F operations='{ "query": "mutation ($files: [FileUpload!]!){upload(files: $files)}", "variables": { "files": [null] } }' \
+  -F map='{ "0": ["variables.files.0"] }' \
   -F 0=@/path/to/file.txt
 ```
 
@@ -145,7 +136,7 @@ query {
 - makeSchema - Функция, результатом работы котрой является объекс, содержащий:
   - typeDefs - служебные Типы
   - resolvers - Служеюные Резолверы
-  - service - Класс, реализующий модель данного модуля
+  - FileStorage - Класс, реализующий модель данного модуля
   - permissions - Разрешения для [GraphQL-chield](https://github.com/maticzav/graphql-shield)
 
 Пример подключения:
