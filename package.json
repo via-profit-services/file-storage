@@ -56,7 +56,6 @@
         "moment": "^2.25.1",
         "moment-timezone": "^0.5.28",
         "rimraf": "^3.0.2",
-        "sharp": "^0.25.2",
         "uuid": "^7.0.2",
         "winston": "^3.2.1",
         "winston-daily-rotate-file": "^4.4.2"
@@ -80,7 +79,6 @@
         "@types/moment-timezone": "^0.5.12",
         "@types/node": "^13.13.5",
         "@types/rimraf": "^3.0.0",
-        "@types/sharp": "^0.25.0",
         "@types/supertest": "^2.0.8",
         "@types/uuid": "^7.0.0",
         "@types/webpack": "^4.41.2",
