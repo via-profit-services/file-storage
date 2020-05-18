@@ -4,11 +4,13 @@ import Busboy from 'busboy';
 import { WriteStream } from 'fs-capacitor';
 
 import FileUploadInstance from './FileUploadInstance';
-import { IFilePayload, IUploadExpressMiddlewareProps, IUploadLimits } from './types';
+import {
+  IFilePayload, IUploadExpressMiddlewareProps, IUploadLimits, ExtendedContext,
+} from './types';
 
 const graphqlUploadExpress = (props: IUploadExpressMiddlewareProps) => {
   const { context, limits } = props;
-  const { logger } = context;
+  const { logger } = context as ExtendedContext;
 
   return async (request: Express.Request, response: any, next: Express.NextFunction) => {
     if (!request.is('multipart/form-data')) {

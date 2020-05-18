@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import {
-  IExpressMidlewareContainer, Express, IContext, CronJobManager,
+  IExpressMidlewareContainer, Express, CronJobManager,
 } from '@via-profit-services/core';
 import Jimp from 'jimp';
 
@@ -9,15 +9,15 @@ import { CRON_JOB_CLEAR_CACHE_NAME } from './constants';
 import { getParams } from './paramsBuffer';
 import FileStorageService from './service';
 import {
-  IFileStorageInitialProps, ITransformUrlPayload, IImageTransform, Context,
+  IFileStorageInitialProps, ITransformUrlPayload, IImageTransform, Context, ExtendedContext,
 } from './types';
 import uploadMiddleware from './uploadMiddleware';
 
 const expressMiddlewareFactory = (props: IFileStorageInitialProps): IExpressMidlewareContainer => {
   return (middlewareProps) => {
-    const context = middlewareProps.context as IContext & Context;
+    const context = middlewareProps.context as Context;
     const { staticPrefix } = props;
-    const { logger, endpoint } = context;
+    const { logger, endpoint } = context as ExtendedContext;
     const {
       storageAbsolutePath, staticDelimiter, transformDelimiter, rootPath,
       cacheAbsolutePath, cacheDelimiter, clearCacheCronJob,

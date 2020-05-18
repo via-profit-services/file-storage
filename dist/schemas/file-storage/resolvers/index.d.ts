@@ -1,4 +1,4 @@
 import { IResolvers } from 'graphql-tools';
-import { Context } from '../types';
-declare const resolvers: IResolvers<any, Context>;
+import { ExtendedContext } from '../types';
+declare const resolvers: IResolvers<any, ExtendedContext>;
 export default resolvers;

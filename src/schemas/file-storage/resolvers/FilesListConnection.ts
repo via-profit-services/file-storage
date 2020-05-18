@@ -8,9 +8,9 @@ import { IFieldResolver } from 'graphql-tools';
 
 import createLoaders from '../loaders';
 import FileStorageService from '../service';
-import { IImageTransform, Context } from '../types';
+import { IImageTransform, ExtendedContext } from '../types';
 
-const FilesListConnectionResolver: IFieldResolver<any, Context, TArgs> = async (
+const FilesListConnectionResolver: IFieldResolver<any, ExtendedContext, TArgs> = async (
   parent, args, context,
 ) => {
   const { transform } = args;

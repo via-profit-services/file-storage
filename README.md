@@ -145,7 +145,7 @@ query {
 - makeSchema - Функция, результатом работы котрой является объекс, содержащий:
   - typeDefs - служебные Типы
   - resolvers - Служеюные Резолверы
-  - service - Класс, реализующий модель данного модуля
+  - FileStorage - Класс, реализующий модель данного модуля
   - permissions - Разрешения для [GraphQL-chield](https://github.com/maticzav/graphql-shield)
 
 Пример подключения:

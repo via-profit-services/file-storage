@@ -25,7 +25,7 @@ import { REDIS_CACHE_NAME } from './constants';
 import { getParams } from './paramsBuffer';
 import {
   IFileBag, IFileBagTable, IFileBagTableInput, FileType, IImageTransform, ITransformUrlPayload,
-  IImgeData, Context,
+  IImgeData, Context, ExtendedContext,
 } from './types';
 
 interface IProps {
@@ -41,7 +41,7 @@ class FileStorageService {
 
   public async clearCache() {
     const { cacheAbsolutePath, rootPath } = getParams();
-    const { redis, logger } = this.props.context;
+    const { redis, logger } = this.props.context as ExtendedContext;
 
     if (cacheAbsolutePath !== rootPath && fs.existsSync(cacheAbsolutePath)) {
       // clear Redis data

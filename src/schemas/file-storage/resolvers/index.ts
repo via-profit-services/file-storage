@@ -1,13 +1,13 @@
 import { IResolvers } from 'graphql-tools';
 
 import FileUpload from '../FileUploadScalar';
-import { Context } from '../types';
+import { ExtendedContext } from '../types';
 import DeleteFiles from './DeleteFiles';
 import File from './File';
 import FilesListConnection from './FilesListConnection';
 import UploadFiles from './UploadFiles';
 
-const resolvers: IResolvers<any, Context> = {
+const resolvers: IResolvers<any, ExtendedContext> = {
   Query: {
     fileStorage: () => ({}),
   },

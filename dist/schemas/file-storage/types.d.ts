@@ -10,11 +10,12 @@ export declare enum FileType {
     image = "image",
     document = "document"
 }
-export declare type Context = Pick<IContext, 'knex' | 'timezone' | 'token' | 'jwt' | 'redis'> & {
+export declare type Context = Pick<IContext, 'knex' | 'timezone' | 'token' | 'jwt' | 'redis' | 'endpoint'>;
+export interface ExtendedContext extends Context {
     logger: ILoggerCollection & {
         fileStorage: Logger;
     };
-};
+}
 export interface IFileBag {
     id: string;
     owner: string;
