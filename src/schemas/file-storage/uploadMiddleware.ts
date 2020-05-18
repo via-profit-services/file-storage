@@ -84,7 +84,7 @@ const graphqlUploadExpress = (props: IUploadExpressMiddlewareProps) => {
         }
 
         // put files into variables
-        operations.variables.files = operations.variables.files.map((any, index) => {
+        operations.variables.files = operations?.variables?.files?.map((any, index) => {
           const file = map.get(index);
 
           if (!file) {
