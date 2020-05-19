@@ -13,7 +13,7 @@ export enum FileType {
 }
 
 
-export type Context = Pick<IContext, 'knex' | 'timezone' | 'token' | 'jwt' | 'redis' | 'endpoint'>;
+export type Context = Pick<IContext, 'knex' | 'timezone' | 'token' | 'redis' | 'endpoint'>;
 
 export interface ExtendedContext extends Context {
   logger: ILoggerCollection & {
@@ -95,11 +95,6 @@ export interface IFileStorageInitialProps {
   hostname?: string;
 
   /**
-   * JS Crontime while cache will be cleared
-   */
-  clearCacheCronJob?: string;
-
-  /**
    * Image maximum width
    */
   imageOptimMaxWidth?: number;
@@ -144,9 +139,6 @@ export type IFileStorageParams = IFileStorageInitialProps & {
 
   /** URL delimeter of static content */
   staticDelimiter: string;
-
-  /** URL delimiter for transform content */
-  transformDelimiter: string;
 
   /** URL delimiter for cached content */
   cacheDelimiter: string;
