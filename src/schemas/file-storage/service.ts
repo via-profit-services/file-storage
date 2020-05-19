@@ -326,20 +326,22 @@ class FileStorageService {
               .then((image) => {
                 return image.writeAsync(absoluteFilename);
               })
-              .then(async () => {
+              .then(() => {
                 if (noCompress) {
                   return;
                 }
 
-                const optiRes = await imagemin([absoluteFilename], {
+                // do not wait this promise
+                imagemin([absoluteFilename], {
                   plugins: [
                     imageminMozjpeg(compressionOptions.mozJpeg),
                     imageminPngquant(compressionOptions.pngQuant),
                     imageminOptipng(compressionOptions.optiPng),
                   ],
+                }).then((optiRes) => {
+                  const { data } = optiRes[0];
+                  fs.writeFileSync(absoluteFilename, data);
                 });
-                const { data } = optiRes[0];
-                fs.writeFileSync(absoluteFilename, data);
               })
               .then(() => {
                 return resolve({

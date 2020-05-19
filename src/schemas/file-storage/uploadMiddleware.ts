@@ -43,6 +43,7 @@ const graphqlUploadExpress = (props: IUploadExpressMiddlewareProps) => {
       },
     });
 
+    const map = new Map<number, FileUploadInstance>();
     let operations: {
         query: string;
         variables: {
@@ -50,7 +51,6 @@ const graphqlUploadExpress = (props: IUploadExpressMiddlewareProps) => {
           [key: string]: any;
         }
       } | null = null;
-    const map = new Map<number, FileUploadInstance>();
 
 
     parser.on('field', (fieldName, value, fieldNameTruncated, valueTruncated) => {
@@ -64,7 +64,6 @@ const graphqlUploadExpress = (props: IUploadExpressMiddlewareProps) => {
       if (fieldName === 'operations') {
         try {
           operations = JSON.parse(value);
-          // console.log('operations', operations);
         } catch (error) {
           logger.fileStorage.error('Invalid JSON in the «operations» multipart field');
           throw new ServerError('Invalid JSON in the «operations» multipart field');
@@ -84,20 +83,23 @@ const graphqlUploadExpress = (props: IUploadExpressMiddlewareProps) => {
         }
 
         // put files into variables
-        operations.variables.files = operations?.variables?.files?.map((any, index) => {
-          const file = map.get(index);
+        try {
+          operations.variables.files = operations.variables.files.map((any, index) => {
+            const file = map.get(index);
 
-          if (!file) {
-            logger.fileStorage.error(`Can't assing file with index «${index}»`);
-            throw new ServerError(`Can't assing file with index «${index}»`);
-          }
-
-          return file;
-        });
+            if (!file) {
+              logger.fileStorage.error(`Can't assing file with index «${index}»`);
+              throw new ServerError(`Can't assing file with index «${index}»`);
+            }
+            return file;
+          });
+        } catch (err) {
+          logger.fileStorage.error('Can\'t assing file from variables', { err });
+          throw new ServerError('Can\'t assing file from variables');
+        }
 
         // replace body to new requst data with files in the variables
         request.body = operations;
-
         next();
       }
     });
@@ -153,6 +155,7 @@ const graphqlUploadExpress = (props: IUploadExpressMiddlewareProps) => {
     parser.once('finish', () => {
       request.unpipe(parser);
       request.resume();
+
 
       if (operations === null) {
         logger.fileStorage.error('Missing multipart field «operations»');
