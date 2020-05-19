@@ -85,7 +85,7 @@ class FileStorageService {
     imageData: Pick<IFileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>,
     transform: IImageTransform,
   ) {
-    const { redis } = this.props.context;
+    const { redis, logger } = this.props.context as ExtendedContext;
     const {
       hostname, cacheDelimiter, staticPrefix, cacheAbsolutePath, storageAbsolutePath,
     } = getParams();
@@ -133,11 +133,16 @@ class FileStorageService {
     }
 
 
-    // no wait this promise
-    this.applyTransform(absoluteOriginalFilename, absoluteFilename, transform);
-
+    fs.copyFileSync(absoluteOriginalFilename, absoluteFilename);
     await redis.hset(REDIS_CACHE_NAME, imageUrlHash, newFilename);
 
+    // no wait this promise
+    try {
+      this.applyTransform(absoluteFilename, transform);
+      logger.fileStorage.debug(`Apply transformation to file ${newFilename} from ${originalFilename}`, { transform });
+    } catch (err) {
+      logger.fileStorage.error(`Failed to apply transformation with file ${newFilename}`, { err });
+    }
 
     return [
       `${hostname}${staticPrefix}`,
@@ -157,10 +162,8 @@ class FileStorageService {
     ].join('/');
   }
 
-  public async applyTransform(
-    sourceFilepath: string, destinationFilePath: string, transform: IImageTransform,
-  ) {
-    let jimpHandle = await Jimp.read(sourceFilepath);
+  public async applyTransform(filepath: string, transform: IImageTransform) {
+    let jimpHandle = await Jimp.read(filepath);
 
     Object.entries(transform).forEach(([method, options]) => {
       if (method === 'resize') {
@@ -201,7 +204,7 @@ class FileStorageService {
       }
     });
 
-    await jimpHandle.writeAsync(destinationFilePath);
+    await jimpHandle.writeAsync(filepath);
   }
 
   /**
