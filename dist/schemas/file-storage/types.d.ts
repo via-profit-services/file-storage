@@ -10,7 +10,7 @@ export declare enum FileType {
     image = "image",
     document = "document"
 }
-export declare type Context = Pick<IContext, 'knex' | 'timezone' | 'token' | 'jwt' | 'redis' | 'endpoint'>;
+export declare type Context = Pick<IContext, 'knex' | 'timezone' | 'token' | 'redis' | 'endpoint'>;
 export interface ExtendedContext extends Context {
     logger: ILoggerCollection & {
         fileStorage: Logger;
@@ -80,10 +80,6 @@ export interface IFileStorageInitialProps {
      */
     hostname?: string;
     /**
-     * JS Crontime while cache will be cleared
-     */
-    clearCacheCronJob?: string;
-    /**
      * Image maximum width
      */
     imageOptimMaxWidth?: number;
@@ -119,8 +115,6 @@ export declare type IFileStorageParams = IFileStorageInitialProps & {
     rootPath: string;
     /** URL delimeter of static content */
     staticDelimiter: string;
-    /** URL delimiter for transform content */
-    transformDelimiter: string;
     /** URL delimiter for cached content */
     cacheDelimiter: string;
 };

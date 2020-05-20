@@ -16,7 +16,6 @@ const paramsBuffer: IParamsBuffer = {
     cachePath: './public/fileStorage/cache',
     staticPrefix: '/static',
     hostname: 'http://localhost:80',
-    clearCacheCronJob: '* 30 04 * * */6',
     staticPrefixAbsolutePath: '',
     storageAbsolutePath: '',
     cacheAbsolutePath: '',
@@ -24,7 +23,6 @@ const paramsBuffer: IParamsBuffer = {
     imageOptimMaxWidth: 800,
     imageOptimMaxHeight: 600,
     staticDelimiter: 's',
-    transformDelimiter: 't',
     cacheDelimiter: 'c',
     compressionOptions: {
       mozJpeg: { quality: 70 },

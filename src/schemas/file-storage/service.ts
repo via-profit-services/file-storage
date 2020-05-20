@@ -15,7 +15,6 @@ import imageminMozjpeg from 'imagemin-mozjpeg';
 import imageminOptipng from 'imagemin-optipng';
 import imageminPngquant from 'imagemin-pngquant';
 import Jimp from 'jimp';
-import Jwt from 'jsonwebtoken';
 import mime from 'mime-types';
 import moment from 'moment-timezone';
 import rimraf from 'rimraf';
@@ -82,18 +81,17 @@ class FileStorageService {
     await redis.hset(REDIS_CACHE_NAME, token, absoluteFilename);
   }
 
-  public getUrlWithTransform(
+  public async getUrlWithTransform(
     imageData: Pick<IFileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>,
     transform: IImageTransform,
   ) {
-    const { jwt } = this.props.context;
-
+    const { redis, logger } = this.props.context as ExtendedContext;
+    const {
+      hostname, cacheDelimiter, staticPrefix, cacheAbsolutePath, storageAbsolutePath,
+    } = getParams();
     const {
       url, id, mimeType, isLocalFile,
     } = imageData;
-    const {
-      hostname, staticPrefix, transformDelimiter,
-    } = getParams();
 
     const ext = FileStorageService.getExtensionByMimeType(mimeType);
 
@@ -109,48 +107,48 @@ class FileStorageService {
     }
 
 
-    const privatKey = fs.readFileSync(jwt.privateKey);
-    const imageUrlHash = Jwt.sign(hashPayload, privatKey, {
-      algorithm: jwt.algorithm,
-    });
+    const imageUrlHash = Buffer.from(JSON.stringify(hashPayload), 'utf8').toString('base64');
+
+    // check redis cache
+    const inCache = await redis.hget(REDIS_CACHE_NAME, imageUrlHash);
+
+
+    if (inCache) {
+      return [
+        `${hostname}${staticPrefix}`,
+        cacheDelimiter,
+        `${inCache}`,
+      ].join('/');
+    }
+
+    const originalFilename = `${FileStorageService.getPathFromUuid(id)}.${ext}`;
+    const newFilename = `${FileStorageService.getPathFromUuid(uuidv4())}.${ext}`;
+    const absoluteOriginalFilename = path.join(storageAbsolutePath, originalFilename);
+    const absoluteFilename = path.join(cacheAbsolutePath, newFilename);
+    const dirname = path.dirname(absoluteFilename);
+
+
+    if (!fs.existsSync(dirname)) {
+      fs.mkdirSync(dirname, { recursive: true });
+    }
+
+
+    fs.copyFileSync(absoluteOriginalFilename, absoluteFilename);
+    await redis.hset(REDIS_CACHE_NAME, imageUrlHash, newFilename);
+
+    // no wait this promise
+    try {
+      this.applyTransform(absoluteFilename, transform);
+      logger.fileStorage.debug(`Apply transformation to file ${newFilename} from ${originalFilename}`, { transform });
+    } catch (err) {
+      logger.fileStorage.error(`Failed to apply transformation with file ${newFilename}`, { err });
+    }
 
     return [
       `${hostname}${staticPrefix}`,
-      transformDelimiter,
-      `${imageUrlHash}.${ext}`,
+      cacheDelimiter,
+      `${newFilename}`,
     ].join('/');
-  }
-
-  public getImageDataFromTransformUrl(transformUrl: string): IImgeData {
-    const { jwt } = this.props.context;
-    const { transformDelimiter } = getParams();
-    const data = transformUrl.split('/');
-
-    if (data.length < 4) {
-      throw new ServerError('Incorrect URL');
-    }
-
-    const delimiter = data[2];
-    const token = data[3].split('.').slice(0, -1).join('.');
-
-    if (delimiter !== transformDelimiter) {
-      throw new ServerError('Incorrect transform delimiter URL', { delimiter });
-    }
-
-    if (!token) {
-      throw new ServerError('Incorrect data or extension in URL', { token });
-    }
-    const privateKey = fs.readFileSync(jwt.publicKey);
-
-    try {
-      const payload = Jwt.verify(String(token), privateKey) as ITransformUrlPayload;
-      return {
-        payload,
-        token,
-      };
-    } catch (err) {
-      throw new ServerError('Failed to URL decode', { err });
-    }
   }
 
   /**
@@ -162,6 +160,51 @@ class FileStorageService {
       guid.substr(2, 2),
       guid.substr(4),
     ].join('/');
+  }
+
+  public async applyTransform(filepath: string, transform: IImageTransform) {
+    let jimpHandle = await Jimp.read(filepath);
+
+    Object.entries(transform).forEach(([method, options]) => {
+      if (method === 'resize') {
+        const { width, height } = options as IImageTransform['resize'];
+        jimpHandle = jimpHandle.resize(width, height);
+      }
+
+      if (method === 'cover') {
+        const { width, height } = options as IImageTransform['cover'];
+        jimpHandle = jimpHandle.cover(width, height);
+      }
+
+      if (method === 'contain') {
+        const { width, height } = options as IImageTransform['contain'];
+        jimpHandle = jimpHandle.contain(width, height);
+      }
+
+      if (method === 'scaleToFit') {
+        const { width, height } = options as IImageTransform['scaleToFit'];
+        jimpHandle = jimpHandle.scaleToFit(width, height);
+      }
+
+      if (method === 'gaussian') {
+        const gaussian = options as IImageTransform['gaussian'];
+        jimpHandle = jimpHandle.gaussian(gaussian);
+      }
+
+      if (method === 'blur') {
+        const blur = options as IImageTransform['blur'];
+        jimpHandle = jimpHandle.gaussian(blur);
+      }
+
+      if (method === 'greyscale') {
+        const greyscale = options as IImageTransform['greyscale'];
+        if (greyscale === true) {
+          jimpHandle = jimpHandle.grayscale();
+        }
+      }
+    });
+
+    await jimpHandle.writeAsync(filepath);
   }
 
   /**
@@ -326,20 +369,22 @@ class FileStorageService {
               .then((image) => {
                 return image.writeAsync(absoluteFilename);
               })
-              .then(async () => {
+              .then(() => {
                 if (noCompress) {
                   return;
                 }
 
-                const optiRes = await imagemin([absoluteFilename], {
+                // do not wait this promise
+                imagemin([absoluteFilename], {
                   plugins: [
                     imageminMozjpeg(compressionOptions.mozJpeg),
                     imageminPngquant(compressionOptions.pngQuant),
                     imageminOptipng(compressionOptions.optiPng),
                   ],
+                }).then((optiRes) => {
+                  const { data } = optiRes[0];
+                  fs.writeFileSync(absoluteFilename, data);
                 });
-                const { data } = optiRes[0];
-                fs.writeFileSync(absoluteFilename, data);
               })
               .then(() => {
                 return resolve({

@@ -2,11 +2,12 @@
     "name": "@via-profit-services/file-storage",
     "private": true,
     "support": "https://via-profit.ru",
-    "version": "0.5.5",
+    "version": "0.6.1",
     "description": "Via Profit File Storage Schema",
     "main": "dist/index.js",
     "scripts": {
         "dist": "yarn lint && yarn test && yarn build:dist",
+        "upload": "node ./scripts/upload.js",
         "start": "yarn start:dev",
         "debug": "yarn build:dev && node --inspect-brk=9229 ./build/playground.js",
         "build:dev": "cross-env NODE_ENV=development webpack --config ./webpack/webpack.config.dev.js",

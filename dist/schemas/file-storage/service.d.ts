@@ -11,12 +11,12 @@ declare class FileStorageService {
     clearCache(): Promise<void>;
     checkFileInCache(imageDataHash: string): Promise<string>;
     saveImageIntoTheCache(imageData: IImgeData, imageBuffer: Buffer): Promise<void>;
-    getUrlWithTransform(imageData: Pick<IFileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>, transform: IImageTransform): string;
-    getImageDataFromTransformUrl(transformUrl: string): IImgeData;
+    getUrlWithTransform(imageData: Pick<IFileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>, transform: IImageTransform): Promise<string>;
     /**
      * Returns Full filename without extension (e.g. /path/to/file)
      */
     static getPathFromUuid(guid: string): string;
+    applyTransform(filepath: string, transform: IImageTransform): Promise<void>;
     /**
      * Returns filename at static prefix root (e.g. /static/path/to/file.ext)
      */
