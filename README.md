@@ -4,6 +4,15 @@
 
 > Via Profit services / **File-Storage** - это пакет, который является частью сервиса, базирующегося на `via-profit-services` и представляет собой реализацию схемы для хранения каких-либо файлов, изображений и прочих документов.
 
+
+## TODO
+
+- [ ] трансформации типа Crop и кадрирование при создании изоражения
+- [ ] Описание методов класса сервиса
+- [ ] CONTRIBUTING docs
+- [ ] Тесты
+- [ ] Subscriptions
+
 ## Содержание
 
 - [Зависимости](#dependencies)
@@ -182,8 +191,4 @@ app.bootstrap();
 | compressionOptions.pngQuant                                | object |     Нет      | `{ quality: [0.8, 0.8] }`    | [https://github.com/imagemin/imagemin-optipng#readme](https://github.com/imagemin/imagemin-optipng#readme)                                                                                                                     |
 | compressionOptions.optiPng                                 | object |     Нет      | `{ optimizationLevel: 3 }`   | [https://github.com/imagemin/imagemin-pngquant#readme](https://github.com/imagemin/imagemin-pngquant#readme)                                                                                                                   |
 
-## TODO
 
-- [ ] Write the CONTRIBUTING docs
-- [ ] Write the tests
-- [ ] Create Subscriptions
