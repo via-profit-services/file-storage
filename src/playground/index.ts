@@ -16,9 +16,6 @@ const config = configureApp({
   typeDefs: [
     fileStorage.typeDefs,
   ],
-  permissions: [
-    fileStorage.permissions,
-  ],
   resolvers: [
     fileStorage.resolvers,
   ],

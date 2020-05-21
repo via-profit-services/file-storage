@@ -144,7 +144,6 @@ query {
   - typeDefs - служебные Типы
   - resolvers - Служеюные Резолверы
   - FileStorage - Класс, реализующий модель данного модуля
-  - permissions - Разрешения для [GraphQL-chield](https://github.com/maticzav/graphql-shield)
 
 Пример подключения:
 
@@ -163,9 +162,6 @@ const app = new App({
   ],
   resolvers: [
     fileStorage.resolvers,
-  ],
-  permissions: [
-    fileStorage.permissions,
   ],
   expressMiddlewares: [
     fileStorage.expressMiddleware
