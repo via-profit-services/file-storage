@@ -86,13 +86,12 @@ const serverConfig: IInitProps = {
 
 const configureApp = (props?: IProps): IInitProps => {
   const {
-    typeDefs, resolvers, permissions, expressMiddlewares,
+    typeDefs, resolvers, expressMiddlewares,
   } = props || {};
   return {
     ...serverConfig,
     typeDefs,
     resolvers,
-    permissions,
     expressMiddlewares,
   };
 };
@@ -100,7 +99,6 @@ const configureApp = (props?: IProps): IInitProps => {
 interface IProps {
   typeDefs: IInitProps['typeDefs'];
   resolvers: IInitProps['resolvers'];
-  permissions: IInitProps['permissions'];
   expressMiddlewares: IInitProps['expressMiddlewares'];
 }
 

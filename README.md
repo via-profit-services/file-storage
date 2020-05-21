@@ -31,7 +31,7 @@
 ### Установка
 
 ```bash
-yarn add ssh://git@gitlab.com:via-profit-services/file-storage.git#semver:^0.6.1
+yarn add ssh://git@gitlab.com:via-profit-services/file-storage.git#semver:^0.7.0
 ```
 
 Список версий [см. здесь](https://gitlab.com/via-profit-services/file-storage/-/tags)
@@ -144,7 +144,6 @@ query {
   - typeDefs - служебные Типы
   - resolvers - Служеюные Резолверы
   - FileStorage - Класс, реализующий модель данного модуля
-  - permissions - Разрешения для [GraphQL-chield](https://github.com/maticzav/graphql-shield)
 
 Пример подключения:
 
@@ -163,9 +162,6 @@ const app = new App({
   ],
   resolvers: [
     fileStorage.resolvers,
-  ],
-  permissions: [
-    fileStorage.permissions,
   ],
   expressMiddlewares: [
     fileStorage.expressMiddleware
