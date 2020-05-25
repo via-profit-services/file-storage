@@ -103,7 +103,7 @@ class FileStorageService {
     };
 
     if (!isLocalFile) {
-      hashPayload.url = url;
+      return url;
     }
 
 
@@ -127,14 +127,18 @@ class FileStorageService {
     const absoluteFilename = path.join(cacheAbsolutePath, newFilename);
     const dirname = path.dirname(absoluteFilename);
 
+    if (!fs.existsSync(absoluteOriginalFilename)) {
+      throw new ServerError(`File ${originalFilename} with id ${id} not exists`);
+    }
 
     if (!fs.existsSync(dirname)) {
       fs.mkdirSync(dirname, { recursive: true });
     }
 
 
-    fs.copyFileSync(absoluteOriginalFilename, absoluteFilename);
-    await redis.hset(REDIS_CACHE_NAME, imageUrlHash, newFilename);
+    fs.copyFile(absoluteOriginalFilename, absoluteFilename, () => {
+      redis.hset(REDIS_CACHE_NAME, imageUrlHash, newFilename);
+    });
 
     // no wait this promise
     try {
@@ -158,7 +162,7 @@ class FileStorageService {
     return [
       guid.substr(0, 2),
       guid.substr(2, 2),
-      guid.substr(4),
+      guid,
     ].join('/');
   }
 
@@ -302,7 +306,7 @@ class FileStorageService {
     return nodes;
   }
 
-  public async getDriver(id: string): Promise<IFileBag | false> {
+  public async getFile(id: string): Promise<IFileBag | false> {
     const nodes = await this.getFilesByIds([id]);
     return nodes.length ? nodes[0] : false;
   }

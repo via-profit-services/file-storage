@@ -28,7 +28,7 @@ declare class FileStorageService {
     static getMimeTypeByFilename(filename: string): string;
     getFiles(filter: Partial<TOutputFilter>): Promise<IListResponse<IFileBag>>;
     getFilesByIds(ids: string[]): Promise<IFileBag[]>;
-    getDriver(id: string): Promise<IFileBag | false>;
+    getFile(id: string): Promise<IFileBag | false>;
     updateFile(id: string, fileData: Partial<IFileBagTableInput>): Promise<void>;
     createFile(fileStream: ReadStream, fileInfo: IFileBagTableInput, noCompress?: boolean): Promise<{
         id: string;
