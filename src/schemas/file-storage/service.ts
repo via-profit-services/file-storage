@@ -359,6 +359,38 @@ class FileStorageService {
       .where('id', id);
   }
 
+  public async createTemporaryFile(
+    fileStream: ReadStream,
+    fileInfo: IFileBagTableInput,
+  ): Promise<{id: string; absoluteFilename: string; url: string; }> {
+    const id = fileInfo.id || uuidv4();
+    const {
+      temporaryAbsolutePath, hostname, temporaryDelimiter, staticPrefix,
+    } = getParams();
+    const ext = FileStorageService.getExtensionByMimeType(fileInfo.mimeType);
+    const localFilename = `${FileStorageService.getPathFromUuid(id)}.${ext}`;
+
+    const absoluteFilename = path.join(temporaryAbsolutePath, localFilename);
+    const dirname = path.dirname(absoluteFilename);
+
+    return new Promise((resolve) => {
+      if (!fs.existsSync(dirname)) {
+        fs.mkdirSync(dirname, { recursive: true });
+      }
+
+      const url = `${hostname}${staticPrefix}/${temporaryDelimiter}/${localFilename}`;
+      fileStream
+        .pipe(fs.createWriteStream(absoluteFilename))
+        .on('close', () => {
+          resolve({
+            id,
+            absoluteFilename,
+            url,
+          });
+        });
+    });
+  }
+
   public async createFile(
     fileStream: ReadStream,
     fileInfo: IFileBagTableInput,

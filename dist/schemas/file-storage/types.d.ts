@@ -76,6 +76,11 @@ export interface IFileStorageInitialProps {
      */
     cachePath?: string;
     /**
+     * Storage temporary directory (e.g. `./public/fileStorage/temp`).
+     * Do not set absolute path!
+     */
+    temporaryPath?: string;
+    /**
      * Host or hostname without protocol ang schema (`www.example.com`)
      */
     hostname?: string;
@@ -112,11 +117,14 @@ export declare type IFileStorageParams = IFileStorageInitialProps & {
     staticPrefixAbsolutePath: string;
     storageAbsolutePath: string;
     cacheAbsolutePath: string;
+    temporaryAbsolutePath: string;
     rootPath: string;
     /** URL delimeter of static content */
     staticDelimiter: string;
     /** URL delimiter for cached content */
     cacheDelimiter: string;
+    /** URL delimiter for temporary content */
+    temporaryDelimiter: string;
 };
 export interface IImageTransform {
     resize: {

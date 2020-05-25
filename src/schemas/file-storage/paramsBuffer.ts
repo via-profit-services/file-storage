@@ -14,16 +14,19 @@ const paramsBuffer: IParamsBuffer = {
   params: {
     storagePath: './public/fileStorage/files',
     cachePath: './public/fileStorage/cache',
+    temporaryPath: './public/fileStorage/temp',
     staticPrefix: '/static',
     hostname: 'http://localhost:80',
     staticPrefixAbsolutePath: '',
     storageAbsolutePath: '',
     cacheAbsolutePath: '',
+    temporaryAbsolutePath: '',
     rootPath,
     imageOptimMaxWidth: 800,
     imageOptimMaxHeight: 600,
     staticDelimiter: 's',
     cacheDelimiter: 'c',
+    temporaryDelimiter: 't',
     compressionOptions: {
       mozJpeg: { quality: 70 },
       pngQuant: { quality: [0.8, 0.8] },
@@ -44,6 +47,7 @@ export const setParams = (params?: Partial<IFileStorageInitialProps>) => {
     staticPrefixAbsolutePath: path.resolve(rootPath, paramsBuffer.params.staticPrefix),
     storageAbsolutePath: path.resolve(rootPath, paramsBuffer.params.storagePath),
     cacheAbsolutePath: path.resolve(rootPath, paramsBuffer.params.cachePath),
+    temporaryAbsolutePath: path.resolve(rootPath, paramsBuffer.params.temporaryPath),
   };
 };
 

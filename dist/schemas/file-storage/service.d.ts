@@ -42,6 +42,11 @@ declare class FileStorageService {
     getFilesByIds(ids: string[]): Promise<IFileBag[]>;
     getFile(id: string): Promise<IFileBag | false>;
     updateFile(id: string, fileData: Partial<IFileBagTableInput>): Promise<void>;
+    createTemporaryFile(fileStream: ReadStream, fileInfo: IFileBagTableInput): Promise<{
+        id: string;
+        absoluteFilename: string;
+        url: string;
+    }>;
     createFile(fileStream: ReadStream, fileInfo: IFileBagTableInput, noCompress?: boolean): Promise<{
         id: string;
         absoluteFilename: string;

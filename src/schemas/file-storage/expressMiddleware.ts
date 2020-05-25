@@ -16,6 +16,7 @@ const expressMiddlewareFactory = (props: IFileStorageInitialProps): IExpressMidl
     const {
       storageAbsolutePath, staticDelimiter,
       cacheAbsolutePath, cacheDelimiter,
+      temporaryAbsolutePath, temporaryDelimiter,
     } = getParams();
     const router = Express.Router();
 
@@ -27,11 +28,16 @@ const expressMiddlewareFactory = (props: IFileStorageInitialProps): IExpressMidl
       `Registered static directory in «${storageAbsolutePath}» with static prefix «${staticPrefix}»`,
     );
 
-
     // express static for the cache static directory
     router.use(`${staticPrefix}/${cacheDelimiter}`, Express.static(cacheAbsolutePath));
     logger.fileStorage.info(
       `Registered static cache directory in «${cacheAbsolutePath}»`,
+    );
+
+    // express static for the temporary static directory
+    router.use(`${staticPrefix}/${temporaryDelimiter}`, Express.static(temporaryAbsolutePath));
+    logger.fileStorage.info(
+      `Registered static temporary directory in «${temporaryAbsolutePath}»`,
     );
 
     return router;
