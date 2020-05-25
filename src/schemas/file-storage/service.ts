@@ -220,6 +220,22 @@ class FileStorageService {
     return path.join('/', storagePath, localPath);
   }
 
+  public static getStoragePath() {
+    const { storagePath, storageAbsolutePath } = getParams();
+    return {
+      storagePath,
+      storageAbsolutePath,
+    };
+  }
+
+  public static getCachePath() {
+    const { cachePath, cacheAbsolutePath } = getParams();
+    return {
+      cachePath,
+      cacheAbsolutePath,
+    };
+  }
+
 
   public static getFileTypeByMimeType(mimeType: string): FileType {
     switch (mimeType) {
