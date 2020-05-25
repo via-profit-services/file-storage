@@ -9,6 +9,7 @@ import {
   convertWhereToKnex,
   TWhereAction,
   ServerError,
+  CronJobManager,
 } from '@via-profit-services/core';
 import imagemin from 'imagemin';
 import imageminMozjpeg from 'imagemin-mozjpeg';
@@ -20,12 +21,13 @@ import moment from 'moment-timezone';
 import rimraf from 'rimraf';
 import { v4 as uuidv4 } from 'uuid';
 
-import { REDIS_CACHE_NAME } from './constants';
+import { REDIS_CACHE_NAME, CRON_JOB_DELETE_FILE_DEFAULTMIN, CRON_JOB_DELETE_FILE_NAME } from './constants';
 import { getParams } from './paramsBuffer';
 import {
   IFileBag, IFileBagTable, IFileBagTableInput, FileType, IImageTransform, ITransformUrlPayload,
   IImgeData, Context, ExtendedContext,
 } from './types';
+import { FileStorage } from '.';
 
 interface IProps {
   context: Context;
@@ -54,6 +56,21 @@ class FileStorageService {
       });
 
       logger.fileStorage.info(`Cache was cleared in «${cacheAbsolutePath}»`);
+    }
+  }
+
+  public async clearTemporary() {
+    const { logger } = this.props.context as ExtendedContext;
+    const { temporaryAbsolutePath, rootPath } = getParams();
+    if (temporaryAbsolutePath !== rootPath && fs.existsSync(temporaryAbsolutePath)) {
+      // remove cache dir
+      rimraf(`${temporaryAbsolutePath}/*`, (err) => {
+        if (err) {
+          logger.fileStorage.error('Failed to remove cache directory', { err });
+        }
+      });
+
+      logger.fileStorage.info(`Cache was cleared in «${temporaryAbsolutePath}»`);
     }
   }
 
@@ -166,6 +183,26 @@ class FileStorageService {
     ].join('/');
   }
 
+  public static resolveFile(filedata: Pick<IFileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>) {
+    const {
+      mimeType, isLocalFile, url, id,
+    } = filedata;
+    if (!isLocalFile) {
+      return {
+        resolveAbsolutePath: url,
+        resolvePath: url,
+      };
+    }
+
+    const { storagePath, storageAbsolutePath } = getParams();
+    const ext = FileStorage.getExtensionByMimeType(mimeType);
+    const fileLocation = FileStorage.getPathFromUuid(id);
+    return {
+      resolvePath: path.join(storagePath, `${fileLocation}.${ext}`),
+      resolveAbsolutePath: path.join(storageAbsolutePath, `${fileLocation}.${ext}`),
+    };
+  }
+
   public async applyTransform(filepath: string, transform: IImageTransform) {
     let jimpHandle = await Jimp.read(filepath);
 
@@ -218,6 +255,22 @@ class FileStorageService {
     const { storagePath } = getParams();
     const localPath = FileStorageService.getPathFromUuid(guid);
     return path.join('/', storagePath, localPath);
+  }
+
+  public static getStoragePath() {
+    const { storagePath, storageAbsolutePath } = getParams();
+    return {
+      storagePath,
+      storageAbsolutePath,
+    };
+  }
+
+  public static getCachePath() {
+    const { cachePath, cacheAbsolutePath } = getParams();
+    return {
+      cachePath,
+      cacheAbsolutePath,
+    };
   }
 
 
@@ -320,6 +373,54 @@ class FileStorageService {
         updatedAt: moment.tz(timezone).format(),
       })
       .where('id', id);
+  }
+
+  public async createTemporaryFile(
+    fileStream: ReadStream,
+    fileInfo: IFileBagTableInput,
+    deleteAfterMin?: number,
+  ): Promise<{id: string; absoluteFilename: string; url: string; }> {
+    const { logger } = this.props.context as ExtendedContext;
+    const id = fileInfo.id || uuidv4();
+    const {
+      temporaryAbsolutePath, hostname, temporaryDelimiter, staticPrefix,
+    } = getParams();
+    const ext = FileStorageService.getExtensionByMimeType(fileInfo.mimeType);
+    const localFilename = `${FileStorageService.getPathFromUuid(id)}.${ext}`;
+
+    const absoluteFilename = path.join(temporaryAbsolutePath, localFilename);
+    const dirname = path.dirname(absoluteFilename);
+
+    return new Promise((resolve) => {
+      if (!fs.existsSync(dirname)) {
+        fs.mkdirSync(dirname, { recursive: true });
+      }
+
+      const url = `${hostname}${staticPrefix}/${temporaryDelimiter}/${localFilename}`;
+      fileStream
+        .pipe(fs.createWriteStream(absoluteFilename))
+        .on('close', () => {
+          CronJobManager.addJob(`${CRON_JOB_DELETE_FILE_NAME}${id}`, {
+            cronTime: `* */${deleteAfterMin || CRON_JOB_DELETE_FILE_DEFAULTMIN} * * * *`,
+            start: true,
+            onTick: () => {
+              try {
+                fs.unlink(absoluteFilename, () => {
+                  logger.fileStorage.info(`Temporary file ${id} was removed successfully`);
+                });
+              } catch (err) {
+                logger.fileStorage.error(`Failed to remove Temporary file ${id}`, { err });
+              }
+            },
+          });
+
+          resolve({
+            id,
+            absoluteFilename,
+            url,
+          });
+        });
+    });
   }
 
   public async createFile(

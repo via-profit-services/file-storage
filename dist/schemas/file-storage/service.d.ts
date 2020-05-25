@@ -9,6 +9,7 @@ declare class FileStorageService {
     props: IProps;
     constructor(props: IProps);
     clearCache(): Promise<void>;
+    clearTemporary(): Promise<void>;
     checkFileInCache(imageDataHash: string): Promise<string>;
     saveImageIntoTheCache(imageData: IImgeData, imageBuffer: Buffer): Promise<void>;
     getUrlWithTransform(imageData: Pick<IFileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>, transform: IImageTransform): Promise<string>;
@@ -16,11 +17,23 @@ declare class FileStorageService {
      * Returns Full filename without extension (e.g. /path/to/file)
      */
     static getPathFromUuid(guid: string): string;
+    static resolveFile(filedata: Pick<IFileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>): {
+        resolveAbsolutePath: string;
+        resolvePath: string;
+    };
     applyTransform(filepath: string, transform: IImageTransform): Promise<void>;
     /**
      * Returns filename at static prefix root (e.g. /static/path/to/file.ext)
      */
     static getFilenameFromUuid(guid: string): string;
+    static getStoragePath(): {
+        storagePath: string;
+        storageAbsolutePath: string;
+    };
+    static getCachePath(): {
+        cachePath: string;
+        cacheAbsolutePath: string;
+    };
     static getFileTypeByMimeType(mimeType: string): FileType;
     static getExtensionByMimeType(mimeType: string): string;
     static getMimeTypeByExtension(extension: string): string;
@@ -30,6 +43,11 @@ declare class FileStorageService {
     getFilesByIds(ids: string[]): Promise<IFileBag[]>;
     getFile(id: string): Promise<IFileBag | false>;
     updateFile(id: string, fileData: Partial<IFileBagTableInput>): Promise<void>;
+    createTemporaryFile(fileStream: ReadStream, fileInfo: IFileBagTableInput, deleteAfterMin?: number): Promise<{
+        id: string;
+        absoluteFilename: string;
+        url: string;
+    }>;
     createFile(fileStream: ReadStream, fileInfo: IFileBagTableInput, noCompress?: boolean): Promise<{
         id: string;
         absoluteFilename: string;
