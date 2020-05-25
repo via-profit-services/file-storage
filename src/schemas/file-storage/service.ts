@@ -9,6 +9,7 @@ import {
   convertWhereToKnex,
   TWhereAction,
   ServerError,
+  CronJobManager,
 } from '@via-profit-services/core';
 import imagemin from 'imagemin';
 import imageminMozjpeg from 'imagemin-mozjpeg';
@@ -20,7 +21,7 @@ import moment from 'moment-timezone';
 import rimraf from 'rimraf';
 import { v4 as uuidv4 } from 'uuid';
 
-import { REDIS_CACHE_NAME } from './constants';
+import { REDIS_CACHE_NAME, CRON_JOB_DELETE_FILE_DEFAULTMIN, CRON_JOB_DELETE_FILE_NAME } from './constants';
 import { getParams } from './paramsBuffer';
 import {
   IFileBag, IFileBagTable, IFileBagTableInput, FileType, IImageTransform, ITransformUrlPayload,
@@ -55,6 +56,21 @@ class FileStorageService {
       });
 
       logger.fileStorage.info(`Cache was cleared in «${cacheAbsolutePath}»`);
+    }
+  }
+
+  public async clearTemporary() {
+    const { logger } = this.props.context as ExtendedContext;
+    const { temporaryAbsolutePath, rootPath } = getParams();
+    if (temporaryAbsolutePath !== rootPath && fs.existsSync(temporaryAbsolutePath)) {
+      // remove cache dir
+      rimraf(`${temporaryAbsolutePath}/*`, (err) => {
+        if (err) {
+          logger.fileStorage.error('Failed to remove cache directory', { err });
+        }
+      });
+
+      logger.fileStorage.info(`Cache was cleared in «${temporaryAbsolutePath}»`);
     }
   }
 
@@ -362,7 +378,9 @@ class FileStorageService {
   public async createTemporaryFile(
     fileStream: ReadStream,
     fileInfo: IFileBagTableInput,
+    deleteAfterMin?: number,
   ): Promise<{id: string; absoluteFilename: string; url: string; }> {
+    const { logger } = this.props.context as ExtendedContext;
     const id = fileInfo.id || uuidv4();
     const {
       temporaryAbsolutePath, hostname, temporaryDelimiter, staticPrefix,
@@ -382,6 +400,20 @@ class FileStorageService {
       fileStream
         .pipe(fs.createWriteStream(absoluteFilename))
         .on('close', () => {
+          CronJobManager.addJob(`${CRON_JOB_DELETE_FILE_NAME}${id}`, {
+            cronTime: `* */${deleteAfterMin || CRON_JOB_DELETE_FILE_DEFAULTMIN} * * * *`,
+            start: true,
+            onTick: () => {
+              try {
+                fs.unlink(absoluteFilename, () => {
+                  logger.fileStorage.info(`Temporary file ${id} was removed successfully`);
+                });
+              } catch (err) {
+                logger.fileStorage.error(`Failed to remove Temporary file ${id}`, { err });
+              }
+            },
+          });
+
           resolve({
             id,
             absoluteFilename,

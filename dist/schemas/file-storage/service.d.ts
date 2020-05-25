@@ -9,6 +9,7 @@ declare class FileStorageService {
     props: IProps;
     constructor(props: IProps);
     clearCache(): Promise<void>;
+    clearTemporary(): Promise<void>;
     checkFileInCache(imageDataHash: string): Promise<string>;
     saveImageIntoTheCache(imageData: IImgeData, imageBuffer: Buffer): Promise<void>;
     getUrlWithTransform(imageData: Pick<IFileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>, transform: IImageTransform): Promise<string>;
@@ -42,7 +43,7 @@ declare class FileStorageService {
     getFilesByIds(ids: string[]): Promise<IFileBag[]>;
     getFile(id: string): Promise<IFileBag | false>;
     updateFile(id: string, fileData: Partial<IFileBagTableInput>): Promise<void>;
-    createTemporaryFile(fileStream: ReadStream, fileInfo: IFileBagTableInput): Promise<{
+    createTemporaryFile(fileStream: ReadStream, fileInfo: IFileBagTableInput, deleteAfterMin?: number): Promise<{
         id: string;
         absoluteFilename: string;
         url: string;
