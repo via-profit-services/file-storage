@@ -377,7 +377,10 @@ class FileStorageService {
 
   public async createTemporaryFile(
     fileStream: ReadStream,
-    fileInfo: IFileBagTableInput,
+    fileInfo: {
+      id?: string;
+      mimeType: string;
+    },
     deleteAfterMin?: number,
   ): Promise<{id: string; absoluteFilename: string; url: string; }> {
     const { logger } = this.props.context as ExtendedContext;
