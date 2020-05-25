@@ -306,7 +306,7 @@ class FileStorageService {
     return nodes;
   }
 
-  public async getDriver(id: string): Promise<IFileBag | false> {
+  public async getFile(id: string): Promise<IFileBag | false> {
     const nodes = await this.getFilesByIds([id]);
     return nodes.length ? nodes[0] : false;
   }
