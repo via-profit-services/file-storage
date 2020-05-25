@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { ReadStream } from 'fs';
+import { ReadStream, WriteStream } from 'fs';
 import { IListResponse, TOutputFilter } from '@via-profit-services/core';
 import { IFileBag, IFileBagTableInput, FileType, IImageTransform, IImgeData, Context } from './types';
 interface IProps {
@@ -43,7 +43,7 @@ declare class FileStorageService {
     getFilesByIds(ids: string[]): Promise<IFileBag[]>;
     getFile(id: string): Promise<IFileBag | false>;
     updateFile(id: string, fileData: Partial<IFileBagTableInput>): Promise<void>;
-    createTemporaryFile(fileStream: ReadStream, fileInfo: {
+    createTemporaryFile(fileStream: ReadStream | WriteStream, fileInfo: {
         id?: string;
         mimeType: string;
     }, deleteAfterMin?: number): Promise<{
@@ -51,6 +51,10 @@ declare class FileStorageService {
         absoluteFilename: string;
         url: string;
     }>;
+    getTemporaryFileStream(fileInfo: {
+        id?: string;
+        mimeType: string;
+    }, deleteAfterMin?: number): Promise<unknown>;
     createFile(fileStream: ReadStream, fileInfo: IFileBagTableInput, noCompress?: boolean): Promise<{
         id: string;
         absoluteFilename: string;

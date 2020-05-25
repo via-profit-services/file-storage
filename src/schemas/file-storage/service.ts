@@ -1,6 +1,6 @@
 /* eslint-disable import/max-dependencies */
 /* eslint-disable class-methods-use-this */
-import fs, { ReadStream } from 'fs';
+import fs, { ReadStream, WriteStream } from 'fs';
 import path from 'path';
 import {
   IListResponse,
@@ -376,7 +376,7 @@ class FileStorageService {
   }
 
   public async createTemporaryFile(
-    fileStream: ReadStream,
+    fileStream: ReadStream | WriteStream,
     fileInfo: {
       id?: string;
       mimeType: string;
@@ -400,29 +400,82 @@ class FileStorageService {
       }
 
       const url = `${hostname}${staticPrefix}/${temporaryDelimiter}/${localFilename}`;
-      fileStream
-        .pipe(fs.createWriteStream(absoluteFilename))
-        .on('close', () => {
-          CronJobManager.addJob(`${CRON_JOB_DELETE_FILE_NAME}${id}`, {
-            cronTime: `* */${deleteAfterMin || CRON_JOB_DELETE_FILE_DEFAULTMIN} * * * *`,
-            start: true,
-            onTick: () => {
-              try {
-                fs.unlink(absoluteFilename, () => {
-                  logger.fileStorage.info(`Temporary file ${id} was removed successfully`);
-                });
-              } catch (err) {
-                logger.fileStorage.error(`Failed to remove Temporary file ${id}`, { err });
-              }
-            },
-          });
 
-          resolve({
-            id,
-            absoluteFilename,
-            url,
-          });
+      if (fileStream instanceof ReadStream) {
+        fileStream.pipe(fs.createWriteStream(absoluteFilename));
+      }
+
+      fileStream.on('close', () => {
+        CronJobManager.addJob(`${CRON_JOB_DELETE_FILE_NAME}${id}`, {
+          cronTime: `* */${deleteAfterMin || CRON_JOB_DELETE_FILE_DEFAULTMIN} * * * *`,
+          start: true,
+          onTick: () => {
+            try {
+              fs.unlink(absoluteFilename, () => {
+                logger.fileStorage.info(`Temporary file ${id} was removed successfully`);
+              });
+            } catch (err) {
+              logger.fileStorage.error(`Failed to remove Temporary file ${id}`, { err });
+            }
+          },
         });
+
+        resolve({
+          id,
+          absoluteFilename,
+          url,
+        });
+      });
+    });
+  }
+
+  public async getTemporaryFileStream(
+    fileInfo: {
+      id?: string;
+      mimeType: string;
+    },
+    deleteAfterMin?: number,
+  ) {
+    const { logger } = this.props.context as ExtendedContext;
+    const id = fileInfo.id || uuidv4();
+    const {
+      temporaryAbsolutePath, hostname, temporaryDelimiter, staticPrefix,
+    } = getParams();
+    const ext = FileStorageService.getExtensionByMimeType(fileInfo.mimeType);
+    const localFilename = `${FileStorageService.getPathFromUuid(id)}.${ext}`;
+
+    const absoluteFilename = path.join(temporaryAbsolutePath, localFilename);
+    const dirname = path.dirname(absoluteFilename);
+
+    return new Promise((resolve) => {
+      if (!fs.existsSync(dirname)) {
+        fs.mkdirSync(dirname, { recursive: true });
+      }
+
+      const url = `${hostname}${staticPrefix}/${temporaryDelimiter}/${localFilename}`;
+
+      const fileStream = fs.createWriteStream(absoluteFilename);
+
+      fileStream.on('close', () => {
+        CronJobManager.addJob(`${CRON_JOB_DELETE_FILE_NAME}${id}`, {
+          cronTime: `* */${deleteAfterMin || CRON_JOB_DELETE_FILE_DEFAULTMIN} * * * *`,
+          start: true,
+          onTick: () => {
+            try {
+              fs.unlink(absoluteFilename, () => {
+                logger.fileStorage.info(`Temporary file ${id} was removed successfully`);
+              });
+            } catch (err) {
+              logger.fileStorage.error(`Failed to remove Temporary file ${id}`, { err });
+            }
+          },
+        });
+
+        resolve({
+          url,
+          fileStream,
+        });
+      });
     });
   }
 
