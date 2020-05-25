@@ -16,6 +16,10 @@ declare class FileStorageService {
      * Returns Full filename without extension (e.g. /path/to/file)
      */
     static getPathFromUuid(guid: string): string;
+    static resolveFile(filedata: Pick<IFileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>): {
+        resolveAbsolutePath: string;
+        resolvePath: string;
+    };
     applyTransform(filepath: string, transform: IImageTransform): Promise<void>;
     /**
      * Returns filename at static prefix root (e.g. /static/path/to/file.ext)

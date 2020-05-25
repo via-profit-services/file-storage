@@ -26,6 +26,7 @@ import {
   IFileBag, IFileBagTable, IFileBagTableInput, FileType, IImageTransform, ITransformUrlPayload,
   IImgeData, Context, ExtendedContext,
 } from './types';
+import { FileStorage } from '.';
 
 interface IProps {
   context: Context;
@@ -164,6 +165,26 @@ class FileStorageService {
       guid.substr(2, 2),
       guid,
     ].join('/');
+  }
+
+  public static resolveFile(filedata: Pick<IFileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>) {
+    const {
+      mimeType, isLocalFile, url, id,
+    } = filedata;
+    if (!isLocalFile) {
+      return {
+        resolveAbsolutePath: url,
+        resolvePath: url,
+      };
+    }
+
+    const { storagePath, storageAbsolutePath } = getParams();
+    const ext = FileStorage.getExtensionByMimeType(mimeType);
+    const fileLocation = FileStorage.getPathFromUuid(id);
+    return {
+      resolvePath: path.join(storagePath, `${fileLocation}.${ext}`),
+      resolveAbsolutePath: path.join(storageAbsolutePath, `${fileLocation}.${ext}`),
+    };
   }
 
   public async applyTransform(filepath: string, transform: IImageTransform) {
