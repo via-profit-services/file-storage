@@ -1,5 +1,4 @@
 import { LOG_MAZ_FILES, LOG_MAZ_SIZE, LOG_DATE_PATTERNT, LOG_FILENAME_DEBUG, LOG_FILENAME_ERRORS } from '@via-profit-services/core';
-export declare const CRON_JOB_DELETE_FILE_NAME = "fileStorageDeleteFile";
 export declare const TEMPORARY_FILE_EXPIRED_AT_SEC: number;
 export declare const CRON_JOB_CLEAR_CACHE_NAME = "fileStorageClearCache";
 export declare const REDIS_CACHE_NAME = "fileStorageCache";
