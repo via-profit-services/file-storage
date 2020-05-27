@@ -250,10 +250,23 @@ class FileStorageService {
   /**
    * Returns filename at static prefix root (e.g. /static/path/to/file.ext)
    */
-  public static getFilenameFromUuid(guid: string) {
-    const { storagePath } = getParams();
+  public static getFilenameFromUuid(guid: string, delimiter = 's') {
+    const {
+      storagePath, cachePath, temporaryPath, staticDelimiter, cacheDelimiter, temporaryDelimiter,
+    } = getParams();
     const localPath = FileStorageService.getPathFromUuid(guid);
-    return path.join('/', storagePath, localPath);
+
+    switch (delimiter) {
+      case cacheDelimiter:
+        return path.join('/', cachePath, localPath);
+
+      case temporaryDelimiter:
+        return path.join('/', temporaryPath, localPath);
+
+      case staticDelimiter:
+      default:
+        return path.join('/', storagePath, localPath);
+    }
   }
 
   public static getStoragePath() {
@@ -463,12 +476,29 @@ class FileStorageService {
     const stream = fs.createWriteStream(absoluteFilename);
 
     setTimeout(() => {
+      const filename = FileStorageService.getFilenameFromUuid(id, temporaryDelimiter);
+      const fullFilenamePath = path.resolve(filename);
+      const dirnamePrev = path.resolve(dirname, '..');
+
       try {
-        fs.unlink(absoluteFilename, () => {
-          logger.fileStorage.info(`Temporary file ${id} was removed successfully`);
-        });
+        // remove file
+        if (fs.existsSync(fullFilenamePath)) {
+          fs.unlinkSync(fullFilenamePath);
+        }
+
+        // remove directory if is empty
+        if (fs.readdirSync(dirname).length) {
+          fs.unlinkSync(dirname);
+        }
+
+        // remove subdirectory if is empty
+        if (fs.readdirSync(dirnamePrev).length) {
+          fs.unlinkSync(dirnamePrev);
+        }
       } catch (err) {
-        logger.fileStorage.error(`Failed to remove Temporary file ${id}`, { err });
+        throw new ServerError(`
+          Failed to delete file ${id} in path ${fullFilenamePath}`,
+        { err });
       }
     }, expireAt || TEMPORARY_FILE_EXPIRED_AT_MLSEC);
 
@@ -570,12 +600,13 @@ class FileStorageService {
   public async deleteFiles(ids: string[]): Promise<string[]> {
     const { knex } = this.props.context;
     const filesList = await this.getFilesByIds(ids);
+    const { staticDelimiter } = getParams();
 
     if (filesList.length) {
       filesList.forEach((fileData) => {
         // if is local file
         if (fileData.isLocalFile || fileData.url.match(/^\/[a-z0-9]+/i)) {
-          const filename = FileStorageService.getFilenameFromUuid(fileData.id);
+          const filename = FileStorageService.getFilenameFromUuid(fileData.id, staticDelimiter);
           const fullFilenamePath = path.resolve(filename);
           const dirname = path.dirname(filename);
           const dirnamePrev = path.resolve(dirname, '..');
@@ -597,7 +628,8 @@ class FileStorageService {
             }
           } catch (err) {
             throw new ServerError(`
-              Failed to delete file ${fileData.id} in path ${fullFilenamePath}`, { err });
+              Failed to delete file ${fileData.id} in path ${fullFilenamePath}`,
+            { err });
           }
         }
       });

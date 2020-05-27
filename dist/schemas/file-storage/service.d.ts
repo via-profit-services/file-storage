@@ -25,7 +25,7 @@ declare class FileStorageService {
     /**
      * Returns filename at static prefix root (e.g. /static/path/to/file.ext)
      */
-    static getFilenameFromUuid(guid: string): string;
+    static getFilenameFromUuid(guid: string, delimiter?: string): string;
     static getStoragePath(): {
         storagePath: string;
         storageAbsolutePath: string;
