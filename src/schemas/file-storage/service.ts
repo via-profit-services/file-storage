@@ -493,12 +493,12 @@ class FileStorageService {
         }
 
         // remove directory if is empty
-        if (fs.readdirSync(dirname).length) {
+        if (!fs.readdirSync(dirname).length) {
           fs.rmdirSync(dirname);
         }
 
         // remove subdirectory if is empty
-        if (fs.readdirSync(dirnamePrev).length) {
+        if (!fs.readdirSync(dirnamePrev).length) {
           fs.rmdirSync(dirnamePrev);
         }
       } catch (err) {
@@ -626,12 +626,12 @@ class FileStorageService {
             }
 
             // remove directory if is empty
-            if (fs.readdirSync(dirname).length) {
+            if (!fs.readdirSync(dirname).length) {
               fs.rmdirSync(dirname);
             }
 
             // remove subdirectory if is empty
-            if (fs.readdirSync(dirnamePrev).length) {
+            if (!fs.readdirSync(dirnamePrev).length) {
               fs.rmdirSync(dirnamePrev);
             }
           } catch (err) {
