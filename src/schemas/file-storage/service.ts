@@ -463,7 +463,7 @@ class FileStorageService {
       expireAt?: number,
     },
   ) {
-    const { timezone, logger } = this.props.context as ExtendedContext;
+    const { timezone } = this.props.context as ExtendedContext;
     const id = fileInfo.id || uuidv4();
     const { mimeType, expireAt } = fileInfo;
     const {
@@ -514,7 +514,7 @@ class FileStorageService {
       stream,
       mimeType,
       absoluteFilename,
-      expireAt: moment.tz(timezone).add(expireAt, 'seconds').toDate(),
+      expireAt: moment.tz(timezone).add(expireAt / 1000, 'seconds').toDate(),
     };
   }
 
