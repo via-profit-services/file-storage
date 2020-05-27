@@ -285,6 +285,14 @@ class FileStorageService {
     };
   }
 
+  public static getTemporaryPath() {
+    const { temporaryPath, temporaryAbsolutePath } = getParams();
+    return {
+      temporaryPath,
+      temporaryAbsolutePath,
+    };
+  }
+
 
   public static getFileTypeByMimeType(mimeType: string): FileType {
     switch (mimeType) {
@@ -476,28 +484,26 @@ class FileStorageService {
     const stream = fs.createWriteStream(absoluteFilename);
 
     setTimeout(() => {
-      const filename = FileStorageService.getFilenameFromUuid(id, temporaryDelimiter);
-      const fullFilenamePath = path.resolve(filename);
       const dirnamePrev = path.resolve(dirname, '..');
 
       try {
         // remove file
-        if (fs.existsSync(fullFilenamePath)) {
-          fs.unlinkSync(fullFilenamePath);
+        if (fs.existsSync(absoluteFilename)) {
+          fs.unlinkSync(absoluteFilename);
         }
 
         // remove directory if is empty
         if (fs.readdirSync(dirname).length) {
-          fs.unlinkSync(dirname);
+          fs.rmdirSync(dirname);
         }
 
         // remove subdirectory if is empty
         if (fs.readdirSync(dirnamePrev).length) {
-          fs.unlinkSync(dirnamePrev);
+          fs.rmdirSync(dirnamePrev);
         }
       } catch (err) {
         throw new ServerError(`
-          Failed to delete file ${id} in path ${fullFilenamePath}`,
+          Failed to delete file ${id} in path ${absoluteFilename}`,
         { err });
       }
     }, expireAt || TEMPORARY_FILE_EXPIRED_AT_MLSEC);
@@ -606,8 +612,10 @@ class FileStorageService {
       filesList.forEach((fileData) => {
         // if is local file
         if (fileData.isLocalFile || fileData.url.match(/^\/[a-z0-9]+/i)) {
-          const filename = FileStorageService.getFilenameFromUuid(fileData.id, staticDelimiter);
-          const fullFilenamePath = path.resolve(filename);
+          const filename = FileStorage.getFilenameFromUuid(fileData.id, staticDelimiter);
+          // const filename = FileStorageService.getFilenameFromUuid(fileData.id, staticDelimiter);
+          const ext = FileStorage.getExtensionByMimeType(fileData.mimeType);
+          const fullFilenamePath = path.resolve(`${filename}.${ext}`);
           const dirname = path.dirname(filename);
           const dirnamePrev = path.resolve(dirname, '..');
 
@@ -619,12 +627,12 @@ class FileStorageService {
 
             // remove directory if is empty
             if (fs.readdirSync(dirname).length) {
-              fs.unlinkSync(dirname);
+              fs.rmdirSync(dirname);
             }
 
             // remove subdirectory if is empty
             if (fs.readdirSync(dirnamePrev).length) {
-              fs.unlinkSync(dirnamePrev);
+              fs.rmdirSync(dirnamePrev);
             }
           } catch (err) {
             throw new ServerError(`

@@ -34,6 +34,10 @@ declare class FileStorageService {
         cachePath: string;
         cacheAbsolutePath: string;
     };
+    static getTemporaryPath(): {
+        temporaryPath: string;
+        temporaryAbsolutePath: string;
+    };
     static getFileTypeByMimeType(mimeType: string): FileType;
     static getExtensionByMimeType(mimeType: string): string;
     static getMimeTypeByExtension(extension: string): string;
