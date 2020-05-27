@@ -9,7 +9,6 @@ import {
   convertWhereToKnex,
   TWhereAction,
   ServerError,
-  CronJobManager,
 } from '@via-profit-services/core';
 import imagemin from 'imagemin';
 import imageminMozjpeg from 'imagemin-mozjpeg';
@@ -21,7 +20,7 @@ import moment from 'moment-timezone';
 import rimraf from 'rimraf';
 import { v4 as uuidv4 } from 'uuid';
 
-import { REDIS_CACHE_NAME, TEMPORARY_FILE_EXPIRED_AT_SEC } from './constants';
+import { REDIS_CACHE_NAME, TEMPORARY_FILE_EXPIRED_AT_MLSEC } from './constants';
 import { getParams } from './paramsBuffer';
 import {
   IFileBag, IFileBagTable, IFileBagTableInput, FileType, IImageTransform, ITransformUrlPayload,
@@ -471,7 +470,7 @@ class FileStorageService {
       } catch (err) {
         logger.fileStorage.error(`Failed to remove Temporary file ${id}`, { err });
       }
-    }, expireAt || TEMPORARY_FILE_EXPIRED_AT_SEC);
+    }, expireAt || TEMPORARY_FILE_EXPIRED_AT_MLSEC);
 
     return {
       ext,
