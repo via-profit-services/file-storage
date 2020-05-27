@@ -21,7 +21,7 @@ import moment from 'moment-timezone';
 import rimraf from 'rimraf';
 import { v4 as uuidv4 } from 'uuid';
 
-import { REDIS_CACHE_NAME, CRON_JOB_DELETE_FILE_DEFAULTMIN, CRON_JOB_DELETE_FILE_NAME } from './constants';
+import { REDIS_CACHE_NAME, TEMPORARY_FILE_EXPIRED_AT_SEC, CRON_JOB_DELETE_FILE_NAME } from './constants';
 import { getParams } from './paramsBuffer';
 import {
   IFileBag, IFileBagTable, IFileBagTableInput, FileType, IImageTransform, ITransformUrlPayload,
@@ -407,7 +407,7 @@ class FileStorageService {
 
       fileStream.on('close', () => {
         CronJobManager.addJob(`${CRON_JOB_DELETE_FILE_NAME}${id}`, {
-          cronTime: `* */${deleteAfterMin || CRON_JOB_DELETE_FILE_DEFAULTMIN} * * * *`,
+          cronTime: `* */${deleteAfterMin || TEMPORARY_FILE_EXPIRED_AT_SEC} * * * *`,
           start: true,
           onTick: () => {
             try {
@@ -434,14 +434,18 @@ class FileStorageService {
       id?: string;
       mimeType: string;
     },
-    deleteAfterMin?: number,
+    /**
+     * After how many seconds have passed the file will be deleted
+     */
+    expiredAt?: number,
   ) {
     const { logger } = this.props.context as ExtendedContext;
     const id = fileInfo.id || uuidv4();
+    const { mimeType } = fileInfo;
     const {
       temporaryAbsolutePath, hostname, temporaryDelimiter, staticPrefix,
     } = getParams();
-    const ext = FileStorageService.getExtensionByMimeType(fileInfo.mimeType);
+    const ext = FileStorageService.getExtensionByMimeType(mimeType);
     const localFilename = `${FileStorageService.getPathFromUuid(id)}.${ext}`;
 
     const absoluteFilename = path.join(temporaryAbsolutePath, localFilename);
@@ -457,7 +461,7 @@ class FileStorageService {
 
     stream.on('close', () => {
       CronJobManager.addJob(`${CRON_JOB_DELETE_FILE_NAME}${id}`, {
-        cronTime: `* */${deleteAfterMin || CRON_JOB_DELETE_FILE_DEFAULTMIN} * * * *`,
+        cronTime: `* */${expiredAt || TEMPORARY_FILE_EXPIRED_AT_SEC} * * * *`,
         start: true,
         onTick: () => {
           try {
@@ -472,8 +476,11 @@ class FileStorageService {
     });
 
     return {
+      ext,
       url,
       stream,
+      mimeType,
+      absoluteFilename,
     };
   }
 
