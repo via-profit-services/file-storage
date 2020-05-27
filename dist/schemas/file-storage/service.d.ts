@@ -64,6 +64,7 @@ declare class FileStorageService {
         stream: fs.WriteStream;
         mimeType: string;
         absoluteFilename: string;
+        expireAt: Date;
     }>;
     createFile(fileStream: ReadStream, fileInfo: IFileBagTableInput, noCompress?: boolean): Promise<{
         id: string;
