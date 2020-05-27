@@ -1,6 +1,6 @@
 /* eslint-disable import/max-dependencies */
 /* eslint-disable class-methods-use-this */
-import fs, { ReadStream } from 'fs';
+import fs, { ReadStream, WriteStream } from 'fs';
 import path from 'path';
 import {
   IListResponse,
@@ -21,7 +21,7 @@ import moment from 'moment-timezone';
 import rimraf from 'rimraf';
 import { v4 as uuidv4 } from 'uuid';
 
-import { REDIS_CACHE_NAME, CRON_JOB_DELETE_FILE_DEFAULTMIN, CRON_JOB_DELETE_FILE_NAME } from './constants';
+import { REDIS_CACHE_NAME, TEMPORARY_FILE_EXPIRED_AT_SEC, CRON_JOB_DELETE_FILE_NAME } from './constants';
 import { getParams } from './paramsBuffer';
 import {
   IFileBag, IFileBagTable, IFileBagTableInput, FileType, IImageTransform, ITransformUrlPayload,
@@ -376,8 +376,11 @@ class FileStorageService {
   }
 
   public async createTemporaryFile(
-    fileStream: ReadStream,
-    fileInfo: IFileBagTableInput,
+    fileStream: ReadStream | WriteStream,
+    fileInfo: {
+      id?: string;
+      mimeType: string;
+    },
     deleteAfterMin?: number,
   ): Promise<{id: string; absoluteFilename: string; url: string; }> {
     const { logger } = this.props.context as ExtendedContext;
@@ -397,30 +400,89 @@ class FileStorageService {
       }
 
       const url = `${hostname}${staticPrefix}/${temporaryDelimiter}/${localFilename}`;
-      fileStream
-        .pipe(fs.createWriteStream(absoluteFilename))
-        .on('close', () => {
-          CronJobManager.addJob(`${CRON_JOB_DELETE_FILE_NAME}${id}`, {
-            cronTime: `* */${deleteAfterMin || CRON_JOB_DELETE_FILE_DEFAULTMIN} * * * *`,
-            start: true,
-            onTick: () => {
-              try {
-                fs.unlink(absoluteFilename, () => {
-                  logger.fileStorage.info(`Temporary file ${id} was removed successfully`);
-                });
-              } catch (err) {
-                logger.fileStorage.error(`Failed to remove Temporary file ${id}`, { err });
-              }
-            },
-          });
 
-          resolve({
-            id,
-            absoluteFilename,
-            url,
-          });
+      if (fileStream instanceof ReadStream) {
+        fileStream.pipe(fs.createWriteStream(absoluteFilename));
+      }
+
+      fileStream.on('close', () => {
+        CronJobManager.addJob(`${CRON_JOB_DELETE_FILE_NAME}${id}`, {
+          cronTime: `* */${deleteAfterMin || TEMPORARY_FILE_EXPIRED_AT_SEC} * * * *`,
+          start: true,
+          onTick: () => {
+            try {
+              fs.unlink(absoluteFilename, () => {
+                logger.fileStorage.info(`Temporary file ${id} was removed successfully`);
+              });
+            } catch (err) {
+              logger.fileStorage.error(`Failed to remove Temporary file ${id}`, { err });
+            }
+          },
         });
+
+        resolve({
+          id,
+          absoluteFilename,
+          url,
+        });
+      });
     });
+  }
+
+  public async getTemporaryFileStream(
+    fileInfo: {
+      id?: string;
+      mimeType: string;
+    },
+    /**
+     * After how many seconds have passed the file will be deleted
+     */
+    expiredAt?: number,
+  ) {
+    const { timezone, logger } = this.props.context as ExtendedContext;
+    const id = fileInfo.id || uuidv4();
+    const { mimeType } = fileInfo;
+    const {
+      temporaryAbsolutePath, hostname, temporaryDelimiter, staticPrefix,
+    } = getParams();
+    const ext = FileStorageService.getExtensionByMimeType(mimeType);
+    const localFilename = `${FileStorageService.getPathFromUuid(id)}.${ext}`;
+
+    const absoluteFilename = path.join(temporaryAbsolutePath, localFilename);
+    const dirname = path.dirname(absoluteFilename);
+
+    if (!fs.existsSync(dirname)) {
+      fs.mkdirSync(dirname, { recursive: true });
+    }
+
+    const url = `${hostname}${staticPrefix}/${temporaryDelimiter}/${localFilename}`;
+
+    const stream = fs.createWriteStream(absoluteFilename);
+
+    stream.on('close', () => {
+      CronJobManager.addJob(`${CRON_JOB_DELETE_FILE_NAME}${id}`, {
+        cronTime: `* */${expiredAt || TEMPORARY_FILE_EXPIRED_AT_SEC} * * * *`,
+        start: true,
+        onTick: () => {
+          try {
+            fs.unlink(absoluteFilename, () => {
+              logger.fileStorage.info(`Temporary file ${id} was removed successfully`);
+            });
+          } catch (err) {
+            logger.fileStorage.error(`Failed to remove Temporary file ${id}`, { err });
+          }
+        },
+      });
+    });
+
+    return {
+      ext,
+      url,
+      stream,
+      mimeType,
+      absoluteFilename,
+      expireAt: moment.tz(timezone).add(expiredAt, 'seconds').toDate(),
+    };
   }
 
   public async createFile(
