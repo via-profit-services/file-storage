@@ -460,10 +460,12 @@ class FileStorageService {
     const stream = fs.createWriteStream(absoluteFilename);
 
     stream.on('close', () => {
-      CronJobManager.addJob(`${CRON_JOB_DELETE_FILE_NAME}${id}`, {
+      const jobName = `${CRON_JOB_DELETE_FILE_NAME}${id}`;
+      const job = CronJobManager.addJob(jobName, {
         cronTime: `* */${expiredAt || TEMPORARY_FILE_EXPIRED_AT_SEC} * * * *`,
         start: true,
         onTick: () => {
+          job.stop();
           try {
             fs.unlink(absoluteFilename, () => {
               logger.fileStorage.info(`Temporary file ${id} was removed successfully`);
