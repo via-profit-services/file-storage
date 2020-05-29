@@ -149,14 +149,30 @@ query {
 
 ```ts
 import { App } from '@via-profit-services/core';
-import { makeSchema } from '@via-profit-services/file-storage';
+import { makeSchema, configureFileStorageLogger } from '@via-profit-services/file-storage';
 
 const fileStorage = makeSchema({
   staticPrefix: '/static',
 });
 
+const fileStorageLogger = configureFileStorageLogger({
+  logDir: path.resolve(rootPath, process.env.LOG),
+});
+
+// default logger
+const logger = configureLogger({
+  logDir: path.resolve(rootPath, process.env.LOG),
+  loggers: {
+    settings: settingsLogger,
+    fileStorage: fileStorageLogger,
+  },
+});
+
+
+
 const app = new App({
   ...
+  logger,
   typeDefs: [
     fileStorage.typeDefs,
   ],
