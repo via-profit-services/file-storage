@@ -135,8 +135,7 @@ type FilesListConnection implements Connection {
   edges: [FilesEdge]!
 }
 
-
-type File implements Node {
+interface FileNode {
   id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -149,7 +148,20 @@ type File implements Node {
   metaData: JSON
 }
 
-type Image implements Node {
+type File implements FileNode & Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  owner: ID!
+  type: FileType!
+  category: String!
+  mimeType: String!
+  url: String!
+  description: String
+  metaData: JSON
+}
+
+type Image implements FileNode & Node {
   id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
