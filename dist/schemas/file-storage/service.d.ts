@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import fs, { ReadStream, WriteStream } from 'fs';
+import fs, { ReadStream } from 'fs';
 import { IListResponse, TOutputFilter } from '@via-profit-services/core';
 import { IFileBag, IFileBagTableInput, FileType, IImageTransform, IImgeData, Context } from './types';
 interface IProps {
@@ -25,7 +25,7 @@ declare class FileStorageService {
     /**
      * Returns filename at static prefix root (e.g. /static/path/to/file.ext)
      */
-    static getFilenameFromUuid(guid: string): string;
+    static getFilenameFromUuid(guid: string, delimiter?: string): string;
     static getStoragePath(): {
         storagePath: string;
         storageAbsolutePath: string;
@@ -33,6 +33,10 @@ declare class FileStorageService {
     static getCachePath(): {
         cachePath: string;
         cacheAbsolutePath: string;
+    };
+    static getTemporaryPath(): {
+        temporaryPath: string;
+        temporaryAbsolutePath: string;
     };
     static getFileTypeByMimeType(mimeType: string): FileType;
     static getExtensionByMimeType(mimeType: string): string;
@@ -43,22 +47,11 @@ declare class FileStorageService {
     getFilesByIds(ids: string[]): Promise<IFileBag[]>;
     getFile(id: string): Promise<IFileBag | false>;
     updateFile(id: string, fileData: Partial<IFileBagTableInput>): Promise<void>;
-    createTemporaryFile(fileStream: ReadStream | WriteStream, fileInfo: {
-        id?: string;
-        mimeType: string;
-    }, deleteAfterMin?: number): Promise<{
-        id: string;
-        absoluteFilename: string;
-        url: string;
-    }>;
     getTemporaryFileStream(fileInfo: {
         id?: string;
         mimeType: string;
-    }, 
-    /**
-     * After how many seconds have passed the file will be deleted
-     */
-    expiredAt?: number): Promise<{
+        expireAt?: number;
+    }): Promise<{
         ext: string;
         url: string;
         stream: fs.WriteStream;

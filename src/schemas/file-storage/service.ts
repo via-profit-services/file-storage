@@ -9,7 +9,6 @@ import {
   convertWhereToKnex,
   TWhereAction,
   ServerError,
-  CronJobManager,
 } from '@via-profit-services/core';
 import imagemin from 'imagemin';
 import imageminMozjpeg from 'imagemin-mozjpeg';
@@ -21,7 +20,7 @@ import moment from 'moment-timezone';
 import rimraf from 'rimraf';
 import { v4 as uuidv4 } from 'uuid';
 
-import { REDIS_CACHE_NAME, TEMPORARY_FILE_EXPIRED_AT_SEC, CRON_JOB_DELETE_FILE_NAME } from './constants';
+import { REDIS_CACHE_NAME, TEMPORARY_FILE_EXPIRED_AT_MLSEC } from './constants';
 import { getParams } from './paramsBuffer';
 import {
   IFileBag, IFileBagTable, IFileBagTableInput, FileType, IImageTransform, ITransformUrlPayload,
@@ -251,10 +250,23 @@ class FileStorageService {
   /**
    * Returns filename at static prefix root (e.g. /static/path/to/file.ext)
    */
-  public static getFilenameFromUuid(guid: string) {
-    const { storagePath } = getParams();
+  public static getFilenameFromUuid(guid: string, delimiter = 's') {
+    const {
+      storagePath, cachePath, temporaryPath, staticDelimiter, cacheDelimiter, temporaryDelimiter,
+    } = getParams();
     const localPath = FileStorageService.getPathFromUuid(guid);
-    return path.join('/', storagePath, localPath);
+
+    switch (delimiter) {
+      case cacheDelimiter:
+        return path.join('/', cachePath, localPath);
+
+      case temporaryDelimiter:
+        return path.join('/', temporaryPath, localPath);
+
+      case staticDelimiter:
+      default:
+        return path.join('/', storagePath, localPath);
+    }
   }
 
   public static getStoragePath() {
@@ -270,6 +282,14 @@ class FileStorageService {
     return {
       cachePath,
       cacheAbsolutePath,
+    };
+  }
+
+  public static getTemporaryPath() {
+    const { temporaryPath, temporaryAbsolutePath } = getParams();
+    return {
+      temporaryPath,
+      temporaryAbsolutePath,
     };
   }
 
@@ -375,73 +395,77 @@ class FileStorageService {
       .where('id', id);
   }
 
-  public async createTemporaryFile(
-    fileStream: ReadStream | WriteStream,
-    fileInfo: {
-      id?: string;
-      mimeType: string;
-    },
-    deleteAfterMin?: number,
-  ): Promise<{id: string; absoluteFilename: string; url: string; }> {
-    const { logger } = this.props.context as ExtendedContext;
-    const id = fileInfo.id || uuidv4();
-    const {
-      temporaryAbsolutePath, hostname, temporaryDelimiter, staticPrefix,
-    } = getParams();
-    const ext = FileStorageService.getExtensionByMimeType(fileInfo.mimeType);
-    const localFilename = `${FileStorageService.getPathFromUuid(id)}.${ext}`;
+  // public async createTemporaryFile(
+  //   fileStream: ReadStream | WriteStream,
+  //   fileInfo: {
+  //     id?: string;
+  //     mimeType: string;
+  //   },
+  //   expireAt?: number,
+  // ): Promise<{id: string; absoluteFilename: string; url: string; }> {
+  //   const { logger } = this.props.context as ExtendedContext;
+  //   const id = fileInfo.id || uuidv4();
+  //   const {
+  //     temporaryAbsolutePath, hostname, temporaryDelimiter, staticPrefix,
+  //   } = getParams();
+  //   const ext = FileStorageService.getExtensionByMimeType(fileInfo.mimeType);
+  //   const localFilename = `${FileStorageService.getPathFromUuid(id)}.${ext}`;
 
-    const absoluteFilename = path.join(temporaryAbsolutePath, localFilename);
-    const dirname = path.dirname(absoluteFilename);
+  //   const absoluteFilename = path.join(temporaryAbsolutePath, localFilename);
+  //   const dirname = path.dirname(absoluteFilename);
 
-    return new Promise((resolve) => {
-      if (!fs.existsSync(dirname)) {
-        fs.mkdirSync(dirname, { recursive: true });
-      }
+  //   return new Promise((resolve) => {
+  //     if (!fs.existsSync(dirname)) {
+  //       fs.mkdirSync(dirname, { recursive: true });
+  //     }
 
-      const url = `${hostname}${staticPrefix}/${temporaryDelimiter}/${localFilename}`;
+  //     const url = `${hostname}${staticPrefix}/${temporaryDelimiter}/${localFilename}`;
 
-      if (fileStream instanceof ReadStream) {
-        fileStream.pipe(fs.createWriteStream(absoluteFilename));
-      }
+  //     if (fileStream instanceof ReadStream) {
+  //       fileStream.pipe(fs.createWriteStream(absoluteFilename));
+  //     }
 
-      fileStream.on('close', () => {
-        CronJobManager.addJob(`${CRON_JOB_DELETE_FILE_NAME}${id}`, {
-          cronTime: `* */${deleteAfterMin || TEMPORARY_FILE_EXPIRED_AT_SEC} * * * *`,
-          start: true,
-          onTick: () => {
-            try {
-              fs.unlink(absoluteFilename, () => {
-                logger.fileStorage.info(`Temporary file ${id} was removed successfully`);
-              });
-            } catch (err) {
-              logger.fileStorage.error(`Failed to remove Temporary file ${id}`, { err });
-            }
-          },
-        });
+  //     fileStream.on('close', () => {
 
-        resolve({
-          id,
-          absoluteFilename,
-          url,
-        });
-      });
-    });
-  }
+  //       setTimeout(() => {
+  //         try {
+  //           fs.unlink(absoluteFilename, () => {
+  //             logger.fileStorage.info(`Temporary file ${id} was removed successfully`);
+  //           });
+  //         } catch (err) {
+  //           logger.fileStorage.error(`Failed to remove Temporary file ${id}`, { err });
+  //         }
+  //       }, expireAt || TEMPORARY_FILE_EXPIRED_AT_SEC);
+
+
+  //       resolve({
+  //         id,
+  //         absoluteFilename,
+  //         url,
+  //       });
+  //     });
+  //   });
+  // }
+
+  // public async gege(fileStream: ReadStream | WriteStream,
+  //   fileInfo: {
+  //     id?: string;
+  //     mimeType: string;
+  //     expireAt?: number
+  //   }){
+
+  // }
 
   public async getTemporaryFileStream(
     fileInfo: {
       id?: string;
       mimeType: string;
+      expireAt?: number,
     },
-    /**
-     * After how many seconds have passed the file will be deleted
-     */
-    expiredAt?: number,
   ) {
-    const { timezone, logger } = this.props.context as ExtendedContext;
+    const { timezone } = this.props.context as ExtendedContext;
     const id = fileInfo.id || uuidv4();
-    const { mimeType } = fileInfo;
+    const { mimeType, expireAt } = fileInfo;
     const {
       temporaryAbsolutePath, hostname, temporaryDelimiter, staticPrefix,
     } = getParams();
@@ -459,21 +483,30 @@ class FileStorageService {
 
     const stream = fs.createWriteStream(absoluteFilename);
 
-    stream.on('close', () => {
-      CronJobManager.addJob(`${CRON_JOB_DELETE_FILE_NAME}${id}`, {
-        cronTime: `* */${expiredAt || TEMPORARY_FILE_EXPIRED_AT_SEC} * * * *`,
-        start: true,
-        onTick: () => {
-          try {
-            fs.unlink(absoluteFilename, () => {
-              logger.fileStorage.info(`Temporary file ${id} was removed successfully`);
-            });
-          } catch (err) {
-            logger.fileStorage.error(`Failed to remove Temporary file ${id}`, { err });
-          }
-        },
-      });
-    });
+    setTimeout(() => {
+      const dirnamePrev = path.resolve(dirname, '..');
+
+      try {
+        // remove file
+        if (fs.existsSync(absoluteFilename)) {
+          fs.unlinkSync(absoluteFilename);
+        }
+
+        // remove directory if is empty
+        if (!fs.readdirSync(dirname).length) {
+          fs.rmdirSync(dirname);
+        }
+
+        // remove subdirectory if is empty
+        if (!fs.readdirSync(dirnamePrev).length) {
+          fs.rmdirSync(dirnamePrev);
+        }
+      } catch (err) {
+        throw new ServerError(`
+          Failed to delete file ${id} in path ${absoluteFilename}`,
+        { err });
+      }
+    }, expireAt || TEMPORARY_FILE_EXPIRED_AT_MLSEC);
 
     return {
       ext,
@@ -481,7 +514,7 @@ class FileStorageService {
       stream,
       mimeType,
       absoluteFilename,
-      expireAt: moment.tz(timezone).add(expiredAt, 'seconds').toDate(),
+      expireAt: moment.tz(timezone).add(expireAt / 1000, 'seconds').toDate(),
     };
   }
 
@@ -573,13 +606,16 @@ class FileStorageService {
   public async deleteFiles(ids: string[]): Promise<string[]> {
     const { knex } = this.props.context;
     const filesList = await this.getFilesByIds(ids);
+    const { staticDelimiter } = getParams();
 
     if (filesList.length) {
       filesList.forEach((fileData) => {
         // if is local file
         if (fileData.isLocalFile || fileData.url.match(/^\/[a-z0-9]+/i)) {
-          const filename = FileStorageService.getFilenameFromUuid(fileData.id);
-          const fullFilenamePath = path.resolve(filename);
+          const filename = FileStorage.getFilenameFromUuid(fileData.id, staticDelimiter);
+          // const filename = FileStorageService.getFilenameFromUuid(fileData.id, staticDelimiter);
+          const ext = FileStorage.getExtensionByMimeType(fileData.mimeType);
+          const fullFilenamePath = path.resolve(`${filename}.${ext}`);
           const dirname = path.dirname(filename);
           const dirnamePrev = path.resolve(dirname, '..');
 
@@ -590,17 +626,18 @@ class FileStorageService {
             }
 
             // remove directory if is empty
-            if (fs.readdirSync(dirname).length) {
-              fs.unlinkSync(dirname);
+            if (!fs.readdirSync(dirname).length) {
+              fs.rmdirSync(dirname);
             }
 
             // remove subdirectory if is empty
-            if (fs.readdirSync(dirnamePrev).length) {
-              fs.unlinkSync(dirnamePrev);
+            if (!fs.readdirSync(dirnamePrev).length) {
+              fs.rmdirSync(dirnamePrev);
             }
           } catch (err) {
             throw new ServerError(`
-              Failed to delete file ${fileData.id} in path ${fullFilenamePath}`, { err });
+              Failed to delete file ${fileData.id} in path ${fullFilenamePath}`,
+            { err });
           }
         }
       });
