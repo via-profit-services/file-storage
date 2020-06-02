@@ -1,6 +1,6 @@
 /* eslint-disable import/max-dependencies */
 /* eslint-disable class-methods-use-this */
-import fs, { ReadStream, WriteStream } from 'fs';
+import fs, { ReadStream } from 'fs';
 import path from 'path';
 import {
   IListResponse,
@@ -569,13 +569,13 @@ class FileStorageService {
               .then((image) => {
                 return image.writeAsync(absoluteFilename);
               })
-              .then(() => {
+              .then(async () => {
                 if (noCompress) {
                   return;
                 }
 
                 // do not wait this promise
-                imagemin([absoluteFilename], {
+                await imagemin([absoluteFilename], {
                   plugins: [
                     imageminMozjpeg(compressionOptions.mozJpeg),
                     imageminPngquant(compressionOptions.pngQuant),
