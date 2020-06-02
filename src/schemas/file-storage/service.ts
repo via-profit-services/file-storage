@@ -569,13 +569,13 @@ class FileStorageService {
               .then((image) => {
                 return image.writeAsync(absoluteFilename);
               })
-              .then(() => {
+              .then(async () => {
                 if (noCompress) {
                   return;
                 }
 
                 // do not wait this promise
-                imagemin([absoluteFilename], {
+                await imagemin([absoluteFilename], {
                   plugins: [
                     imageminMozjpeg(compressionOptions.mozJpeg),
                     imageminPngquant(compressionOptions.pngQuant),
