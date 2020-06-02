@@ -575,7 +575,7 @@ class FileStorageService {
                 }
 
                 // do not wait this promise
-                await imagemin([absoluteFilename], {
+                imagemin([absoluteFilename], {
                   plugins: [
                     imageminMozjpeg(compressionOptions.mozJpeg),
                     imageminPngquant(compressionOptions.pngQuant),
