@@ -1,6 +1,6 @@
 /* eslint-disable import/max-dependencies */
 /* eslint-disable class-methods-use-this */
-import fs, { ReadStream, WriteStream } from 'fs';
+import fs, { ReadStream } from 'fs';
 import path from 'path';
 import {
   IListResponse,
