@@ -1,6 +1,6 @@
 /*!
  * 
- *  Via Profit Services / Settings Manager
+ *  Via Profit Services / File Storage
  * 
  *  Repository https://gitlab.com/via-profit-services/file-storage
  *  Contact    promo@via-profit.ru
