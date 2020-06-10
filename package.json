@@ -39,7 +39,7 @@
     "author": "Via Profit <promo@via-profit.ru>",
     "license": "MIT",
     "dependencies": {
-        "@via-profit-services/core": "ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.21.0",
+        "@via-profit-services/core": "ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.23.0",
         "busboy": "^0.3.1",
         "fs-capacitor": "^6.1.0",
         "graphql": "^14.6.0",
@@ -110,7 +110,7 @@
         "husky": "^4.2.3",
         "jest": "^24.9.0",
         "jest-transform-graphql": "^2.1.0",
-        "knex": "^0.20.10",
+        "knex": "^0.21.1",
         "minimist": "^1.2.3",
         "nodemon": "^2.0.2",
         "nodemon-webpack-plugin": "^4.2.2",
