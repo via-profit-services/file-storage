@@ -15,6 +15,7 @@
 /keys
 dump.rdb
 
+/sessions
 /files
 /upload.sh
 /uploadMultiple.sh
