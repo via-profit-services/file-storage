@@ -8,13 +8,13 @@ const baseConfig = require('./webpack.config.base');
 module.exports = merge(baseConfig, {
   entry: {
     index: path.resolve(__dirname, '../src/index.ts'),
+    // playground: path.resolve(__dirname, '../src/playground/index.ts'),
   },
   output: {
     path: path.join(__dirname, '../dist/'),
     filename: '[name].js',
     libraryTarget: 'commonjs2',
   },
-  devtool: 'inline-source-map',
   mode: 'production',
   plugins: [
     new ProgressPlugin(),
@@ -23,7 +23,7 @@ module.exports = merge(baseConfig, {
     new IgnorePlugin(/pg-query-stream/),
     new BannerPlugin({
       banner: `
- Via Profit Services / Settings Manager
+ Via Profit Services / File Storage
 
  Repository https://gitlab.com/via-profit-services/file-storage
  Contact    promo@via-profit.ru

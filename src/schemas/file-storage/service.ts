@@ -10,10 +10,10 @@ import {
   TWhereAction,
   ServerError,
 } from '@via-profit-services/core';
-import imagemin from 'imagemin';
-import imageminMozjpeg from 'imagemin-mozjpeg';
-import imageminOptipng from 'imagemin-optipng';
-import imageminPngquant from 'imagemin-pngquant';
+// import imagemin from 'imagemin';
+// import imageminMozjpeg from 'imagemin-mozjpeg';
+// import imageminOptipng from 'imagemin-optipng';
+// import imageminPngquant from 'imagemin-pngquant';
 import Jimp from 'jimp';
 import mime from 'mime-types';
 import moment from 'moment-timezone';
@@ -395,66 +395,6 @@ class FileStorageService {
       .where('id', id);
   }
 
-  // public async createTemporaryFile(
-  //   fileStream: ReadStream | WriteStream,
-  //   fileInfo: {
-  //     id?: string;
-  //     mimeType: string;
-  //   },
-  //   expireAt?: number,
-  // ): Promise<{id: string; absoluteFilename: string; url: string; }> {
-  //   const { logger } = this.props.context as ExtendedContext;
-  //   const id = fileInfo.id || uuidv4();
-  //   const {
-  //     temporaryAbsolutePath, hostname, temporaryDelimiter, staticPrefix,
-  //   } = getParams();
-  //   const ext = FileStorageService.getExtensionByMimeType(fileInfo.mimeType);
-  //   const localFilename = `${FileStorageService.getPathFromUuid(id)}.${ext}`;
-
-  //   const absoluteFilename = path.join(temporaryAbsolutePath, localFilename);
-  //   const dirname = path.dirname(absoluteFilename);
-
-  //   return new Promise((resolve) => {
-  //     if (!fs.existsSync(dirname)) {
-  //       fs.mkdirSync(dirname, { recursive: true });
-  //     }
-
-  //     const url = `${hostname}${staticPrefix}/${temporaryDelimiter}/${localFilename}`;
-
-  //     if (fileStream instanceof ReadStream) {
-  //       fileStream.pipe(fs.createWriteStream(absoluteFilename));
-  //     }
-
-  //     fileStream.on('close', () => {
-
-  //       setTimeout(() => {
-  //         try {
-  //           fs.unlink(absoluteFilename, () => {
-  //             logger.fileStorage.info(`Temporary file ${id} was removed successfully`);
-  //           });
-  //         } catch (err) {
-  //           logger.fileStorage.error(`Failed to remove Temporary file ${id}`, { err });
-  //         }
-  //       }, expireAt || TEMPORARY_FILE_EXPIRED_AT_SEC);
-
-
-  //       resolve({
-  //         id,
-  //         absoluteFilename,
-  //         url,
-  //       });
-  //     });
-  //   });
-  // }
-
-  // public async gege(fileStream: ReadStream | WriteStream,
-  //   fileInfo: {
-  //     id?: string;
-  //     mimeType: string;
-  //     expireAt?: number
-  //   }){
-
-  // }
 
   public async getTemporaryFileStream(
     fileInfo: {
@@ -554,8 +494,13 @@ class FileStorageService {
 
     return new Promise((resolve) => {
       if (!fs.existsSync(dirname)) {
-        fs.mkdirSync(dirname, { recursive: true });
+        try {
+          fs.mkdirSync(dirname, { recursive: true });
+        } catch (err) {
+          throw new ServerError('Failed to create destination directory', { err });
+        }
       }
+
 
       fileStream
         .pipe(fs.createWriteStream(absoluteFilename))
@@ -569,23 +514,24 @@ class FileStorageService {
               .then((image) => {
                 return image.writeAsync(absoluteFilename);
               })
-              .then(async () => {
-                if (noCompress) {
-                  return;
-                }
+              // .then(async () => {
+              //   if (noCompress) {
+              //     return;
+              //   }
 
-                // do not wait this promise
-                imagemin([absoluteFilename], {
-                  plugins: [
-                    imageminMozjpeg(compressionOptions.mozJpeg),
-                    imageminPngquant(compressionOptions.pngQuant),
-                    imageminOptipng(compressionOptions.optiPng),
-                  ],
-                }).then((optiRes) => {
-                  const { data } = optiRes[0];
-                  fs.writeFileSync(absoluteFilename, data);
-                });
-              })
+              //   // do not wait this promise
+              //   await imagemin([absoluteFilename],
+              //     {
+              //       plugins: [
+              //         imageminMozjpeg(compressionOptions.mozJpeg),
+              //         imageminPngquant(compressionOptions.pngQuant),
+              //         imageminOptipng(compressionOptions.optiPng),
+              //       ],
+              //     }).then((optiRes) => {
+              //     const { data } = optiRes[0];
+              //     fs.writeFileSync(absoluteFilename, data);
+              //   });
+              // })
               .then(() => {
                 return resolve({
                   id: newId,
