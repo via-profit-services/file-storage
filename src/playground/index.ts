@@ -10,6 +10,7 @@ import { configureApp } from '../utils/configureApp';
 
 const fileStorage = makeSchema({
   hostname: `http://localhost:${process.env.PORT}`,
+  cacheTTL: 30,
 });
 
 const config = configureApp({
