@@ -549,10 +549,10 @@ class FileStorageService {
   }
 
 
-  public async deleteFiles(ids: string[]): Promise<string[]> {
+  public async deleteStaticFiles(ids: string[]): Promise<string[]> {
     const { knex } = this.props.context;
     const filesList = await this.getFilesByIds(ids);
-    const { staticDelimiter } = getParams();
+    const { staticDelimiter, rootPath } = getParams();
 
     if (filesList.length) {
       filesList.forEach((fileData) => {
@@ -561,7 +561,7 @@ class FileStorageService {
           const filename = FileStorage.getFilenameFromUuid(fileData.id, staticDelimiter);
           // const filename = FileStorageService.getFilenameFromUuid(fileData.id, staticDelimiter);
           const ext = FileStorage.getExtensionByMimeType(fileData.mimeType);
-          const fullFilenamePath = path.resolve(`${filename}.${ext}`);
+          const fullFilenamePath = path.resolve(rootPath, `${filename}.${ext}`);
           const dirname = path.dirname(filename);
           const dirnamePrev = path.resolve(dirname, '..');
 
@@ -569,16 +569,16 @@ class FileStorageService {
             // remove file
             if (fs.existsSync(fullFilenamePath)) {
               fs.unlinkSync(fullFilenamePath);
-            }
 
-            // remove directory if is empty
-            if (!fs.readdirSync(dirname).length) {
-              fs.rmdirSync(dirname);
-            }
+              // remove directory if is empty
+              if (!fs.readdirSync(dirname).length) {
+                fs.rmdirSync(dirname);
+              }
 
-            // remove subdirectory if is empty
-            if (!fs.readdirSync(dirnamePrev).length) {
-              fs.rmdirSync(dirnamePrev);
+              // remove subdirectory if is empty
+              if (!fs.readdirSync(dirnamePrev).length) {
+                fs.rmdirSync(dirnamePrev);
+              }
             }
           } catch (err) {
             throw new ServerError(`
