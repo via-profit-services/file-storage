@@ -28,7 +28,6 @@ const FileResolver: IResolverObject<IParent, Context, any> = new Proxy({
     const resolver: IFieldResolver<IParent, Context, any> = async (parent, args, context) => {
       const { id, transform } = parent;
       const fileStorage = new FileStorageService({ context });
-
       const loaders = createDataloaders(context);
       const file = await loaders.files.load(id);
 

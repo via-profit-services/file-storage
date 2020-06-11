@@ -16,14 +16,12 @@ const resolvers: IResolvers<any, ExtendedContext> = {
   },
   FileStorageQuery: {
     list: FilesListConnection,
-    image: (parent, args: any) => (args),
   },
   FileStorageMutation: {
     delete: DeleteFiles,
     upload: UploadFiles,
   },
   File,
-  Image: File,
 
   // scalar
   FileUpload,

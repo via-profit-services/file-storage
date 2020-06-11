@@ -18,9 +18,9 @@ type FileStorageMutation {
   """
   upload(
     """
-    Array of files
+    GraphQL multipart request specification: https://github.com/jaydenseric/graphql-multipart-request-spec#graphql-multipart-request-specification
     For example `curl` request will be:
-    curl localhost:3001/graphql \
+    curl localhost:9000/graphql \
     -F operations='{ "query": "mutation($files: [FileUpload!]! $info: [FileUploadInfo!]!) { multipleUpload(files: $files info: $info) { id url } }", "variables": { "files": [null, null] }, "info": [{"owner": "xxxx-xxx-xxx", "category": "other"}, {"owner": "xxxx-xxx-xxx", "category": "other"}] }' \
     -F map='{ "0": ["variables.files.0"], "1": ["variables.files.1"] }' \
     -F 0=@b.txt \
@@ -28,9 +28,13 @@ type FileStorageMutation {
     """
     files: [FileUpload!]!
     info: [FileUploadInfo!]!
-    
     """
-    Only for images.
+    Only for images and only for local images
+    Image transform options
+    """
+    transform: [ImageTransformInput!]
+    """
+    Only for images and only for local images
     If true, the image will not be compressed
     """
     noCompress: Boolean
@@ -73,18 +77,29 @@ type FileStorageQuery {
     after: String
     orderBy: [FilesOrderBy]
     filter: FilesListFilter
+
+    """
+    Only for images and only for local images
+    Image transform options
+    """
     transform: ImageTransformInput
   ): FilesListConnection!
 
   """
-  Returns single image
-  """
-  image(id: ID! transform: ImageTransformInput): Image!
-  
-  """
   Returns single file
   """
-  file(id: ID!): File!
+  file(
+    """
+    File ID
+    """
+    id: ID!
+    
+    """
+    Only for images and only for local images
+    Image transform options
+    """
+    transform: ImageTransformInput
+  ): File!
 }
 
 
@@ -161,24 +176,12 @@ type File implements FileNode & Node {
   metaData: JSON
 }
 
-type Image implements FileNode & Node {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  owner: ID!
-  type: FileType!
-  category: String!
-  mimeType: String!
-  url: URL!
-  description: String
-  metaData: JSON
-}
-
 input ImageTransformInput {
   resize: ImageTransformInputResize
   cover: ImageTransformInputCover
   contain: ImageTransformInputContain
   scaleToFit: ImageTransformInputScaleToFit
+  crop: ImageTransformInputCrop
   gaussian: Int
   blur: Int
   quality: Int
@@ -186,23 +189,30 @@ input ImageTransformInput {
 }
 
 input ImageTransformInputResize {
-  width: Int!
-  height: Int!
+  w: Int!
+  h: Int!
 }
 
 input ImageTransformInputCover {
-  width: Int!
-  height: Int!
+  w: Int!
+  h: Int!
 }
 
 input ImageTransformInputContain {
-  width: Int!
-  height: Int!
+  w: Int!
+  h: Int!
 }
 
 input ImageTransformInputScaleToFit {
-  width: Int!
-  height: Int!
+  w: Int!
+  h: Int!
+}
+
+input ImageTransformInputCrop {
+  w: Int!
+  h: Int!
+  x: Int!
+  y: Int!
 }
 
 """

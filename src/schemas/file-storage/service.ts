@@ -151,7 +151,7 @@ class FileStorageService {
       fs.mkdirSync(dirname, { recursive: true });
     }
 
-
+    // copy file for transform operation
     fs.copyFile(absoluteOriginalFilename, absoluteFilename, () => {
       redis.hset(REDIS_CACHE_NAME, imageUrlHash, newFilename);
     });
@@ -161,7 +161,7 @@ class FileStorageService {
       this.applyTransform(absoluteFilename, transform);
       logger.fileStorage.debug(`Apply transformation to file ${newFilename} from ${originalFilename}`, { transform });
     } catch (err) {
-      logger.fileStorage.error(`Failed to apply transformation with file ${newFilename}`, { err });
+      logger.fileStorage.error(`Failed to apply transformation with file ${newFilename}`, { err, transform });
     }
 
     return [
@@ -207,23 +207,23 @@ class FileStorageService {
 
     Object.entries(transform).forEach(([method, options]) => {
       if (method === 'resize') {
-        const { width, height } = options as IImageTransform['resize'];
-        jimpHandle = jimpHandle.resize(width, height);
+        const { w, h } = options as IImageTransform['resize'];
+        jimpHandle = jimpHandle.resize(w, h);
       }
 
       if (method === 'cover') {
-        const { width, height } = options as IImageTransform['cover'];
-        jimpHandle = jimpHandle.cover(width, height);
+        const { w, h } = options as IImageTransform['cover'];
+        jimpHandle = jimpHandle.cover(w, h);
       }
 
       if (method === 'contain') {
-        const { width, height } = options as IImageTransform['contain'];
-        jimpHandle = jimpHandle.contain(width, height);
+        const { w, h } = options as IImageTransform['contain'];
+        jimpHandle = jimpHandle.contain(w, h);
       }
 
       if (method === 'scaleToFit') {
-        const { width, height } = options as IImageTransform['scaleToFit'];
-        jimpHandle = jimpHandle.scaleToFit(width, height);
+        const { w, h } = options as IImageTransform['scaleToFit'];
+        jimpHandle = jimpHandle.scaleToFit(w, h);
       }
 
       if (method === 'gaussian') {
@@ -241,6 +241,13 @@ class FileStorageService {
         if (greyscale === true) {
           jimpHandle = jimpHandle.grayscale();
         }
+      }
+
+      if (method === 'crop') {
+        const {
+          w, h, x, y,
+        } = options as IImageTransform['crop'];
+        jimpHandle = jimpHandle.crop(w, h, x, y);
       }
     });
 
