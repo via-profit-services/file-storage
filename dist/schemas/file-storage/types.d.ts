@@ -60,6 +60,10 @@ export interface IUploadFileInput {
 }
 export interface IFileStorageInitialProps {
     /**
+     * Host or hostname without protocol ang schema (`www.example.com`)
+     */
+    hostname: string;
+    /**
      * Prefix path (e.g. `/static`)
      * @see https://expressjs.com/ru/starter/static-files.html
      */
@@ -81,9 +85,10 @@ export interface IFileStorageInitialProps {
      */
     temporaryPath?: string;
     /**
-     * Host or hostname without protocol ang schema (`www.example.com`)
+     * TTL for cache files (`in sec.`)\
+     * The time after which the file will be deleted from the cache
      */
-    hostname?: string;
+    cacheTTL?: number;
     /**
      * Image maximum width
      */
@@ -156,13 +161,10 @@ export interface IImageTransform {
 export interface ITransformUrlPayload {
     /** File extension */
     ext: string;
-    mimeType: string;
     /** File original ID */
     id: string;
     /** Image transform options */
     transform: IImageTransform;
-    /** Image remote URL */
-    url?: string;
 }
 export interface IImgeData {
     payload: ITransformUrlPayload;
@@ -184,4 +186,9 @@ export interface IUploadLimits {
 export interface IUploadExpressMiddlewareProps {
     context: Context;
     limits?: Partial<IUploadLimits>;
+}
+export interface IRedisFileValue {
+    id: string;
+    filename: string;
+    exp: number;
 }

@@ -4,13 +4,26 @@ import Busboy from 'busboy';
 import { WriteStream } from 'fs-capacitor';
 
 import FileUploadInstance from './FileUploadInstance';
+import { getParams } from './paramsBuffer';
+import FileStorage from './service';
 import {
   IFilePayload, IUploadExpressMiddlewareProps, IUploadLimits, ExtendedContext,
 } from './types';
 
+let timeoutId: NodeJS.Timeout;
+
 const graphqlUploadExpress = (props: IUploadExpressMiddlewareProps) => {
   const { context, limits } = props;
+  const { cacheTTL } = getParams();
   const { logger } = context as ExtendedContext;
+  const fileStorage = new FileStorage({ context });
+
+  fileStorage.clearExpiredCacheFiles();
+  logger.fileStorage.info(`A timer is set for clearing the cache for ${cacheTTL} sec.`);
+  clearInterval(timeoutId);
+  timeoutId = setInterval(() => {
+    fileStorage.clearExpiredCacheFiles();
+  }, cacheTTL * 1000);
 
   return async (request: Express.Request, response: any, next: Express.NextFunction) => {
     if (!request.is('multipart/form-data')) {

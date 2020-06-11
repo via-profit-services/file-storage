@@ -20,11 +20,18 @@ import moment from 'moment-timezone';
 import rimraf from 'rimraf';
 import { v4 as uuidv4 } from 'uuid';
 
-import { REDIS_CACHE_NAME, TEMPORARY_FILE_EXPIRED_AT_MLSEC } from './constants';
+import {
+  REDIS_CACHE_NAME,
+  TEMPORARY_FILE_EXPIRED_AT_MLSEC,
+  IMAGE_TRANSFORM_MAX_BLUR,
+  IMAGE_TRANSFORM_MAX_GAUSSIAN,
+  IMAGE_TRANSFORM_MAX_HEIGHT,
+  IMAGE_TRANSFORM_MAX_WITH,
+} from './constants';
 import { getParams } from './paramsBuffer';
 import {
   IFileBag, IFileBagTable, IFileBagTableInput, FileType, IImageTransform, ITransformUrlPayload,
-  IImgeData, Context, ExtendedContext,
+  IImgeData, Context, ExtendedContext, IRedisFileValue,
 } from './types';
 import { FileStorage } from '.';
 
@@ -37,6 +44,64 @@ class FileStorageService {
 
   public constructor(props: IProps) {
     this.props = props;
+  }
+
+  public async clearExpiredCacheFiles() {
+    const { cacheAbsolutePath } = getParams();
+    const { redis, logger } = this.props.context as ExtendedContext;
+
+    const counter = {
+      allFiles: 0,
+      deletedFiles: 0,
+    };
+    const allFiles = await redis.hgetall(REDIS_CACHE_NAME);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    Object.entries(allFiles).forEach(async ([hash, payloadStr]) => {
+      let payload: IRedisFileValue;
+      counter.allFiles += 1;
+
+      try {
+        payload = JSON.parse(payloadStr) as IRedisFileValue;
+      } catch (err) {
+        logger.fileStorage.error('Cache clean. Failed to decode transform JSON', { err });
+      }
+
+      try {
+        const { exp, filename } = payload;
+        if (new Date().getTime() > exp) {
+          const fullFilenamePath = path.resolve(cacheAbsolutePath, filename);
+          const dirname = path.dirname(fullFilenamePath);
+          const dirnamePrev = path.resolve(dirname, '..');
+          if (fs.existsSync(fullFilenamePath)) {
+            // remove file from fs
+            fs.unlinkSync(fullFilenamePath);
+
+            // remove file from redis
+            redis.hdel(REDIS_CACHE_NAME, hash);
+
+            counter.deletedFiles += 1;
+
+            // remove directory if is empty
+            if (!fs.readdirSync(dirname).length) {
+              fs.rmdirSync(dirname);
+            }
+
+            // remove subdirectory if is empty
+            if (!fs.readdirSync(dirnamePrev).length) {
+              fs.rmdirSync(dirnamePrev);
+            }
+          }
+        }
+      } catch (err) {
+        logger.fileStorage.error('Cache clean. Failed to delete cache file', { err });
+      }
+    });
+
+    if (counter.allFiles > 0) {
+      logger.fileStorage.info(`Cache clean. Deleted ${counter.deletedFiles} from ${counter.allFiles}`);
+    } else {
+      logger.fileStorage.info('Cache clean. There are no files to delete');
+    }
   }
 
   public async clearCache() {
@@ -73,10 +138,21 @@ class FileStorageService {
     }
   }
 
+
   public async checkFileInCache(imageDataHash: string) {
-    const { redis } = this.props.context;
+    const { redis, logger } = this.props.context as ExtendedContext;
     const res = await redis.hget(REDIS_CACHE_NAME, imageDataHash);
-    return res;
+
+    if (res) {
+      try {
+        const payload = JSON.parse(res) as IRedisFileValue;
+        return payload;
+      } catch (err) {
+        logger.fileStorage.error('Failed to parse payload', { err, imageDataHash });
+        return null;
+      }
+    }
+    return null;
   }
 
   public async saveImageIntoTheCache(imageData: IImgeData, imageBuffer: Buffer) {
@@ -94,7 +170,24 @@ class FileStorageService {
       fs.mkdirSync(dirname, { recursive: true });
     }
     fs.writeFileSync(absoluteFilename, imageBuffer);
-    await redis.hset(REDIS_CACHE_NAME, token, absoluteFilename);
+    await redis.hset(
+      REDIS_CACHE_NAME,
+      token,
+      this.compilePayloadString(payload.id, absoluteFilename),
+    );
+  }
+
+
+  public compilePayloadString(id: string, filename: string) {
+    const { cacheTTL } = getParams();
+    const exp = (new Date().getTime() + (cacheTTL * 1000));
+    const payload: IRedisFileValue = {
+      id,
+      filename,
+      exp,
+    };
+
+    return JSON.stringify(payload);
   }
 
   public async getUrlWithTransform(
@@ -106,7 +199,10 @@ class FileStorageService {
       hostname, cacheDelimiter, staticPrefix, cacheAbsolutePath, storageAbsolutePath,
     } = getParams();
     const {
-      url, id, mimeType, isLocalFile,
+      url,
+      id,
+      mimeType,
+      isLocalFile,
     } = imageData;
 
     const ext = FileStorageService.getExtensionByMimeType(mimeType);
@@ -114,7 +210,6 @@ class FileStorageService {
     const hashPayload: ITransformUrlPayload = {
       id,
       ext,
-      mimeType,
       transform,
     };
 
@@ -126,14 +221,13 @@ class FileStorageService {
     const imageUrlHash = Buffer.from(JSON.stringify(hashPayload), 'utf8').toString('base64');
 
     // check redis cache
-    const inCache = await redis.hget(REDIS_CACHE_NAME, imageUrlHash);
-
+    const inCache = await this.checkFileInCache(imageUrlHash);
 
     if (inCache) {
       return [
         `${hostname}${staticPrefix}`,
         cacheDelimiter,
-        `${inCache}`,
+        `${inCache.filename}`,
       ].join('/');
     }
 
@@ -152,18 +246,14 @@ class FileStorageService {
     }
 
     // copy file for transform operation
-    fs.copyFile(absoluteOriginalFilename, absoluteFilename, () => {
-      redis.hset(REDIS_CACHE_NAME, imageUrlHash, newFilename);
-    });
+    fs.copyFileSync(absoluteOriginalFilename, absoluteFilename);
+    redis.hset(REDIS_CACHE_NAME, imageUrlHash, this.compilePayloadString(id, newFilename));
 
-    // no wait this promise
     try {
       this.applyTransform(absoluteFilename, transform);
-      logger.fileStorage.debug(`Apply transformation to file ${newFilename} from ${originalFilename}`, { transform });
     } catch (err) {
       logger.fileStorage.error(`Failed to apply transformation with file ${newFilename}`, { err, transform });
     }
-
     return [
       `${hostname}${staticPrefix}`,
       cacheDelimiter,
@@ -203,37 +293,65 @@ class FileStorageService {
   }
 
   public async applyTransform(filepath: string, transform: IImageTransform) {
+    if (!fs.existsSync(filepath)) {
+      const { logger } = this.props.context as ExtendedContext;
+      logger.fileStorage.error(`Transform error. File «${filepath}» not found`);
+      return;
+    }
+
+    if (!fs.readFileSync(filepath)) {
+      const { logger } = this.props.context as ExtendedContext;
+      logger.fileStorage.error(`Transform error. File «${filepath}» not readable`);
+      return;
+    }
+
     let jimpHandle = await Jimp.read(filepath);
 
     Object.entries(transform).forEach(([method, options]) => {
       if (method === 'resize') {
         const { w, h } = options as IImageTransform['resize'];
-        jimpHandle = jimpHandle.resize(w, h);
+        jimpHandle = jimpHandle.resize(
+          Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
+          Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
+        );
       }
 
       if (method === 'cover') {
         const { w, h } = options as IImageTransform['cover'];
-        jimpHandle = jimpHandle.cover(w, h);
+        jimpHandle = jimpHandle.cover(
+          Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
+          Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
+        );
       }
 
       if (method === 'contain') {
         const { w, h } = options as IImageTransform['contain'];
-        jimpHandle = jimpHandle.contain(w, h);
+        jimpHandle = jimpHandle.contain(
+          Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
+          Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
+        );
       }
 
       if (method === 'scaleToFit') {
         const { w, h } = options as IImageTransform['scaleToFit'];
-        jimpHandle = jimpHandle.scaleToFit(w, h);
+        jimpHandle = jimpHandle.scaleToFit(
+          Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
+          Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
+        );
       }
 
       if (method === 'gaussian') {
         const gaussian = options as IImageTransform['gaussian'];
-        jimpHandle = jimpHandle.gaussian(gaussian);
+        jimpHandle = jimpHandle.gaussian(
+          Math.min(gaussian, IMAGE_TRANSFORM_MAX_GAUSSIAN),
+        );
       }
 
       if (method === 'blur') {
         const blur = options as IImageTransform['blur'];
-        jimpHandle = jimpHandle.gaussian(blur);
+        jimpHandle = jimpHandle.blur(
+          Math.min(blur, IMAGE_TRANSFORM_MAX_BLUR),
+        );
       }
 
       if (method === 'greyscale') {
@@ -247,10 +365,14 @@ class FileStorageService {
         const {
           w, h, x, y,
         } = options as IImageTransform['crop'];
-        jimpHandle = jimpHandle.crop(w, h, x, y);
+        jimpHandle = jimpHandle.crop(
+          Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
+          Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
+          Math.min(x, IMAGE_TRANSFORM_MAX_WITH),
+          Math.min(y, IMAGE_TRANSFORM_MAX_HEIGHT),
+        );
       }
     });
-
     await jimpHandle.writeAsync(filepath);
   }
 
@@ -604,6 +726,40 @@ class FileStorageService {
 
     return results;
   }
+
+  // public async deleteCacheFiles(ids: string[]): Promise<string[]> {
+  //   const { cacheDelimiter, rootPath } = getParams();
+
+
+  //   ids.forEach((id) => {
+  //     const filename = FileStorage.getFilenameFromUuid(id, cacheDelimiter);
+  //     const ext = FileStorage.getExtensionByMimeType(fileData.mimeType);
+  //     const fullFilenamePath = path.resolve(rootPath, `${filename}.${ext}`);
+  //     const dirname = path.dirname(filename);
+  //     const dirnamePrev = path.resolve(dirname, '..');
+
+  //     try {
+  //       // remove file
+  //       if (fs.existsSync(fullFilenamePath)) {
+  //         fs.unlinkSync(fullFilenamePath);
+
+  //         // remove directory if is empty
+  //         if (!fs.readdirSync(dirname).length) {
+  //           fs.rmdirSync(dirname);
+  //         }
+
+  //         // remove subdirectory if is empty
+  //         if (!fs.readdirSync(dirnamePrev).length) {
+  //           fs.rmdirSync(dirnamePrev);
+  //         }
+  //       }
+  //     } catch (err) {
+  //       throw new ServerError(`
+  //             Failed to delete file ${id} in path ${fullFilenamePath}`,
+  //       { err });
+  //     }
+  //   });
+  // }
 }
 
 

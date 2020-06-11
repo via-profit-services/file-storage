@@ -1,4 +1,18 @@
 import path from 'path';
+
+import {
+  CACHE_FILES_DEFAULT_TTL,
+  DEFAULT_IMAGE_OPTIM_MAX_WIDTH,
+  DEFAULT_IMAGE_OPTIM_MAX_HEIGHT,
+  DEFAULT_STORAGE_PATH,
+  DEFAULT_CACHE_PATH,
+  DEFAULT_TEMPORARY_PATH,
+  DEFAULT_STATIC_PREFIX,
+  DEFAULT_CACHE_DELIMITER,
+  DEFAULT_STATIC_DELIMITER,
+  DEFAULT_TEMPORARY_DELIMITER,
+  TIMEOUT_MAX_VALUE,
+} from './constants';
 import { IFileStorageInitialProps, IFileStorageParams } from './types';
 
 interface IParamsBuffer {
@@ -12,21 +26,22 @@ const rootPath = isDev
 
 const paramsBuffer: IParamsBuffer = {
   params: {
-    storagePath: './public/fileStorage/files',
-    cachePath: './public/fileStorage/cache',
-    temporaryPath: './public/fileStorage/temp',
-    staticPrefix: '/static',
-    hostname: 'http://localhost:80',
+    storagePath: DEFAULT_STORAGE_PATH,
+    cachePath: DEFAULT_CACHE_PATH,
+    temporaryPath: DEFAULT_TEMPORARY_PATH,
+    staticPrefix: DEFAULT_STATIC_PREFIX,
+    cacheTTL: CACHE_FILES_DEFAULT_TTL,
+    imageOptimMaxWidth: DEFAULT_IMAGE_OPTIM_MAX_WIDTH,
+    imageOptimMaxHeight: DEFAULT_IMAGE_OPTIM_MAX_HEIGHT,
+    staticDelimiter: DEFAULT_STATIC_DELIMITER,
+    cacheDelimiter: DEFAULT_CACHE_DELIMITER,
+    temporaryDelimiter: DEFAULT_TEMPORARY_DELIMITER,
+    rootPath,
+    hostname: '',
     staticPrefixAbsolutePath: '',
     storageAbsolutePath: '',
     cacheAbsolutePath: '',
     temporaryAbsolutePath: '',
-    rootPath,
-    imageOptimMaxWidth: 800,
-    imageOptimMaxHeight: 600,
-    staticDelimiter: 's',
-    cacheDelimiter: 'c',
-    temporaryDelimiter: 't',
     compressionOptions: {
       mozJpeg: { quality: 70 },
       pngQuant: { quality: [0.8, 0.8] },
@@ -42,6 +57,10 @@ export const setParams = (params?: Partial<IFileStorageInitialProps>) => {
     ...params,
   };
 
+  // fuse for timout max value
+  paramsBuffer.params.cacheTTL = Math.min(TIMEOUT_MAX_VALUE / 1000, params.cacheTTL);
+
+  // resolve absolute paths
   paramsBuffer.params = {
     ...paramsBuffer.params,
     staticPrefixAbsolutePath: path.resolve(rootPath, paramsBuffer.params.staticPrefix),

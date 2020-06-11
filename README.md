@@ -4,7 +4,6 @@
 
 > Via Profit services / **File-Storage** - это пакет, который является частью сервиса, базирующегося на `via-profit-services` и представляет собой реализацию схемы для хранения каких-либо файлов, изображений и прочих документов.
 
-
 ## TODO
 
 - [ ] трансформации типа Crop и кадрирование при создании изоражения
@@ -31,7 +30,7 @@
 ### Установка
 
 ```bash
-yarn add ssh://git@gitlab.com:via-profit-services/file-storage.git#semver:^0.10.0
+yarn add ssh://git@gitlab.com:via-profit-services/file-storage.git#semver:^0.11.0
 ```
 
 Список версий [см. здесь](https://gitlab.com/via-profit-services/file-storage/-/tags)
@@ -50,9 +49,9 @@ yarn knex:migrate:latest
 
 Модуль определяет скалярный тип **FileUpload** для представления загружаемого файла согласно спецификации [GraphQL multipart request specification](https://github.com/jaydenseric/graphql-multipart-request-spec)\_. Помимо самого скаляра FileUpload, модуль модифицирует GraphQL запрос таким образом, что в конечный резолвер будет передан объект `files` в виде аргумента, который будет содержать массив промисов. Каждый промис - это загружаемый файл, который резолвит объект содержащий:
 
- - createReadStream - WriteStream  из [fs-capacitor](https://github.com/mike-marcacci/fs-capacitor#readme)
- - mimeType - Тип файла
- - filename - Имя файла
+- createReadStream - WriteStream из [fs-capacitor](https://github.com/mike-marcacci/fs-capacitor#readme)
+- mimeType - Тип файла
+- filename - Имя файла
 
 Для чтения файла необходимо вызвать функцию `createReadStream` полученную из промиса. Функция вернет ReadStram, расширенный от [NodeJS ReadStream](https://nodejs.org/api/stream.html#stream_new_stream_readable_options)
 
@@ -66,7 +65,6 @@ _./schema.graphql_
 extend type Mutation {
   upload(files: [FileUpload!]!): File!
 }
-
 ```
 
 _./resolvers.ts_
@@ -88,7 +86,7 @@ const resolvers: IResolvers<any, IContext> = {
       const filesData = await Promise.all(files);
       const fileStorage = new FileStorage({ context });
 
-      filesData.map(async (file) => {
+      filesData.map(async file => {
         const { createReadStream, mimeType } = file;
         const fileData = await fileStorage.createFile(createReadStream(), {
           category: 'photo',
@@ -190,17 +188,16 @@ app.bootstrap();
 
 ## <a name="options"></a> Параметры
 
-| Параметр                                                   |  Тип   | Обязательный | По умолчанию                 | Описание                                                                                                                                                                                                                       |
-| ---------------------------------------------------------- | :----: | :----------: | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| staticPrefix                                               | string |     Нет      | `/static`                    | Префикс статического пути (подробнее [https://expressjs.com/ru/starter/static-files.html](https://expressjs.com/ru/starter/static-files.html))                                                                                 |
-| <a name="options-storagePath"></a>storagePath              | string |     Нет      | `./public/fileStorage/files` | Путь до директории статических файлов. Не используйте абсолютный путь - только относительный (подробнее [https://expressjs.com/ru/starter/static-files.html](https://expressjs.com/ru/starter/static-files.html))              |
-| <a name="options-cachePath"></a>cachePath                  | string |     Нет      | `./public/fileStorage/cache` | Путь до директории хранения кэша. Не используйте абсолютный путь - только относительный                                                                                                                                        |
-| hostname                                                   | string |     Нет      | `http://localhost:80`        | Имя хоста для формирования URL-адреса файлов                                                                                                                                                                                   |
-| imageOptimMaxWidth                                         | number |     Нет      | `800`                        | Максимально допустимая ширина изображения. Все загружаемые изображения будут уменьшены до данного значения, но только в том случае, если ширина изображения превышает заданную величину                                        |
-| imageOptimMaxHeight                                        | number |     Нет      | `600`                        | Максимально допустимая высота изображения. Все загружаемые изображения будут уменьшены до данного значения, но только в том случае, если высота изображения превышает заданную величину                                        |
-| compressionOptions                                         | object |     Нет      |                              | Объект настроек imagemin плагинов                                                                                                                                                                                              |
-| compressionOptions.mozJpeg                                 | object |     Нет      | `{ quality: 70 }`            | [https://github.com/imagemin/imagemin-mozjpeg#readme](https://github.com/imagemin/imagemin-mozjpeg#readme)                                                                                                                     |
-| compressionOptions.pngQuant                                | object |     Нет      | `{ quality: [0.8, 0.8] }`    | [https://github.com/imagemin/imagemin-optipng#readme](https://github.com/imagemin/imagemin-optipng#readme)                                                                                                                     |
-| compressionOptions.optiPng                                 | object |     Нет      | `{ optimizationLevel: 3 }`   | [https://github.com/imagemin/imagemin-pngquant#readme](https://github.com/imagemin/imagemin-pngquant#readme)                                                                                                                   |
-
-
+| Параметр                                      |  Тип   | Обязательный | По умолчанию                 | Описание                                                                                                                                                                                                          |
+| --------------------------------------------- | :----: | :----------: | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| hostname                                      | string |      Дв      | `http://localhost:80`        | Имя хоста для формирования URL-адреса файлов                                                                                                                                                                      |
+| cacheTTL                                      | number |     Нет      | 86400                        | Время жизни файлов в кэше. По истечению указанного времени файл будет удален из кэша                                                                                                                              |
+| staticPrefix                                  | string |     Нет      | `/static`                    | Префикс статического пути (подробнее [https://expressjs.com/ru/starter/static-files.html](https://expressjs.com/ru/starter/static-files.html))                                                                    |
+| <a name="options-storagePath"></a>storagePath | string |     Нет      | `./public/fileStorage/files` | Путь до директории статических файлов. Не используйте абсолютный путь - только относительный (подробнее [https://expressjs.com/ru/starter/static-files.html](https://expressjs.com/ru/starter/static-files.html)) |
+| <a name="options-cachePath"></a>cachePath     | string |     Нет      | `./public/fileStorage/cache` | Путь до директории хранения кэша. Не используйте абсолютный путь - только относительный                                                                                                                           |
+| imageOptimMaxWidth                            | number |     Нет      | `800`                        | Максимально допустимая ширина изображения. Все загружаемые изображения будут уменьшены до данного значения, но только в том случае, если ширина изображения превышает заданную величину                           |
+| imageOptimMaxHeight                           | number |     Нет      | `600`                        | Максимально допустимая высота изображения. Все загружаемые изображения будут уменьшены до данного значения, но только в том случае, если высота изображения превышает заданную величину                           |
+| compressionOptions                            | object |     Нет      |                              | Объект настроек imagemin плагинов                                                                                                                                                                                 |
+| compressionOptions.mozJpeg                    | object |     Нет      | `{ quality: 70 }`            | [https://github.com/imagemin/imagemin-mozjpeg#readme](https://github.com/imagemin/imagemin-mozjpeg#readme)                                                                                                        |
+| compressionOptions.pngQuant                   | object |     Нет      | `{ quality: [0.8, 0.8] }`    | [https://github.com/imagemin/imagemin-optipng#readme](https://github.com/imagemin/imagemin-optipng#readme)                                                                                                        |
+| compressionOptions.optiPng                    | object |     Нет      | `{ optimizationLevel: 3 }`   | [https://github.com/imagemin/imagemin-pngquant#readme](https://github.com/imagemin/imagemin-pngquant#readme)                                                                                                      |

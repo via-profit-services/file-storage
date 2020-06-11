@@ -1,17 +1,19 @@
 /// <reference types="node" />
 import fs, { ReadStream } from 'fs';
 import { IListResponse, TOutputFilter } from '@via-profit-services/core';
-import { IFileBag, IFileBagTableInput, FileType, IImageTransform, IImgeData, Context } from './types';
+import { IFileBag, IFileBagTableInput, FileType, IImageTransform, IImgeData, Context, IRedisFileValue } from './types';
 interface IProps {
     context: Context;
 }
 declare class FileStorageService {
     props: IProps;
     constructor(props: IProps);
+    clearExpiredCacheFiles(): Promise<void>;
     clearCache(): Promise<void>;
     clearTemporary(): Promise<void>;
-    checkFileInCache(imageDataHash: string): Promise<string>;
+    checkFileInCache(imageDataHash: string): Promise<IRedisFileValue>;
     saveImageIntoTheCache(imageData: IImgeData, imageBuffer: Buffer): Promise<void>;
+    compilePayloadString(id: string, filename: string): string;
     getUrlWithTransform(imageData: Pick<IFileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>, transform: IImageTransform): Promise<string>;
     /**
      * Returns Full filename without extension (e.g. /path/to/file)
