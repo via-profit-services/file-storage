@@ -128,20 +128,26 @@ export declare type IFileStorageParams = IFileStorageInitialProps & {
 };
 export interface IImageTransform {
     resize: {
-        width: number;
-        height: number;
+        w: number;
+        h: number;
     };
     cover: {
-        width: number;
-        height: number;
+        w: number;
+        h: number;
     };
     contain: {
-        width: number;
-        height: number;
+        w: number;
+        h: number;
     };
     scaleToFit: {
-        width: number;
-        height: number;
+        w: number;
+        h: number;
+    };
+    crop: {
+        w: number;
+        h: number;
+        x: number;
+        y: number;
     };
     gaussian: number;
     blur: number;

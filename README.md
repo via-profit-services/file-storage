@@ -31,7 +31,7 @@
 ### Установка
 
 ```bash
-yarn add ssh://git@gitlab.com:via-profit-services/file-storage.git#semver:^0.9.1
+yarn add ssh://git@gitlab.com:via-profit-services/file-storage.git#semver:^0.10.0
 ```
 
 Список версий [см. здесь](https://gitlab.com/via-profit-services/file-storage/-/tags)
@@ -115,14 +115,14 @@ curl http://localhost:3005/graphql \
   -F 0=@/path/to/file.txt
 ```
 
-В экспортируемой схеме присутствуют GraphQL типы `File` и `Image`. Эти типы содержат информацию о загруженных файлах. При запросе изображений возможно применить модификаторы трансформаций, например:
+В экспортируемой схеме присутствуют GraphQL типы `File`. Этот тип содержат информацию о загруженном файле. При запросе изображений возможно применить модификаторы трансформаций, например:
 
 ```graphql
 query {
   fileStorage {
-    image(
+    file(
       id: "be44e49f-2318-45cc-9e3c-47f1aee91f4d"
-      transform: { blur: 4, greyscale: true, scaleToFit: { width: 300, height: 300 } }
+      transform: { blur: 4, greyscale: true, scaleToFit: { w: 300, h: 300 } }
     ) {
       url
     }

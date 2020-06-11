@@ -63,7 +63,7 @@ declare class FileStorageService {
         id: string;
         absoluteFilename: string;
     }>;
-    deleteFiles(ids: string[]): Promise<string[]>;
+    deleteStaticFiles(ids: string[]): Promise<string[]>;
 }
 export default FileStorageService;
 export { FileStorageService };
