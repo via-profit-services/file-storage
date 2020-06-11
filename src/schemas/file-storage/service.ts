@@ -203,6 +203,18 @@ class FileStorageService {
   }
 
   public async applyTransform(filepath: string, transform: IImageTransform) {
+    if (!fs.existsSync(filepath)) {
+      const { logger } = this.props.context as ExtendedContext;
+      logger.fileStorage.error(`Transform error. File «${filepath}» not found`);
+      return;
+    }
+
+    if (!fs.readFileSync(filepath)) {
+      const { logger } = this.props.context as ExtendedContext;
+      logger.fileStorage.error(`Transform error. File «${filepath}» not readable`);
+      return;
+    }
+
     let jimpHandle = await Jimp.read(filepath);
 
     Object.entries(transform).forEach(([method, options]) => {
