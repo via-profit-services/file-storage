@@ -726,40 +726,6 @@ class FileStorageService {
 
     return results;
   }
-
-  // public async deleteCacheFiles(ids: string[]): Promise<string[]> {
-  //   const { cacheDelimiter, rootPath } = getParams();
-
-
-  //   ids.forEach((id) => {
-  //     const filename = FileStorage.getFilenameFromUuid(id, cacheDelimiter);
-  //     const ext = FileStorage.getExtensionByMimeType(fileData.mimeType);
-  //     const fullFilenamePath = path.resolve(rootPath, `${filename}.${ext}`);
-  //     const dirname = path.dirname(filename);
-  //     const dirnamePrev = path.resolve(dirname, '..');
-
-  //     try {
-  //       // remove file
-  //       if (fs.existsSync(fullFilenamePath)) {
-  //         fs.unlinkSync(fullFilenamePath);
-
-  //         // remove directory if is empty
-  //         if (!fs.readdirSync(dirname).length) {
-  //           fs.rmdirSync(dirname);
-  //         }
-
-  //         // remove subdirectory if is empty
-  //         if (!fs.readdirSync(dirnamePrev).length) {
-  //           fs.rmdirSync(dirnamePrev);
-  //         }
-  //       }
-  //     } catch (err) {
-  //       throw new ServerError(`
-  //             Failed to delete file ${id} in path ${fullFilenamePath}`,
-  //       { err });
-  //     }
-  //   });
-  // }
 }
 
 

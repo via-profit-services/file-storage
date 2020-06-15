@@ -37,15 +37,14 @@ const UploadFilesResolver: IFieldResolver<any, ExtendedContext, TArgs> = async (
       { uuid, mimeType },
     );
 
-    const returnData: {id: string; transform?: IImageTransform} = {
-      id,
-    };
 
     if (transform && transform[index]) {
-      returnData.transform = transform[index];
+      await fileService.applyTransform(absoluteFilename, transform[index]);
     }
 
-    return returnData;
+    return {
+      id,
+    };
   });
 
   return Promise.all(savePromises);
