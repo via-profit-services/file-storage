@@ -11,7 +11,7 @@ type FileStorageMutation {
   """
   Delete files by IDs
   """
-  delete(ids: [ID!]!): Boolean
+  delete(ids: [ID!] owners: [ID!]): Boolean
   
   """
   Upload files
