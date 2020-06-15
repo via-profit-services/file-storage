@@ -366,10 +366,10 @@ class FileStorageService {
           w, h, x, y,
         } = options as IImageTransform['crop'];
         jimpHandle = jimpHandle.crop(
-          Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
-          Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
           Math.min(x, IMAGE_TRANSFORM_MAX_WITH),
           Math.min(y, IMAGE_TRANSFORM_MAX_HEIGHT),
+          Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
+          Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
         );
       }
     });
