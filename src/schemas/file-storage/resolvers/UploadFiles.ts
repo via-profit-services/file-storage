@@ -26,11 +26,10 @@ const UploadFilesResolver: IFieldResolver<any, ExtendedContext, TArgs> = async (
 
   const savePromises = filesData.map(async (file, index) => {
     const { createReadStream, mimeType, filename } = file;
-
     const { id, absoluteFilename } = await fileService.createFile(createReadStream(), {
       mimeType,
       ...info[index],
-    }, noCompress);
+    }, Boolean(noCompress || (transform && transform[index])));
 
     logger.fileStorage.info(
       `File «${filename}» uploaded successfully as «${absoluteFilename}»`,

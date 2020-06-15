@@ -638,7 +638,13 @@ class FileStorageService {
             const { imageOptimMaxWidth, imageOptimMaxHeight } = getParams();
             Jimp.read(absoluteFilename)
               .then((image) => {
-                return image.scaleToFit(imageOptimMaxWidth, imageOptimMaxHeight);
+                if (
+                  !noCompress
+                  || (image.getWidth() < imageOptimMaxWidth && image.getHeight() < imageOptimMaxHeight)
+                ) {
+                  return image.scaleToFit(imageOptimMaxWidth, imageOptimMaxHeight);
+                }
+                return image;
               })
               .then((image) => {
                 return image.writeAsync(absoluteFilename);
