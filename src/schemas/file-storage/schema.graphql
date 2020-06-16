@@ -190,10 +190,10 @@ type File implements FileNode & Node {
 type TemporaryFile {
   id: ID!
   owner: ID!
-  url: String!
   type: FileType!
   category: String!
   mimeType: String!
+  url: URL!
   description: String
   metaData: JSON
 }
