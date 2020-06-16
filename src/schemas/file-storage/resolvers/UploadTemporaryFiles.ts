@@ -2,21 +2,19 @@ import { IFieldResolver } from 'graphql-tools';
 
 import FileStorage from '../service';
 import {
-  IUploadFileInput, ExtendedContext, IFile, IImageTransform,
+  IUploadFileInput, ExtendedContext, IFile,
 } from '../types';
 
 interface TArgs {
   files: IFile[];
   info: IUploadFileInput[];
-  transform?: IImageTransform[];
-  noCompress?: boolean;
 }
 
-const UploadFilesResolver: IFieldResolver<any, ExtendedContext, TArgs> = async (
+const UploadTemporaryFilesResolver: IFieldResolver<any, ExtendedContext, TArgs> = async (
   parent, args, context,
 ) => {
   const {
-    files, info, noCompress, transform,
+    files, info,
   } = args;
   const { logger, token } = context;
   const { uuid } = token;
@@ -28,29 +26,20 @@ const UploadFilesResolver: IFieldResolver<any, ExtendedContext, TArgs> = async (
     const { createReadStream, mimeType, filename } = file;
 
     const stream = createReadStream();
-    const options = {
-      noCompress: Boolean(noCompress || (transform && transform[index])),
-    };
     const fileInfo = {
       mimeType: FileStorage.resolveMimeType(filename, mimeType),
       ...info[index],
     };
 
-    const { id, absoluteFilename } = await fileService.createFile(
+    const { id, absoluteFilename } = await fileService.createTemporaryFile(
       stream,
       fileInfo,
-      options,
     );
 
     logger.fileStorage.info(
-      `File «${filename}» uploaded successfully as «${absoluteFilename}»`,
+      `Temporary file «${filename}» uploaded successfully as «${absoluteFilename}»`,
       { uuid, mimeType },
     );
-
-
-    if (transform && transform[index]) {
-      await fileService.applyTransform(absoluteFilename, transform[index]);
-    }
 
     return {
       id,
@@ -60,4 +49,4 @@ const UploadFilesResolver: IFieldResolver<any, ExtendedContext, TArgs> = async (
   return Promise.all(savePromises);
 };
 
-export default UploadFilesResolver;
+export default UploadTemporaryFilesResolver;

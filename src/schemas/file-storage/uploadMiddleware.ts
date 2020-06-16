@@ -10,20 +10,30 @@ import {
   IFilePayload, IUploadExpressMiddlewareProps, IUploadLimits, ExtendedContext,
 } from './types';
 
-let timeoutId: NodeJS.Timeout;
+let cacheTimeoutId: NodeJS.Timeout;
+let temporaryTimeoutId: NodeJS.Timeout;
 
 const graphqlUploadExpress = (props: IUploadExpressMiddlewareProps) => {
   const { context, limits } = props;
-  const { cacheTTL } = getParams();
+  const { cacheTTL, temporaryTTL } = getParams();
   const { logger } = context as ExtendedContext;
   const fileStorage = new FileStorage({ context });
 
+  // cache clean
   fileStorage.clearExpiredCacheFiles();
   logger.fileStorage.info(`A timer is set for clearing the cache for ${cacheTTL} sec.`);
-  clearInterval(timeoutId);
-  timeoutId = setInterval(() => {
+  clearInterval(cacheTimeoutId);
+  cacheTimeoutId = setInterval(() => {
     fileStorage.clearExpiredCacheFiles();
   }, cacheTTL * 1000);
+
+  // temporary clean
+  fileStorage.clearExpiredTemporaryFiles();
+  logger.fileStorage.info(`A timer is set for clearing the temporary for ${temporaryTTL} sec.`);
+  clearInterval(temporaryTimeoutId);
+  temporaryTimeoutId = setInterval(() => {
+    fileStorage.clearExpiredTemporaryFiles();
+  }, temporaryTTL * 1000);
 
   return async (request: Express.Request, response: any, next: Express.NextFunction) => {
     if (!request.is('multipart/form-data')) {
