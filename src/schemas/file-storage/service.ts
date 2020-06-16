@@ -703,8 +703,8 @@ class FileStorageService {
 
     const id = fileInfo.id || uuidv4();
     const ext = FileStorageService.getExtensionByMimeType(fileInfo.mimeType);
+    const type = FileStorageService.getFileTypeByMimeType(fileInfo.mimeType);
     const filename = `${FileStorageService.getPathFromUuid(id)}.${ext}`;
-
 
     const absoluteFilename = path.join(temporaryAbsolutePath, filename);
     const dirname = path.dirname(absoluteFilename);
@@ -714,7 +714,10 @@ class FileStorageService {
       id,
       filename,
       exp,
-      fileInfo,
+      fileInfo: {
+        ...fileInfo,
+        type,
+      },
     };
 
     return new Promise((resolve) => {
