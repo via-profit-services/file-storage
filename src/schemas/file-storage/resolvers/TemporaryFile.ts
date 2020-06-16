@@ -12,6 +12,7 @@ interface IParent {
 
 const TemporaryFileResolver: IResolverObject<IParent, Context, any> = new Proxy({
   id: () => ({}),
+  url: () => ({}),
   owner: () => ({}),
   category: () => ({}),
   mimeType: () => ({}),
