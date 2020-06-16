@@ -29,7 +29,6 @@ export interface IFileBag {
     metaData?: Object | Array<any>;
     description?: string;
 }
-export declare type ITemporaryFileBag = Omit<IFileBag, 'createdAt' | 'updatedAt'>;
 export declare type IFileBagTable = IFileBag & {
     totalCount: number;
 };
