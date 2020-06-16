@@ -547,9 +547,57 @@ class FileStorageService {
     return FileStorageService.getMimeTypeByExtension(filename);
   }
 
+  public async getTemporaryFileStream(fileInfo: {
+    id?: string;
+    mimeType: string;
+    expireAt?: number,
+    }): Promise<{
+      stream: fs.WriteStream;
+      file: ITemporaryFileBag;
+      expireAt: Date;
+    }> {
+    const { timezone } = this.props.context;
+    const { temporaryAbsolutePath, temporaryTTL } = getParams();
+    const id = fileInfo.id || uuidv4();
+
+    const expireAt = fileInfo.expireAt || temporaryTTL;
+    const filename = FileStorage.getPathFromUuid(id);
+    const absoluteFilename = path.join(temporaryAbsolutePath, filename);
+
+    const readStream = fs.createReadStream(absoluteFilename);
+    await this.createTemporaryFile(readStream, {
+      id,
+      isLocalFile: true,
+      mimeType: fileInfo.mimeType,
+      category: 'temporary',
+      type: FileType.document,
+      owner: uuidv4(),
+    }, expireAt);
+    const file = await this.getTemporaryFile(id);
+
+    if (!file) {
+      throw new ServerError('Failed to create temporary file stream');
+    }
+
+
+    if (!fs.existsSync(absoluteFilename)) {
+      throw new ServerError('Failed to create temporary file stream');
+    }
+
+    const stream = fs.createWriteStream(absoluteFilename);
+
+    return {
+      stream,
+      file,
+      expireAt: moment.tz(timezone).add(expireAt, 'seconds').toDate(),
+    };
+  }
+
   public async getTemporaryFile(id: string): Promise<ITemporaryFileBag | false> {
     const { redis, logger } = this.props.context as ExtendedContext;
-    const { temporaryAbsolutePath } = getParams();
+    const {
+      temporaryAbsolutePath, hostname, temporaryDelimiter, staticPrefix,
+    } = getParams();
     const payloadStr = await redis.hget(REDIS_TEMPORARY_NAME, id);
     let payload: IRedisTemporaryValue;
 
@@ -567,6 +615,7 @@ class FileStorageService {
     const { fileInfo } = payload;
     return {
       id,
+      url: `${hostname}${staticPrefix}/${temporaryDelimiter}/${payload.filename}`,
       ...fileInfo,
     };
   }
@@ -646,8 +695,9 @@ class FileStorageService {
   public async createTemporaryFile(
     fileStream: ReadStream,
     fileInfo: IUploadFileInput,
+    expireAt?: number,
   ): Promise<{id: string; absoluteFilename: string; }> {
-    const { temporaryAbsolutePath } = getParams();
+    const { temporaryAbsolutePath, temporaryTTL } = getParams();
     const { redis } = this.props.context;
 
     const id = fileInfo.id || uuidv4();
@@ -657,8 +707,7 @@ class FileStorageService {
 
     const absoluteFilename = path.join(temporaryAbsolutePath, filename);
     const dirname = path.dirname(absoluteFilename);
-    const tmpCacheTTL = 15;
-    const exp = (new Date().getTime() + (tmpCacheTTL * 1000));
+    const exp = (new Date().getTime() + ((expireAt || temporaryTTL) * 1000));
     const token = id;
     const payload: IRedisTemporaryValue = {
       id,

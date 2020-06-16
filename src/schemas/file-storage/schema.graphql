@@ -193,6 +193,7 @@ type TemporaryFile {
   type: FileType!
   category: String!
   mimeType: String!
+  url: URL!
   description: String
   metaData: JSON
 }
