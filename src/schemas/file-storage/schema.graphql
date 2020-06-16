@@ -48,7 +48,7 @@ type FileStorageMutation {
   uploadTemporary (
     files: [FileUpload!]!
     info: [FileUploadInfo!]!
-  ): [TemporaryFile!]
+  ): [File!]
 
   """
   Move your data from temporary directory into the permanent state
@@ -227,16 +227,6 @@ type File implements FileNode & Node {
   metaData: JSON
 }
 
-type TemporaryFile {
-  id: ID!
-  owner: ID!
-  type: FileType!
-  category: String!
-  mimeType: String!
-  url: URL!
-  description: String
-  metaData: JSON
-}
 
 
 input ImageTransformInput {

@@ -32,7 +32,7 @@ import { getParams } from './paramsBuffer';
 import {
   IFileBag, IFileBagTable, IFileBagTableInput, FileType, IImageTransform, ITransformUrlPayload,
   IImgeData, Context, ExtendedContext, IRedisFileValue, IFileParams, IRedisTemporaryValue,
-  IUploadFileInput, ITemporaryFileBag,
+  IUploadFileInput,
 } from './types';
 import { FileStorage } from '.';
 
@@ -553,7 +553,7 @@ class FileStorageService {
     expireAt?: number,
     }): Promise<{
       stream: fs.WriteStream;
-      file: ITemporaryFileBag;
+      file: IFileBag;
       expireAt: Date;
     }> {
     const { timezone } = this.props.context;
@@ -593,8 +593,8 @@ class FileStorageService {
     };
   }
 
-  public async getTemporaryFile(id: string): Promise<ITemporaryFileBag | false> {
-    const { redis, logger } = this.props.context as ExtendedContext;
+  public async getTemporaryFile(id: string): Promise<IFileBag | false> {
+    const { redis, logger, timezone } = this.props.context as ExtendedContext;
     const {
       temporaryAbsolutePath, hostname, temporaryDelimiter, staticPrefix,
     } = getParams();
@@ -615,6 +615,8 @@ class FileStorageService {
     const { fileInfo } = payload;
     return {
       id,
+      createdAt: moment.tz(timezone).toDate(),
+      updatedAt: moment.tz(timezone).toDate(),
       url: `${hostname}${staticPrefix}/${temporaryDelimiter}/${payload.filename}`,
       ...fileInfo,
     };
@@ -854,13 +856,14 @@ class FileStorageService {
     const ext = FileStorage.getExtensionByMimeType(payload.mimeType);
     const absoluteFilename = path.join(temporaryAbsolutePath, `${filename}.${ext}`);
     if (!fs.existsSync(absoluteFilename)) {
-      console.log('not found', absoluteFilename);
       return false;
     }
 
     const stream = fs.createReadStream(absoluteFilename);
     const fileData = await this.createFile(stream, {
       ...payload,
+      createdAt: moment(payload.createdAt).format(),
+      updatedAt: moment(payload.updatedAt).format(),
       isLocalFile: true,
     });
 
