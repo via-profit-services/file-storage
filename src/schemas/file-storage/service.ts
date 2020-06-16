@@ -22,7 +22,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import {
   REDIS_CACHE_NAME,
-  TEMPORARY_FILE_EXPIRED_AT_MLSEC,
+  REDIS_TEMPORARY_NAME,
   IMAGE_TRANSFORM_MAX_BLUR,
   IMAGE_TRANSFORM_MAX_GAUSSIAN,
   IMAGE_TRANSFORM_MAX_HEIGHT,
@@ -31,7 +31,8 @@ import {
 import { getParams } from './paramsBuffer';
 import {
   IFileBag, IFileBagTable, IFileBagTableInput, FileType, IImageTransform, ITransformUrlPayload,
-  IImgeData, Context, ExtendedContext, IRedisFileValue,
+  IImgeData, Context, ExtendedContext, IRedisFileValue, IFileParams, IRedisTemporaryValue,
+  IUploadFileInput, ITemporaryFileBag,
 } from './types';
 import { FileStorage } from '.';
 
@@ -104,6 +105,66 @@ class FileStorageService {
     }
   }
 
+  public async clearExpiredTemporaryFiles() {
+    const { temporaryAbsolutePath } = getParams();
+    const { redis, logger } = this.props.context as ExtendedContext;
+
+    const counter = {
+      allFiles: 0,
+      deletedFiles: 0,
+    };
+    const allFiles = await redis.hgetall(REDIS_TEMPORARY_NAME);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    Object.entries(allFiles).forEach(async ([hash, payloadStr]) => {
+      let payload: IRedisTemporaryValue;
+      counter.allFiles += 1;
+
+      try {
+        payload = JSON.parse(payloadStr) as IRedisTemporaryValue;
+      } catch (err) {
+        logger.fileStorage.error('Cache clean. Failed to decode transform JSON', { err });
+      }
+
+      try {
+        const { exp, filename } = payload;
+        if (new Date().getTime() > exp) {
+          const fullFilenamePath = path.resolve(temporaryAbsolutePath, filename);
+          const dirname = path.dirname(fullFilenamePath);
+          const dirnamePrev = path.resolve(dirname, '..');
+          if (fs.existsSync(fullFilenamePath)) {
+            // remove file from fs
+            fs.unlinkSync(fullFilenamePath);
+
+            // remove file from redis
+            redis.hdel(REDIS_TEMPORARY_NAME, hash);
+
+            counter.deletedFiles += 1;
+
+            // remove directory if is empty
+            if (!fs.readdirSync(dirname).length) {
+              fs.rmdirSync(dirname);
+            }
+
+            // remove subdirectory if is empty
+            if (!fs.readdirSync(dirnamePrev).length) {
+              fs.rmdirSync(dirnamePrev);
+            }
+          }
+        }
+      } catch (err) {
+        logger.fileStorage.error('Temporary clean. Failed to delete temporary file', { err });
+      }
+    });
+
+    if (counter.allFiles > 0) {
+      logger.fileStorage.info(
+        `Temporary clean. Deleted ${counter.deletedFiles} from ${counter.allFiles}`,
+      );
+    } else {
+      logger.fileStorage.info('Temporary clean. There are no files to delete');
+    }
+  }
+
   public async clearCache() {
     const { cacheAbsolutePath, rootPath } = getParams();
     const { redis, logger } = this.props.context as ExtendedContext;
@@ -155,7 +216,7 @@ class FileStorageService {
     return null;
   }
 
-  public async saveImageIntoTheCache(imageData: IImgeData, imageBuffer: Buffer) {
+  public async makeImageCache(imageData: IImgeData, imageBuffer: Buffer) {
     const { redis } = this.props.context;
     const { payload, token } = imageData;
     const { cacheAbsolutePath } = getParams();
@@ -173,12 +234,12 @@ class FileStorageService {
     await redis.hset(
       REDIS_CACHE_NAME,
       token,
-      this.compilePayloadString(payload.id, absoluteFilename),
+      this.compilePayloadCache(payload.id, absoluteFilename),
     );
   }
 
 
-  public compilePayloadString(id: string, filename: string) {
+  public compilePayloadCache(id: string, filename: string) {
     const { cacheTTL } = getParams();
     const exp = (new Date().getTime() + (cacheTTL * 1000));
     const payload: IRedisFileValue = {
@@ -247,7 +308,7 @@ class FileStorageService {
 
     // copy file for transform operation
     fs.copyFileSync(absoluteOriginalFilename, absoluteFilename);
-    redis.hset(REDIS_CACHE_NAME, imageUrlHash, this.compilePayloadString(id, newFilename));
+    redis.hset(REDIS_CACHE_NAME, imageUrlHash, this.compilePayloadCache(id, newFilename));
 
     try {
       this.applyTransform(absoluteFilename, transform);
@@ -436,21 +497,78 @@ class FileStorageService {
     }
   }
 
+
+  /**
+   * Resolve extension by mimeType or return default `txt` extension
+   */
   public static getExtensionByMimeType(mimeType: string) {
     return mime.extension(mimeType) || 'txt';
   }
 
+
+  /**
+   * Resolve mimeType by mime database or return default `text/plain` mimeType
+   */
   public static getMimeTypeByExtension(extension: string) {
     return mime.lookup(extension) || 'text/plain';
   }
 
+  /**
+   * Extract file extension
+   */
   public static extractExtensionFromFilename(filename: string) {
     return filename.split('.').pop();
   }
 
+  /**
+   * Extract file extension and try to resolve mimeType by mime database
+   */
   public static getMimeTypeByFilename(filename: string) {
     const ext = FileStorageService.extractExtensionFromFilename(filename);
     return FileStorageService.getMimeTypeByExtension(ext);
+  }
+
+  /**
+   * Resolve mimeType. \
+   * You may pass invalid mimeType but valid filename with extension \
+   * This method should return valid mimeType \
+   * \
+   * `Note:` On Linux OS the file Manager can pass invalid mime types \
+   * when uploading files to the server
+   */
+  public static resolveMimeType(filename: string, mimeType: string) {
+    const ext = FileStorageService.extractExtensionFromFilename(filename);
+    const extFromMimeType = mime.extension(mimeType);
+
+    if (ext === extFromMimeType) {
+      return mimeType;
+    }
+
+    return FileStorageService.getMimeTypeByExtension(filename);
+  }
+
+  public async getTemporaryFile(id: string): Promise<ITemporaryFileBag | false> {
+    const { redis, logger } = this.props.context as ExtendedContext;
+    const { temporaryAbsolutePath } = getParams();
+    const payloadStr = await redis.hget(REDIS_TEMPORARY_NAME, id);
+    let payload: IRedisTemporaryValue;
+
+    try {
+      payload = JSON.parse(payloadStr) as IRedisTemporaryValue;
+    } catch (err) {
+      logger.fileStorage.error('Failed to decode temporary data JSON', { err });
+    }
+
+    const absoluteFilename = path.join(temporaryAbsolutePath, payload.filename);
+    if (!fs.existsSync(absoluteFilename)) {
+      return false;
+    }
+
+    const { fileInfo } = payload;
+    return {
+      id,
+      ...fileInfo,
+    };
   }
 
   public async getFiles(filter: Partial<TOutputFilter>): Promise<IListResponse<IFileBag>> {
@@ -525,101 +643,29 @@ class FileStorageService {
   }
 
 
-  public async getTemporaryFileStream(
-    fileInfo: {
-      id?: string;
-      mimeType: string;
-      expireAt?: number,
-    },
-  ) {
-    const { timezone } = this.props.context as ExtendedContext;
-    const id = fileInfo.id || uuidv4();
-    const { mimeType, expireAt } = fileInfo;
-    const {
-      temporaryAbsolutePath, hostname, temporaryDelimiter, staticPrefix,
-    } = getParams();
-    const ext = FileStorageService.getExtensionByMimeType(mimeType);
-    const localFilename = `${FileStorageService.getPathFromUuid(id)}.${ext}`;
-
-    const absoluteFilename = path.join(temporaryAbsolutePath, localFilename);
-    const dirname = path.dirname(absoluteFilename);
-
-    if (!fs.existsSync(dirname)) {
-      fs.mkdirSync(dirname, { recursive: true });
-    }
-
-    const url = `${hostname}${staticPrefix}/${temporaryDelimiter}/${localFilename}`;
-
-    const stream = fs.createWriteStream(absoluteFilename);
-
-    setTimeout(() => {
-      const dirnamePrev = path.resolve(dirname, '..');
-
-      try {
-        // remove file
-        if (fs.existsSync(absoluteFilename)) {
-          fs.unlinkSync(absoluteFilename);
-        }
-
-        // remove directory if is empty
-        if (!fs.readdirSync(dirname).length) {
-          fs.rmdirSync(dirname);
-        }
-
-        // remove subdirectory if is empty
-        if (!fs.readdirSync(dirnamePrev).length) {
-          fs.rmdirSync(dirnamePrev);
-        }
-      } catch (err) {
-        throw new ServerError(`
-          Failed to delete file ${id} in path ${absoluteFilename}`,
-        { err });
-      }
-    }, expireAt || TEMPORARY_FILE_EXPIRED_AT_MLSEC);
-
-    return {
-      ext,
-      url,
-      stream,
-      mimeType,
-      absoluteFilename,
-      expireAt: moment.tz(timezone).add(expireAt / 1000, 'seconds').toDate(),
-    };
-  }
-
-  public async createFile(
+  public async createTemporaryFile(
     fileStream: ReadStream,
-    fileInfo: IFileBagTableInput,
-    noCompress?: boolean,
+    fileInfo: IUploadFileInput,
   ): Promise<{id: string; absoluteFilename: string; }> {
-    const { knex, timezone } = this.props.context;
-    const { storageAbsolutePath, compressionOptions } = getParams();
+    const { temporaryAbsolutePath } = getParams();
+    const { redis } = this.props.context;
 
     const id = fileInfo.id || uuidv4();
     const ext = FileStorageService.getExtensionByMimeType(fileInfo.mimeType);
-    const localFilename = `${FileStorageService.getPathFromUuid(id)}.${ext}`;
+    const filename = `${FileStorageService.getPathFromUuid(id)}.${ext}`;
 
-    const url = fileInfo.url || localFilename;
-    const result = await knex<IFileBagTableInput>('fileStorage')
-      .insert({
-        isLocalFile: true,
-        id,
-        url,
-        type: FileStorageService.getFileTypeByMimeType(fileInfo.mimeType),
-        ...fileInfo,
-        createdAt: moment.tz(timezone).format(),
-        updatedAt: moment.tz(timezone).format(),
-      })
-      .returning('id');
 
-    const newId = result[0];
-    if (!newId) {
-      throw new ServerError('Failed to register file in Database');
-    }
-
-    const absoluteFilename = path.join(storageAbsolutePath, localFilename);
+    const absoluteFilename = path.join(temporaryAbsolutePath, filename);
     const dirname = path.dirname(absoluteFilename);
-
+    const tmpCacheTTL = 15;
+    const exp = (new Date().getTime() + (tmpCacheTTL * 1000));
+    const token = id;
+    const payload: IRedisTemporaryValue = {
+      id,
+      filename,
+      exp,
+      fileInfo,
+    };
 
     return new Promise((resolve) => {
       if (!fs.existsSync(dirname)) {
@@ -630,6 +676,67 @@ class FileStorageService {
         }
       }
 
+      fileStream
+        .pipe(fs.createWriteStream(absoluteFilename))
+        .on('close', async () => {
+          await redis.hset(
+            REDIS_TEMPORARY_NAME,
+            token,
+            JSON.stringify(payload),
+          );
+          resolve({
+            id,
+            absoluteFilename,
+          });
+        });
+    });
+  }
+
+  public async createFile(
+    fileStream: ReadStream,
+    fileInfo: IFileBagTableInput,
+    fileParams?: IFileParams,
+  ): Promise<{id: string; absoluteFilename: string; }> {
+    const { knex, timezone } = this.props.context;
+    const { noCompress } = fileParams || {};
+    const {
+      storageAbsolutePath,
+    } = getParams();
+
+    const id = fileInfo.id || uuidv4();
+    const ext = FileStorageService.getExtensionByMimeType(fileInfo.mimeType);
+    const localFilename = `${FileStorageService.getPathFromUuid(id)}.${ext}`;
+
+    const url = fileInfo.url || localFilename;
+
+    try {
+      await knex<IFileBagTableInput>('fileStorage')
+        .insert({
+          isLocalFile: true,
+          id,
+          url,
+          type: FileStorageService.getFileTypeByMimeType(fileInfo.mimeType),
+          ...fileInfo,
+          createdAt: moment.tz(timezone).format(),
+          updatedAt: moment.tz(timezone).format(),
+        })
+        .returning('id');
+    } catch (err) {
+      throw new ServerError('Failed to register file in Database', { err });
+    }
+
+
+    const absoluteFilename = path.join(storageAbsolutePath, localFilename);
+    const dirname = path.dirname(absoluteFilename);
+
+    return new Promise((resolve) => {
+      if (!fs.existsSync(dirname)) {
+        try {
+          fs.mkdirSync(dirname, { recursive: true });
+        } catch (err) {
+          throw new ServerError('Failed to create destination directory', { err });
+        }
+      }
 
       fileStream
         .pipe(fs.createWriteStream(absoluteFilename))
@@ -640,7 +747,10 @@ class FileStorageService {
               .then((image) => {
                 if (
                   !noCompress
-                  || (image.getWidth() < imageOptimMaxWidth && image.getHeight() < imageOptimMaxHeight)
+                  || (
+                    image.getWidth() < imageOptimMaxWidth
+                    && image.getHeight() < imageOptimMaxHeight
+                  )
                 ) {
                   return image.scaleToFit(imageOptimMaxWidth, imageOptimMaxHeight);
                 }
@@ -669,18 +779,43 @@ class FileStorageService {
               // })
               .then(() => {
                 return resolve({
-                  id: newId,
+                  id,
                   absoluteFilename,
                 });
               });
           } else {
             resolve({
-              id: newId,
+              id,
               absoluteFilename,
             });
           }
         });
     });
+  }
+
+  public async moveFileFromTemporary(id: string) {
+    const { temporaryAbsolutePath } = getParams();
+    const payload = await this.getTemporaryFile(id);
+    const filename = FileStorage.getPathFromUuid(id);
+    if (!payload) {
+      console.log('false payload');
+      return false;
+    }
+
+    const ext = FileStorage.getExtensionByMimeType(payload.mimeType);
+    const absoluteFilename = path.join(temporaryAbsolutePath, `${filename}.${ext}`);
+    if (!fs.existsSync(absoluteFilename)) {
+      console.log('not found', absoluteFilename);
+      return false;
+    }
+
+    const stream = fs.createReadStream(absoluteFilename);
+    const fileData = await this.createFile(stream, {
+      ...payload,
+      isLocalFile: true,
+    });
+
+    return fileData;
   }
 
 
@@ -694,7 +829,6 @@ class FileStorageService {
         // if is local file
         if (fileData.isLocalFile || fileData.url.match(/^\/[a-z0-9]+/i)) {
           const filename = FileStorage.getFilenameFromUuid(fileData.id, staticDelimiter);
-          // const filename = FileStorageService.getFilenameFromUuid(fileData.id, staticDelimiter);
           const ext = FileStorage.getExtensionByMimeType(fileData.mimeType);
           const fullFilenamePath = path.resolve(rootPath, `${filename}.${ext}`);
           const dirname = path.dirname(filename);

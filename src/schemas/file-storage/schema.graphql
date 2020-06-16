@@ -39,7 +39,16 @@ type FileStorageMutation {
     If transform is used then props noCompress will be true permanently
     """
     noCompress: Boolean
+
   ): [File!]
+
+  """
+  Upload the file temporarily. When the specified time limit (TTL) expires the file will be deleted
+  """
+  uploadTemporary (
+    files: [FileUpload!]!
+    info: [FileUploadInfo!]!
+  ): [TemporaryFile!]
 }
 
 """
@@ -164,6 +173,7 @@ interface FileNode {
   metaData: JSON
 }
 
+
 type File implements FileNode & Node {
   id: ID!
   createdAt: DateTime!
@@ -176,6 +186,17 @@ type File implements FileNode & Node {
   description: String
   metaData: JSON
 }
+
+type TemporaryFile {
+  id: ID!
+  owner: ID!
+  type: FileType!
+  category: String!
+  mimeType: String!
+  description: String
+  metaData: JSON
+}
+
 
 input ImageTransformInput {
   resize: ImageTransformInputResize

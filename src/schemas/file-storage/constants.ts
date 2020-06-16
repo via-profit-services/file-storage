@@ -3,9 +3,10 @@ import {
 } from '@via-profit-services/core';
 
 export const TIMEOUT_MAX_VALUE = 2147483647;
-export const TEMPORARY_FILE_EXPIRED_AT_MLSEC = 1000 * 60;
 export const REDIS_CACHE_NAME = 'fileStorageCache';
+export const REDIS_TEMPORARY_NAME = 'fileStorageTemporary';
 export const CACHE_FILES_DEFAULT_TTL = 86400; // 1 day
+export const TEMPORARY_FILES_DEFAULT_TTL = 86400; // 1 day
 export const DEFAULT_IMAGE_OPTIM_MAX_WIDTH = 1200;
 export const DEFAULT_IMAGE_OPTIM_MAX_HEIGHT = 800;
 export const DEFAULT_STORAGE_PATH = './public/fileStorage/files';

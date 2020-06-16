@@ -43,7 +43,6 @@ const FileResolver: IResolverObject<IParent, Context, any> = new Proxy({
         }
       }
 
-
       return file[prop];
     };
 

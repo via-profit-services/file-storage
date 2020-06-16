@@ -2,6 +2,7 @@ import path from 'path';
 
 import {
   CACHE_FILES_DEFAULT_TTL,
+  TEMPORARY_FILES_DEFAULT_TTL,
   DEFAULT_IMAGE_OPTIM_MAX_WIDTH,
   DEFAULT_IMAGE_OPTIM_MAX_HEIGHT,
   DEFAULT_STORAGE_PATH,
@@ -31,6 +32,7 @@ const paramsBuffer: IParamsBuffer = {
     temporaryPath: DEFAULT_TEMPORARY_PATH,
     staticPrefix: DEFAULT_STATIC_PREFIX,
     cacheTTL: CACHE_FILES_DEFAULT_TTL,
+    temporaryTTL: TEMPORARY_FILES_DEFAULT_TTL,
     imageOptimMaxWidth: DEFAULT_IMAGE_OPTIM_MAX_WIDTH,
     imageOptimMaxHeight: DEFAULT_IMAGE_OPTIM_MAX_HEIGHT,
     staticDelimiter: DEFAULT_STATIC_DELIMITER,
@@ -58,7 +60,13 @@ export const setParams = (params?: Partial<IFileStorageInitialProps>) => {
   };
 
   // fuse for timout max value
-  paramsBuffer.params.cacheTTL = Math.min(TIMEOUT_MAX_VALUE / 1000, paramsBuffer.params.cacheTTL);
+  paramsBuffer.params.cacheTTL = Math.min(
+    TIMEOUT_MAX_VALUE / 1000, paramsBuffer.params.cacheTTL,
+  );
+
+  paramsBuffer.params.temporaryTTL = Math.min(
+    TIMEOUT_MAX_VALUE / 1000, paramsBuffer.params.temporaryTTL,
+  );
 
   // resolve absolute paths
   paramsBuffer.params = {
