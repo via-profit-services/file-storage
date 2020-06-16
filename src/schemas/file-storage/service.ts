@@ -757,8 +757,7 @@ class FileStorageService {
     const id = fileInfo.id || uuidv4();
     const ext = FileStorageService.getExtensionByMimeType(fileInfo.mimeType);
     const localFilename = `${FileStorageService.getPathFromUuid(id)}.${ext}`;
-
-    const url = fileInfo.url || localFilename;
+    const url = fileInfo.isLocalFile ? localFilename : fileInfo.url;
 
     try {
       await knex<IFileBagTableInput>('fileStorage')
