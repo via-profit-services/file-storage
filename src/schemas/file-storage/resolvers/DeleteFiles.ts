@@ -46,7 +46,6 @@ const DeleteFilesResolver: IFieldResolver<any, ExtendedContext, TArgs> = async (
         logger.fileStorage.debug(`Will be deleted ${idsByOwner} file(s)`, { uuid });
         deletedIds = await fileService.deleteStaticFiles(idsByOwner);
       } catch (err) {
-        logger.fileStorage.error('Failed to Delete files', { err, uuid });
         throw new ServerError('Failed to Delete files', { err, uuid });
       }
     }

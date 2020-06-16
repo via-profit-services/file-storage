@@ -59,6 +59,13 @@ export interface IUploadFileInput {
     metaData?: Object | Array<any>;
     description?: string;
 }
+export interface IUpdateFileInput {
+    id: string;
+    owner?: string;
+    category?: string;
+    metaData?: Object | Array<any>;
+    description?: string;
+}
 export interface IFileStorageInitialProps {
     /**
      * Host or hostname without protocol ang schema (`www.example.com`)
