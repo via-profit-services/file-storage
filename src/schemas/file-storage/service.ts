@@ -684,7 +684,6 @@ class FileStorageService {
 
   public async updateFile(id: string, fileData: Partial<IFileBagTableInput>) {
     const { knex, timezone } = this.props.context;
-
     await knex<IFileBagTableInput>('fileStorage')
       .update({
         ...fileData,
@@ -762,11 +761,10 @@ class FileStorageService {
     try {
       await knex<IFileBagTableInput>('fileStorage')
         .insert({
-          isLocalFile: true,
+          ...fileInfo,
           id,
           url,
           type: FileStorageService.getFileTypeByMimeType(fileInfo.mimeType),
-          ...fileInfo,
           createdAt: moment.tz(timezone).format(),
           updatedAt: moment.tz(timezone).format(),
         })
@@ -848,7 +846,6 @@ class FileStorageService {
     const payload = await this.getTemporaryFile(id);
     const filename = FileStorage.getPathFromUuid(id);
     if (!payload) {
-      console.log('false payload');
       return false;
     }
 
