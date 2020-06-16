@@ -43,6 +43,7 @@ const UploadTemporaryFilesResolver: IFieldResolver<any, ExtendedContext, TArgs> 
 
     return {
       id,
+      isTemporary: true,
     };
   });
 
