@@ -28,10 +28,8 @@ export interface IFileBag {
     isLocalFile?: boolean;
     metaData?: Object | Array<any>;
     description?: string;
-    /** Only for images */
-    width?: number;
-    height?: number;
 }
+export declare type ITemporaryFileBag = Omit<IFileBag, 'createdAt' | 'updatedAt' | 'url'>;
 export declare type IFileBagTable = IFileBag & {
     totalCount: number;
 };
@@ -47,6 +45,9 @@ export interface IFileBagTableInput {
     url?: string;
     owner?: string;
     mimeType: string;
+}
+export interface IFileParams {
+    noCompress?: boolean;
 }
 export interface IUploadFileInput {
     id?: string;
@@ -89,6 +90,11 @@ export interface IFileStorageInitialProps {
      * The time after which the file will be deleted from the cache
      */
     cacheTTL?: number;
+    /**
+     * TTL for temporary files (`in sec.`)\
+     * The time after which the file will be deleted from the temporary directory
+     */
+    temporaryTTL?: number;
     /**
      * Image maximum width
      */
@@ -191,4 +197,10 @@ export interface IRedisFileValue {
     id: string;
     filename: string;
     exp: number;
+}
+export interface IRedisTemporaryValue {
+    id: string;
+    filename: string;
+    exp: number;
+    fileInfo: IUploadFileInput;
 }

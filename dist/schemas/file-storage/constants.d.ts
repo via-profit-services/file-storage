@@ -1,8 +1,9 @@
 import { LOG_MAZ_FILES, LOG_MAZ_SIZE, LOG_DATE_PATTERNT, LOG_FILENAME_DEBUG, LOG_FILENAME_ERRORS } from '@via-profit-services/core';
 export declare const TIMEOUT_MAX_VALUE = 2147483647;
-export declare const TEMPORARY_FILE_EXPIRED_AT_MLSEC: number;
 export declare const REDIS_CACHE_NAME = "fileStorageCache";
+export declare const REDIS_TEMPORARY_NAME = "fileStorageTemporary";
 export declare const CACHE_FILES_DEFAULT_TTL = 86400;
+export declare const TEMPORARY_FILES_DEFAULT_TTL = 86400;
 export declare const DEFAULT_IMAGE_OPTIM_MAX_WIDTH = 1200;
 export declare const DEFAULT_IMAGE_OPTIM_MAX_HEIGHT = 800;
 export declare const DEFAULT_STORAGE_PATH = "./public/fileStorage/files";
