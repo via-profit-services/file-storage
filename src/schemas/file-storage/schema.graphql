@@ -55,6 +55,7 @@ type FileStorageMutation {
 Information about uploaded file
 """
 input FileUploadInfo {
+  id: ID
 
   """
   Your file owner
