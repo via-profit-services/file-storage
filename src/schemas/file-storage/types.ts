@@ -71,6 +71,14 @@ export interface IUploadFileInput {
   description?: string;
 }
 
+export interface IUpdateFileInput {
+  id: string;
+  owner?: string;
+  category?: string;
+  metaData?: Object | Array<any>;
+  description?: string;
+}
+
 
 export interface IFileStorageInitialProps {
 
