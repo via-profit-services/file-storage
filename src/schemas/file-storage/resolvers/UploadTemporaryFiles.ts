@@ -28,6 +28,7 @@ const UploadTemporaryFilesResolver: IFieldResolver<any, ExtendedContext, TArgs> 
     const stream = createReadStream();
     const fileInfo = {
       mimeType: FileStorage.resolveMimeType(filename, mimeType),
+      isLocalFile: true,
       ...info[index],
     };
 

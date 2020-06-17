@@ -33,6 +33,7 @@ const UploadFilesResolver: IFieldResolver<any, ExtendedContext, TArgs> = async (
     };
     const fileInfo = {
       mimeType: FileStorage.resolveMimeType(filename, mimeType),
+      isLocalFile: true,
       ...info[index],
     };
 
