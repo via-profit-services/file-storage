@@ -846,13 +846,13 @@ class FileStorageService {
     const payload = await this.getTemporaryFile(id);
     const filename = FileStorage.getPathFromUuid(id);
     if (!payload) {
-      return false;
+      throw new ServerError(`File ${id} does not have in temporary cache`);
     }
 
     const ext = FileStorage.getExtensionByMimeType(payload.mimeType);
     const absoluteFilename = path.join(temporaryAbsolutePath, `${filename}.${ext}`);
     if (!fs.existsSync(absoluteFilename)) {
-      return false;
+      throw new ServerError(`File ${id} not exists`);
     }
 
     const stream = fs.createReadStream(absoluteFilename);

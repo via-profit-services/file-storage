@@ -89,7 +89,7 @@ declare class FileStorageService {
         id: string;
         absoluteFilename: string;
     }>;
-    moveFileFromTemporary(id: string): Promise<false | {
+    moveFileFromTemporary(id: string): Promise<{
         id: string;
         absoluteFilename: string;
     }>;
