@@ -797,11 +797,8 @@ class FileStorageService {
             Jimp.read(absoluteFilename)
               .then((image) => {
                 if (
-                  !noCompress
-                  || (
-                    image.getWidth() < imageOptimMaxWidth
-                    && image.getHeight() < imageOptimMaxHeight
-                  )
+                  (image.getWidth() > imageOptimMaxWidth || image.getHeight() > imageOptimMaxHeight)
+                  && Boolean(noCompress) === false
                 ) {
                   return image.scaleToFit(imageOptimMaxWidth, imageOptimMaxHeight);
                 }
