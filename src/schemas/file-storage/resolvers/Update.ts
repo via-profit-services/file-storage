@@ -1,6 +1,7 @@
 import { ServerError } from '@via-profit-services/core';
 import { IFieldResolver } from 'graphql-tools';
 
+import createLoaders from '../loaders';
 import FileStorageService from '../service';
 import { ExtendedContext, IUpdateFileInput } from '../types';
 
@@ -13,10 +14,13 @@ const UpdateResolver: IFieldResolver<any, ExtendedContext, TArgs> = async (
 ) => {
   const { info } = args;
   const fileService = new FileStorageService({ context });
+  const loaders = createLoaders(context);
 
   await info.reduce(async (prev, fileInfo) => {
     await prev;
     const { id, ...otherFileData } = fileInfo;
+
+    loaders.files.clear(id);
     try {
       await fileService.updateFile(id, otherFileData);
     } catch (err) {
