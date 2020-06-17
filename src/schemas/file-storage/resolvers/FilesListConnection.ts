@@ -23,9 +23,6 @@ const FilesListConnectionResolver: IFieldResolver<any, ExtendedContext, TArgs> =
     const filesConnection = await fileService.getFiles(filter);
     const connection = buildCursorConnection(filesConnection, 'files');
 
-    loaders.files.clearAll();
-
-
     if (transform) {
       connection.edges = connection.edges.map(({ node, cursor }) => ({
         cursor,
@@ -36,9 +33,10 @@ const FilesListConnectionResolver: IFieldResolver<any, ExtendedContext, TArgs> =
       }));
     }
 
-
     filesConnection.nodes.forEach((node) => {
-      loaders.files.prime(node.id, node);
+      loaders.files
+        .clear(node.id)
+        .prime(node.id, node);
     });
 
     return connection;

@@ -36,7 +36,6 @@ export interface IFileBag {
   description?: string;
 }
 
-export type ITemporaryFileBag = Omit<IFileBag, 'createdAt' | 'updatedAt'>;
 
 export type IFileBagTable = IFileBag & {
   totalCount: number;

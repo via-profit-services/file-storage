@@ -9,6 +9,7 @@ import {
 
 interface IParent {
   id: string;
+  isTemporary?: boolean;
   transform?: IImageTransform;
 }
 
@@ -26,10 +27,16 @@ const FileResolver: IResolverObject<IParent, Context, any> = new Proxy({
 }, {
   get: (target: IFileBag | any, prop: keyof IFileBag) => {
     const resolver: IFieldResolver<IParent, Context, any> = async (parent, args, context) => {
-      const { id, transform } = parent;
+      const { id, transform, isTemporary } = parent;
       const fileStorage = new FileStorageService({ context });
-      const loaders = createDataloaders(context);
-      const file = await loaders.files.load(id);
+
+      let file: IFileBag | false;
+      if (isTemporary) {
+        file = await fileStorage.getTemporaryFile(id);
+      } else {
+        const loaders = createDataloaders(context);
+        file = await loaders.files.load(id);
+      }
 
       if (!file) {
         throw new ServerError(

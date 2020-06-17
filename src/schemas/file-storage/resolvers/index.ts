@@ -7,7 +7,6 @@ import ApplyTemporary from './ApplyTemporary';
 import DeleteFiles from './DeleteFiles';
 import File from './File';
 import FilesListConnection from './FilesListConnection';
-import TemporaryFile from './TemporaryFile';
 import Update from './Update';
 import UploadFiles from './UploadFiles';
 import UploadTemporaryFiles from './UploadTemporaryFiles';
@@ -31,7 +30,6 @@ const resolvers: IResolvers<any, ExtendedContext> = {
     applyTemporary: ApplyTemporary,
   },
   File,
-  TemporaryFile,
   // scalar
   FileUpload,
 };

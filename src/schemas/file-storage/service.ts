@@ -32,7 +32,7 @@ import { getParams } from './paramsBuffer';
 import {
   IFileBag, IFileBagTable, IFileBagTableInput, FileType, IImageTransform, ITransformUrlPayload,
   IImgeData, Context, ExtendedContext, IRedisFileValue, IFileParams, IRedisTemporaryValue,
-  IUploadFileInput, ITemporaryFileBag,
+  IUploadFileInput,
 } from './types';
 import { FileStorage } from '.';
 
@@ -553,7 +553,7 @@ class FileStorageService {
     expireAt?: number,
     }): Promise<{
       stream: fs.WriteStream;
-      file: ITemporaryFileBag;
+      file: IFileBag;
       expireAt: Date;
     }> {
     const { timezone } = this.props.context;
@@ -593,8 +593,8 @@ class FileStorageService {
     };
   }
 
-  public async getTemporaryFile(id: string): Promise<ITemporaryFileBag | false> {
-    const { redis, logger } = this.props.context as ExtendedContext;
+  public async getTemporaryFile(id: string): Promise<IFileBag | false> {
+    const { redis, logger, timezone } = this.props.context as ExtendedContext;
     const {
       temporaryAbsolutePath, hostname, temporaryDelimiter, staticPrefix,
     } = getParams();
@@ -615,6 +615,8 @@ class FileStorageService {
     const { fileInfo } = payload;
     return {
       id,
+      createdAt: moment.tz(timezone).toDate(),
+      updatedAt: moment.tz(timezone).toDate(),
       url: `${hostname}${staticPrefix}/${temporaryDelimiter}/${payload.filename}`,
       ...fileInfo,
     };
@@ -682,7 +684,6 @@ class FileStorageService {
 
   public async updateFile(id: string, fileData: Partial<IFileBagTableInput>) {
     const { knex, timezone } = this.props.context;
-
     await knex<IFileBagTableInput>('fileStorage')
       .update({
         ...fileData,
@@ -702,8 +703,8 @@ class FileStorageService {
 
     const id = fileInfo.id || uuidv4();
     const ext = FileStorageService.getExtensionByMimeType(fileInfo.mimeType);
+    const type = FileStorageService.getFileTypeByMimeType(fileInfo.mimeType);
     const filename = `${FileStorageService.getPathFromUuid(id)}.${ext}`;
-
 
     const absoluteFilename = path.join(temporaryAbsolutePath, filename);
     const dirname = path.dirname(absoluteFilename);
@@ -713,7 +714,10 @@ class FileStorageService {
       id,
       filename,
       exp,
-      fileInfo,
+      fileInfo: {
+        ...fileInfo,
+        type,
+      },
     };
 
     return new Promise((resolve) => {
@@ -755,17 +759,15 @@ class FileStorageService {
     const id = fileInfo.id || uuidv4();
     const ext = FileStorageService.getExtensionByMimeType(fileInfo.mimeType);
     const localFilename = `${FileStorageService.getPathFromUuid(id)}.${ext}`;
-
-    const url = fileInfo.url || localFilename;
+    const url = fileInfo.isLocalFile ? localFilename : fileInfo.url;
 
     try {
       await knex<IFileBagTableInput>('fileStorage')
         .insert({
-          isLocalFile: true,
+          ...fileInfo,
           id,
           url,
           type: FileStorageService.getFileTypeByMimeType(fileInfo.mimeType),
-          ...fileInfo,
           createdAt: moment.tz(timezone).format(),
           updatedAt: moment.tz(timezone).format(),
         })
@@ -847,20 +849,20 @@ class FileStorageService {
     const payload = await this.getTemporaryFile(id);
     const filename = FileStorage.getPathFromUuid(id);
     if (!payload) {
-      console.log('false payload');
       return false;
     }
 
     const ext = FileStorage.getExtensionByMimeType(payload.mimeType);
     const absoluteFilename = path.join(temporaryAbsolutePath, `${filename}.${ext}`);
     if (!fs.existsSync(absoluteFilename)) {
-      console.log('not found', absoluteFilename);
       return false;
     }
 
     const stream = fs.createReadStream(absoluteFilename);
     const fileData = await this.createFile(stream, {
       ...payload,
+      createdAt: moment(payload.createdAt).format(),
+      updatedAt: moment(payload.updatedAt).format(),
       isLocalFile: true,
     });
 
