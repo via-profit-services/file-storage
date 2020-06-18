@@ -80,12 +80,13 @@ declare class FileStorageService {
     getFiles(filter: Partial<TOutputFilter>): Promise<IListResponse<IFileBag>>;
     getFilesByIds(ids: string[]): Promise<IFileBag[]>;
     getFile(id: string): Promise<IFileBag | false>;
-    updateFile(id: string, fileData: Partial<IFileBagTableInput>): Promise<void>;
+    preparePayloadToSQL(fileData: Partial<IFileBag>): Partial<IFileBagTableInput>;
+    updateFile(id: string, fileData: Partial<IFileBag>): Promise<void>;
     createTemporaryFile(fileStream: ReadStream, fileInfo: IUploadFileInput, expireAt?: number): Promise<{
         id: string;
         absoluteFilename: string;
     }>;
-    createFile(fileStream: ReadStream, fileInfo: IFileBagTableInput, fileParams?: IFileParams): Promise<{
+    createFile(fileStream: ReadStream, fileInfo: Partial<IFileBag>, fileParams?: IFileParams): Promise<{
         id: string;
         absoluteFilename: string;
     }>;
