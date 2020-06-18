@@ -756,37 +756,16 @@ class FileStorageService {
           token,
           JSON.stringify(payload),
         );
-        console.log('resolve');
         resolve({
           id,
           absoluteFilename,
         });
       });
-      console.log('fileStream.pipe(wrStream)');
       if (fileStream) {
         fileStream.pipe(wrStream);
       } else {
-        console.log('wrStream.end()');
         wrStream.end();
       }
-      // if (!fileStream) {
-
-      // }
-      // wrStream.pipe()
-
-      // fileStream
-      //   .pipe(fs.createWriteStream(absoluteFilename))
-      //   .on('close', async () => {
-      //     await redis.hset(
-      //       REDIS_TEMPORARY_NAME,
-      //       token,
-      //       JSON.stringify(payload),
-      //     );
-      //     resolve({
-      //       id,
-      //       absoluteFilename,
-      //     });
-      //   });
     });
   }
 
