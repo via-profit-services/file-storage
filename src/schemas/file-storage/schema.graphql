@@ -63,6 +63,11 @@ type FileStorageMutation {
   """
   update (
     info: [FileUpdateInfo!]!
+    """
+    Only for images and only for local images
+    Image transform options
+    """
+    transform: [ImageTransformInput!]
   ): [File!]
 }
 

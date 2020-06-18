@@ -200,7 +200,7 @@ class FileStorageService {
   }
 
 
-  public async checkFileInCache(imageDataHash: string) {
+  public async checkFileInCache(imageDataHash: string): Promise<IRedisFileValue | null> {
     const { redis, logger } = this.props.context as ExtendedContext;
     const res = await redis.hget(REDIS_CACHE_NAME, imageDataHash);
 
@@ -266,6 +266,7 @@ class FileStorageService {
       isLocalFile,
     } = imageData;
 
+    const type = FileStorageService.getFileTypeByMimeType(mimeType);
     const ext = FileStorageService.getExtensionByMimeType(mimeType);
 
     const hashPayload: ITransformUrlPayload = {
@@ -274,7 +275,7 @@ class FileStorageService {
       transform,
     };
 
-    if (!isLocalFile) {
+    if (!isLocalFile || type !== FileType.image) {
       return url;
     }
 
@@ -424,7 +425,7 @@ class FileStorageService {
 
       if (method === 'crop') {
         const {
-          w, h, x, y,
+          x, y, w, h,
         } = options as IImageTransform['crop'];
         jimpHandle = jimpHandle.crop(
           Math.min(x, IMAGE_TRANSFORM_MAX_WITH),

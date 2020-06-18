@@ -2,7 +2,7 @@ import { IFieldResolver } from 'graphql-tools';
 
 import FileStorage from '../service';
 import {
-  IUploadFileInput, ExtendedContext, IFile, IImageTransform, IFileBagCreate,
+  IUploadFileInput, ExtendedContext, IFile, IImageTransform, IFileBagCreate, FileType,
 } from '../types';
 
 interface TArgs {
@@ -39,7 +39,7 @@ const UploadFilesResolver: IFieldResolver<any, ExtendedContext, TArgs> = async (
       metaData: null,
       ...info[index],
     };
-
+    const type = FileStorage.getFileTypeByMimeType(fileInfo.mimeType);
     const { id, absoluteFilename } = await fileService.createFile(
       stream,
       fileInfo,
@@ -52,7 +52,7 @@ const UploadFilesResolver: IFieldResolver<any, ExtendedContext, TArgs> = async (
     );
 
 
-    if (transform && transform[index]) {
+    if (transform && transform[index] && type === FileType.image) {
       await fileService.applyTransform(absoluteFilename, transform[index]);
     }
 
