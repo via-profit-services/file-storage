@@ -36,6 +36,10 @@ export interface IFileBag {
   description?: string;
 }
 
+export type IFileBagCreate = Omit<IFileBag, 'url' | 'id' | 'type' | 'createdAt' | 'updatedAt'> & {
+  id?: string;
+  url?: string;
+}
 
 export type IFileBagTable = IFileBag & {
   totalCount: number;
@@ -66,7 +70,7 @@ export interface IUploadFileInput {
   owner: string;
   mimeType: string;
   isLocalFile?: boolean;
-  metaData?: Object | Array<any>;
+  metaData?: any;
   description?: string;
 }
 
@@ -74,7 +78,7 @@ export interface IUpdateFileInput {
   id: string;
   owner?: string;
   category?: string;
-  metaData?: Object | Array<any>;
+  metaData?: any;
   description?: string;
 }
 

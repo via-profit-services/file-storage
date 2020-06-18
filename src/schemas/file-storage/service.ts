@@ -32,7 +32,7 @@ import { getParams } from './paramsBuffer';
 import {
   IFileBag, IFileBagTable, IFileBagTableInput, FileType, IImageTransform, ITransformUrlPayload,
   IImgeData, Context, ExtendedContext, IRedisFileValue, IFileParams, IRedisTemporaryValue,
-  IUploadFileInput,
+  IUploadFileInput, IFileBagCreate,
 } from './types';
 import { FileStorage } from '.';
 
@@ -685,21 +685,9 @@ class FileStorageService {
   public preparePayloadToSQL(fileData: Partial<IFileBag>): Partial<IFileBagTableInput> {
     const { timezone } = this.props.context;
 
-    const defaultFileData: IFileBag = {
-      id: uuidv4(),
-      type: FileType.document,
-      category: 'any',
-      owner: null,
-      createdAt: moment.tz(timezone).toDate(),
-      updatedAt: moment.tz(timezone).toDate(),
-      mimeType: 'text/plain',
-      url: '',
-      ...fileData,
-    };
-
     const {
       metaData, createdAt, updatedAt, ...otherFileData
-    } = defaultFileData;
+    } = fileData;
 
     const retDataInput: Partial<IFileBagTableInput> = otherFileData;
 
@@ -720,12 +708,14 @@ class FileStorageService {
 
   public async updateFile(id: string, fileData: Partial<IFileBag>) {
     const { knex, timezone } = this.props.context;
-    await knex<IFileBagTableInput>('fileStorage')
+    const result = await knex<IFileBagTableInput>('fileStorage')
       .update({
         ...this.preparePayloadToSQL(fileData),
         updatedAt: moment.tz(timezone).format(),
       })
-      .where('id', id);
+      .where('id', id)
+      .returning('id');
+    return result;
   }
 
 
@@ -783,7 +773,7 @@ class FileStorageService {
 
   public async createFile(
     fileStream: ReadStream,
-    fileInfo: Partial<IFileBag>,
+    fileInfo: IFileBagCreate,
     fileParams?: IFileParams,
   ): Promise<{id: string; absoluteFilename: string; }> {
     const { knex, timezone } = this.props.context;
@@ -795,7 +785,7 @@ class FileStorageService {
     const id = fileInfo.id || uuidv4();
     const ext = FileStorageService.getExtensionByMimeType(fileInfo.mimeType);
     const localFilename = `${FileStorageService.getPathFromUuid(id)}.${ext}`;
-    const url = fileInfo.isLocalFile ? localFilename : fileInfo.url;
+    const url = (fileInfo.isLocalFile || !fileInfo.url) ? localFilename : fileInfo.url;
 
     try {
       await knex<IFileBagTableInput>('fileStorage')

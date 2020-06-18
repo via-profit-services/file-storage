@@ -2,7 +2,7 @@ import { IFieldResolver } from 'graphql-tools';
 
 import FileStorage from '../service';
 import {
-  IUploadFileInput, ExtendedContext, IFile, IImageTransform,
+  IUploadFileInput, ExtendedContext, IFile, IImageTransform, IFileBagCreate,
 } from '../types';
 
 interface TArgs {
@@ -31,9 +31,12 @@ const UploadFilesResolver: IFieldResolver<any, ExtendedContext, TArgs> = async (
     const options = {
       noCompress: Boolean(noCompress || (transform && transform[index])),
     };
-    const fileInfo = {
+    const fileInfo: IFileBagCreate = {
       mimeType: FileStorage.resolveMimeType(filename, mimeType),
       isLocalFile: true,
+      owner: null,
+      description: '',
+      metaData: null,
       ...info[index],
     };
 
