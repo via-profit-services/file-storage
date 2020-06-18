@@ -564,6 +564,7 @@ class FileStorageService {
     const filename = FileStorage.getPathFromUuid(id);
     const ext = FileStorage.getExtensionByMimeType(fileInfo.mimeType);
     const absoluteFilename = path.join(temporaryAbsolutePath, `${filename}.${ext}`);
+    const dirname = path.dirname(absoluteFilename);
     const readStream = fs.createReadStream(absoluteFilename);
 
     await this.createTemporaryFile(readStream, {
@@ -581,9 +582,14 @@ class FileStorageService {
     }
 
 
-    if (!fs.existsSync(absoluteFilename)) {
-      throw new ServerError('Failed to create temporary file stream');
+    try {
+      if (!fs.existsSync(dirname)) {
+        fs.mkdirSync(dirname, { recursive: true });
+      }
+    } catch (err) {
+      throw new ServerError('Failed to create temporary file stream', { err });
     }
+
 
     const stream = fs.createWriteStream(absoluteFilename);
 
