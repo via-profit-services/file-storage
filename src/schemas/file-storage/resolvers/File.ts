@@ -39,10 +39,9 @@ const FileResolver: IResolverObject<IParent, Context, any> = new Proxy({
       }
 
       if (!file) {
-        throw new ServerError(
-          `File with id ${id} not found`, { id },
-        );
+        return null;
       }
+
       // if is image
       if (file.type === FileType.image) {
         if (prop === 'url' && transform) {

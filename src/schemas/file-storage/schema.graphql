@@ -48,6 +48,17 @@ type FileStorageMutation {
   uploadTemporary (
     files: [FileUpload!]!
     info: [FileUploadInfo!]!
+    """
+    Only for images and only for local images
+    Image transform options
+    """
+    transform: [ImageTransformInput!]
+    """
+    Only for images and only for local images
+    If true, the image will not be compressed
+    If transform is used then props noCompress will be true permanently
+    """
+    noCompress: Boolean
   ): [File!]
 
   """
@@ -63,6 +74,11 @@ type FileStorageMutation {
   """
   update (
     info: [FileUpdateInfo!]!
+    """
+    Only for images and only for local images
+    Image transform options
+    """
+    transform: [ImageTransformInput!]
   ): [File!]
 }
 
@@ -149,7 +165,7 @@ type FileStorageQuery {
     Image transform options
     """
     transform: ImageTransformInput
-  ): File!
+  ): File
 }
 
 

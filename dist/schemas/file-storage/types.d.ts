@@ -49,9 +49,6 @@ export interface IFileBagTableInput {
     owner?: string;
     mimeType: string;
 }
-export interface IFileParams {
-    noCompress?: boolean;
-}
 export interface IUploadFileInput {
     id?: string;
     category: string;
