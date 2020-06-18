@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import fs, { ReadStream } from 'fs';
 import { IListResponse, TOutputFilter } from '@via-profit-services/core';
-import { IFileBag, IFileBagTableInput, FileType, IImageTransform, IImgeData, Context, IRedisFileValue, IFileParams, IUploadFileInput, IFileBagCreate } from './types';
+import { IFileBag, IFileBagTableInput, FileType, IImageTransform, IImgeData, Context, IRedisFileValue, IUploadFileInput, IFileBagCreate } from './types';
 interface IProps {
     context: Context;
 }
@@ -86,7 +86,8 @@ declare class FileStorageService {
         id: string;
         absoluteFilename: string;
     }>;
-    createFile(fileStream: ReadStream, fileInfo: IFileBagCreate, fileParams?: IFileParams): Promise<{
+    compressImage(absoluteFilename: string): Promise<void>;
+    createFile(fileStream: ReadStream, fileInfo: IFileBagCreate): Promise<{
         id: string;
         absoluteFilename: string;
     }>;
