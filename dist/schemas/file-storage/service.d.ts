@@ -12,7 +12,7 @@ declare class FileStorageService {
     clearExpiredTemporaryFiles(): Promise<void>;
     clearCache(): Promise<void>;
     clearTemporary(): Promise<void>;
-    checkFileInCache(imageDataHash: string): Promise<IRedisFileValue>;
+    checkFileInCache(imageDataHash: string): Promise<IRedisFileValue | null>;
     makeImageCache(imageData: IImgeData, imageBuffer: Buffer): Promise<void>;
     compilePayloadCache(id: string, filename: string): string;
     getUrlWithTransform(imageData: Pick<IFileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>, transform: IImageTransform): Promise<string>;
