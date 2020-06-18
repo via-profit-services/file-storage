@@ -562,7 +562,12 @@ class FileStorageService {
 
     const expireAt = fileInfo.expireAt || temporaryTTL;
     const filename = FileStorage.getPathFromUuid(id);
-    const absoluteFilename = path.join(temporaryAbsolutePath, filename);
+    const ext = FileStorage.getExtensionByMimeType(fileInfo.mimeType);
+    const absoluteFilename = path.join(temporaryAbsolutePath, `${filename}.${ext}`);
+
+    if (!fs.existsSync(absoluteFilename)) {
+      throw new ServerError(`Temporary file not exists in path ${absoluteFilename}`);
+    }
 
     const readStream = fs.createReadStream(absoluteFilename);
     await this.createTemporaryFile(readStream, {
