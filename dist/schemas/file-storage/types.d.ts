@@ -18,7 +18,7 @@ export interface ExtendedContext extends Context {
 }
 export interface IFileBag {
     id: string;
-    owner: string;
+    owner: string | null;
     url: string;
     createdAt: Date;
     updatedAt: Date;
@@ -26,9 +26,13 @@ export interface IFileBag {
     mimeType: string;
     type: FileType;
     isLocalFile?: boolean;
-    metaData?: Object | Array<any>;
+    metaData?: any;
     description?: string;
 }
+export declare type IFileBagCreate = Omit<IFileBag, 'url' | 'id' | 'type' | 'createdAt' | 'updatedAt'> & {
+    id?: string;
+    url?: string;
+};
 export declare type IFileBagTable = IFileBag & {
     totalCount: number;
 };
@@ -39,7 +43,7 @@ export interface IFileBagTableInput {
     createdAt?: string;
     updatedAt?: string;
     isLocalFile?: boolean;
-    metaData?: Object | Array<any>;
+    metaData?: string;
     description?: string;
     url?: string;
     owner?: string;
@@ -55,14 +59,14 @@ export interface IUploadFileInput {
     owner: string;
     mimeType: string;
     isLocalFile?: boolean;
-    metaData?: Object | Array<any>;
+    metaData?: any;
     description?: string;
 }
 export interface IUpdateFileInput {
     id: string;
     owner?: string;
     category?: string;
-    metaData?: Object | Array<any>;
+    metaData?: any;
     description?: string;
 }
 export interface IFileStorageInitialProps {

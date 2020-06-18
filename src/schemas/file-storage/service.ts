@@ -32,7 +32,7 @@ import { getParams } from './paramsBuffer';
 import {
   IFileBag, IFileBagTable, IFileBagTableInput, FileType, IImageTransform, ITransformUrlPayload,
   IImgeData, Context, ExtendedContext, IRedisFileValue, IFileParams, IRedisTemporaryValue,
-  IUploadFileInput,
+  IUploadFileInput, IFileBagCreate,
 } from './types';
 import { FileStorage } from '.';
 
@@ -682,14 +682,40 @@ class FileStorageService {
     return nodes.length ? nodes[0] : false;
   }
 
-  public async updateFile(id: string, fileData: Partial<IFileBagTableInput>) {
+  public preparePayloadToSQL(fileData: Partial<IFileBag>): Partial<IFileBagTableInput> {
+    const { timezone } = this.props.context;
+
+    const {
+      metaData, createdAt, updatedAt, ...otherFileData
+    } = fileData;
+
+    const retDataInput: Partial<IFileBagTableInput> = otherFileData;
+
+    if (metaData) {
+      retDataInput.metaData = JSON.stringify(metaData);
+    }
+
+    if (createdAt) {
+      retDataInput.createdAt = moment.tz(createdAt, timezone).format();
+    }
+
+    if (updatedAt) {
+      retDataInput.updatedAt = moment.tz(updatedAt, timezone).format();
+    }
+
+    return retDataInput;
+  }
+
+  public async updateFile(id: string, fileData: Partial<IFileBag>) {
     const { knex, timezone } = this.props.context;
-    await knex<IFileBagTableInput>('fileStorage')
+    const result = await knex<IFileBagTableInput>('fileStorage')
       .update({
-        ...fileData,
+        ...this.preparePayloadToSQL(fileData),
         updatedAt: moment.tz(timezone).format(),
       })
-      .where('id', id);
+      .where('id', id)
+      .returning('id');
+    return result;
   }
 
 
@@ -747,7 +773,7 @@ class FileStorageService {
 
   public async createFile(
     fileStream: ReadStream,
-    fileInfo: IFileBagTableInput,
+    fileInfo: IFileBagCreate,
     fileParams?: IFileParams,
   ): Promise<{id: string; absoluteFilename: string; }> {
     const { knex, timezone } = this.props.context;
@@ -759,12 +785,12 @@ class FileStorageService {
     const id = fileInfo.id || uuidv4();
     const ext = FileStorageService.getExtensionByMimeType(fileInfo.mimeType);
     const localFilename = `${FileStorageService.getPathFromUuid(id)}.${ext}`;
-    const url = fileInfo.isLocalFile ? localFilename : fileInfo.url;
+    const url = (fileInfo.isLocalFile || !fileInfo.url) ? localFilename : fileInfo.url;
 
     try {
       await knex<IFileBagTableInput>('fileStorage')
         .insert({
-          ...fileInfo,
+          ...this.preparePayloadToSQL(fileInfo),
           id,
           url,
           type: FileStorageService.getFileTypeByMimeType(fileInfo.mimeType),
@@ -788,7 +814,6 @@ class FileStorageService {
           throw new ServerError('Failed to create destination directory', { err });
         }
       }
-
       fileStream
         .pipe(fs.createWriteStream(absoluteFilename))
         .on('close', () => {
@@ -797,11 +822,8 @@ class FileStorageService {
             Jimp.read(absoluteFilename)
               .then((image) => {
                 if (
-                  !noCompress
-                  || (
-                    image.getWidth() < imageOptimMaxWidth
-                    && image.getHeight() < imageOptimMaxHeight
-                  )
+                  (image.getWidth() > imageOptimMaxWidth || image.getHeight() > imageOptimMaxHeight)
+                  && Boolean(noCompress) === false
                 ) {
                   return image.scaleToFit(imageOptimMaxWidth, imageOptimMaxHeight);
                 }
@@ -849,20 +871,18 @@ class FileStorageService {
     const payload = await this.getTemporaryFile(id);
     const filename = FileStorage.getPathFromUuid(id);
     if (!payload) {
-      return false;
+      throw new ServerError(`File ${id} does not have in temporary cache`);
     }
 
     const ext = FileStorage.getExtensionByMimeType(payload.mimeType);
     const absoluteFilename = path.join(temporaryAbsolutePath, `${filename}.${ext}`);
     if (!fs.existsSync(absoluteFilename)) {
-      return false;
+      throw new ServerError(`File ${id} not exists in path ${absoluteFilename}`);
     }
 
     const stream = fs.createReadStream(absoluteFilename);
     const fileData = await this.createFile(stream, {
       ...payload,
-      createdAt: moment(payload.createdAt).format(),
-      updatedAt: moment(payload.updatedAt).format(),
       isLocalFile: true,
     });
 
