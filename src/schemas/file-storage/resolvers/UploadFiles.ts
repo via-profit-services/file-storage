@@ -28,9 +28,9 @@ const UploadFilesResolver: IFieldResolver<any, ExtendedContext, TArgs> = async (
     const { createReadStream, mimeType, filename } = file;
 
     const stream = createReadStream();
-    const options = {
-      noCompress: Boolean(noCompress || (transform && transform[index])),
-    };
+    // const options = {
+    //   noCompress: Boolean(noCompress || (transform && transform[index])),
+    // };
     const fileInfo: IFileBagCreate = {
       mimeType: FileStorage.resolveMimeType(filename, mimeType),
       isLocalFile: true,
@@ -43,7 +43,6 @@ const UploadFilesResolver: IFieldResolver<any, ExtendedContext, TArgs> = async (
     const { id, absoluteFilename } = await fileService.createFile(
       stream,
       fileInfo,
-      options,
     );
 
     logger.fileStorage.info(
@@ -54,6 +53,10 @@ const UploadFilesResolver: IFieldResolver<any, ExtendedContext, TArgs> = async (
 
     if (transform && transform[index] && type === FileType.image) {
       await fileService.applyTransform(absoluteFilename, transform[index]);
+    }
+
+    if (Boolean(noCompress) === false && type === FileType.image) {
+      await fileService.compressImage(absoluteFilename);
     }
 
     return {

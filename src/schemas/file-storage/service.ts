@@ -31,7 +31,7 @@ import {
 import { getParams } from './paramsBuffer';
 import {
   IFileBag, IFileBagTable, IFileBagTableInput, FileType, IImageTransform, ITransformUrlPayload,
-  IImgeData, Context, ExtendedContext, IRedisFileValue, IFileParams, IRedisTemporaryValue,
+  IImgeData, Context, ExtendedContext, IRedisFileValue, IRedisTemporaryValue,
   IUploadFileInput, IFileBagCreate,
 } from './types';
 import { FileStorage } from '.';
@@ -770,13 +770,25 @@ class FileStorageService {
     });
   }
 
+
+  public async compressImage(absoluteFilename: string): Promise<void> {
+    const { imageOptimMaxWidth, imageOptimMaxHeight } = getParams();
+
+    const jimpHandle = await Jimp.read(absoluteFilename);
+    if (
+      jimpHandle.getWidth() > imageOptimMaxWidth
+      || jimpHandle.getHeight() > imageOptimMaxHeight
+    ) {
+      jimpHandle.scaleToFit(imageOptimMaxWidth, imageOptimMaxHeight);
+      jimpHandle.writeAsync(absoluteFilename);
+    }
+  }
+
   public async createFile(
     fileStream: ReadStream,
     fileInfo: IFileBagCreate,
-    fileParams?: IFileParams,
   ): Promise<{id: string; absoluteFilename: string; }> {
     const { knex, timezone } = this.props.context;
-    const { noCompress } = fileParams || {};
     const {
       storageAbsolutePath,
     } = getParams();
@@ -816,51 +828,9 @@ class FileStorageService {
       fileStream
         .pipe(fs.createWriteStream(absoluteFilename))
         .on('close', () => {
-          if (['image/png', 'image/jpeg'].includes(fileInfo.mimeType)) {
-            const { imageOptimMaxWidth, imageOptimMaxHeight } = getParams();
-            Jimp.read(absoluteFilename)
-              .then((image) => {
-                if (
-                  (image.getWidth() > imageOptimMaxWidth || image.getHeight() > imageOptimMaxHeight)
-                  && Boolean(noCompress) === false
-                ) {
-                  return image.scaleToFit(imageOptimMaxWidth, imageOptimMaxHeight);
-                }
-                return image;
-              })
-              .then((image) => {
-                return image.writeAsync(absoluteFilename);
-              })
-              // .then(async () => {
-              //   if (noCompress) {
-              //     return;
-              //   }
-
-              //   // do not wait this promise
-              //   await imagemin([absoluteFilename],
-              //     {
-              //       plugins: [
-              //         imageminMozjpeg(compressionOptions.mozJpeg),
-              //         imageminPngquant(compressionOptions.pngQuant),
-              //         imageminOptipng(compressionOptions.optiPng),
-              //       ],
-              //     }).then((optiRes) => {
-              //     const { data } = optiRes[0];
-              //     fs.writeFileSync(absoluteFilename, data);
-              //   });
-              // })
-              .then(() => {
-                return resolve({
-                  id,
-                  absoluteFilename,
-                });
-              });
-          } else {
-            resolve({
-              id,
-              absoluteFilename,
-            });
-          }
+          resolve({
+            id, absoluteFilename,
+          });
         });
     });
   }
