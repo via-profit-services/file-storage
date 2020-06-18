@@ -548,8 +548,8 @@ class FileStorageService {
   }
 
   public async getTemporaryFileStream(fileInfo: {
-    id?: string;
     mimeType: string;
+    id?: string;
     expireAt?: number,
     }): Promise<{
       stream: fs.WriteStream;
@@ -564,10 +564,7 @@ class FileStorageService {
     const filename = FileStorage.getPathFromUuid(id);
     const ext = FileStorage.getExtensionByMimeType(fileInfo.mimeType);
     const absoluteFilename = path.join(temporaryAbsolutePath, `${filename}.${ext}`);
-    const dirname = path.dirname(absoluteFilename);
-    const readStream = fs.createReadStream(absoluteFilename);
-
-    await this.createTemporaryFile(readStream, {
+    await this.createTemporaryFile(null, {
       id,
       isLocalFile: true,
       mimeType: fileInfo.mimeType,
@@ -580,16 +577,6 @@ class FileStorageService {
     if (!file) {
       throw new ServerError('Failed to create temporary file stream');
     }
-
-
-    try {
-      if (!fs.existsSync(dirname)) {
-        fs.mkdirSync(dirname, { recursive: true });
-      }
-    } catch (err) {
-      throw new ServerError('Failed to create temporary file stream', { err });
-    }
-
 
     const stream = fs.createWriteStream(absoluteFilename);
 
@@ -727,7 +714,7 @@ class FileStorageService {
 
 
   public async createTemporaryFile(
-    fileStream: ReadStream,
+    fileStream: ReadStream | null,
     fileInfo: IUploadFileInput,
     expireAt?: number,
   ): Promise<{id: string; absoluteFilename: string; }> {
@@ -762,19 +749,23 @@ class FileStorageService {
         }
       }
 
-      fileStream
-        .pipe(fs.createWriteStream(absoluteFilename))
-        .on('close', async () => {
-          await redis.hset(
-            REDIS_TEMPORARY_NAME,
-            token,
-            JSON.stringify(payload),
-          );
-          resolve({
-            id,
-            absoluteFilename,
-          });
+      const wrStream = fs.createWriteStream(absoluteFilename);
+      wrStream.on('close', async () => {
+        await redis.hset(
+          REDIS_TEMPORARY_NAME,
+          token,
+          JSON.stringify(payload),
+        );
+        resolve({
+          id,
+          absoluteFilename,
         });
+      });
+      if (fileStream) {
+        fileStream.pipe(wrStream);
+      } else {
+        wrStream.end();
+      }
     });
   }
 

@@ -4,15 +4,15 @@ import chalk from 'chalk';
 import { v4 as uuidv4 } from 'uuid';
 
 import { makeSchema } from '../schemas/file-storage';
-// import { makeSchema } from '../../dist';
 
 import { configureApp } from '../utils/configureApp';
 
 const fileStorage = makeSchema({
   hostname: `http://localhost:${process.env.PORT}`,
-  // cacheTTL: 30,
-  // temporaryTTL: 30,
+  cacheTTL: 30,
+  temporaryTTL: 30,
 });
+
 
 const config = configureApp({
   typeDefs: [
@@ -29,8 +29,9 @@ const config = configureApp({
 const app = new App(config);
 const AuthService = schemas.auth.service;
 
-app.bootstrap((props) => {
+app.bootstrap(async (props) => {
   const { resolveUrl, context } = props;
+
   if (process.env.NODE_ENV !== 'development') {
     console.log(`GraphQL server was started at ${resolveUrl.graphql}`);
     return;
