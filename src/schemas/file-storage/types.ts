@@ -24,7 +24,7 @@ export interface ExtendedContext extends Context {
 
 export interface IFileBag {
   id: string;
-  owner: string;
+  owner: string | null;
   url: string;
   createdAt: Date;
   updatedAt: Date;
@@ -32,7 +32,7 @@ export interface IFileBag {
   mimeType: string;
   type: FileType;
   isLocalFile?: boolean;
-  metaData?: Object | Array<any>;
+  metaData?: any;
   description?: string;
 }
 
@@ -48,7 +48,7 @@ export interface IFileBagTableInput {
   createdAt?: string;
   updatedAt?: string;
   isLocalFile?: boolean;
-  metaData?: Object | Array<any>;
+  metaData?: string;
   description?: string;
   url?: string;
   owner?: string;

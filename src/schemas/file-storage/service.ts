@@ -682,11 +682,47 @@ class FileStorageService {
     return nodes.length ? nodes[0] : false;
   }
 
-  public async updateFile(id: string, fileData: Partial<IFileBagTableInput>) {
+  public preparePayloadToSQL(fileData: Partial<IFileBag>): Partial<IFileBagTableInput> {
+    const { timezone } = this.props.context;
+
+    const defaultFileData: IFileBag = {
+      id: uuidv4(),
+      type: FileType.document,
+      category: 'any',
+      owner: null,
+      createdAt: moment.tz(timezone).toDate(),
+      updatedAt: moment.tz(timezone).toDate(),
+      mimeType: 'text/plain',
+      url: '',
+      ...fileData,
+    };
+
+    const {
+      metaData, createdAt, updatedAt, ...otherFileData
+    } = defaultFileData;
+
+    const retDataInput: Partial<IFileBagTableInput> = otherFileData;
+
+    if (metaData) {
+      retDataInput.metaData = JSON.stringify(metaData);
+    }
+
+    if (createdAt) {
+      retDataInput.createdAt = moment.tz(createdAt, timezone).format();
+    }
+
+    if (updatedAt) {
+      retDataInput.updatedAt = moment.tz(updatedAt, timezone).format();
+    }
+
+    return retDataInput;
+  }
+
+  public async updateFile(id: string, fileData: Partial<IFileBag>) {
     const { knex, timezone } = this.props.context;
     await knex<IFileBagTableInput>('fileStorage')
       .update({
-        ...fileData,
+        ...this.preparePayloadToSQL(fileData),
         updatedAt: moment.tz(timezone).format(),
       })
       .where('id', id);
@@ -747,7 +783,7 @@ class FileStorageService {
 
   public async createFile(
     fileStream: ReadStream,
-    fileInfo: IFileBagTableInput,
+    fileInfo: Partial<IFileBag>,
     fileParams?: IFileParams,
   ): Promise<{id: string; absoluteFilename: string; }> {
     const { knex, timezone } = this.props.context;
@@ -764,7 +800,7 @@ class FileStorageService {
     try {
       await knex<IFileBagTableInput>('fileStorage')
         .insert({
-          ...fileInfo,
+          ...this.preparePayloadToSQL(fileInfo),
           id,
           url,
           type: FileStorageService.getFileTypeByMimeType(fileInfo.mimeType),
@@ -788,7 +824,6 @@ class FileStorageService {
           throw new ServerError('Failed to create destination directory', { err });
         }
       }
-
       fileStream
         .pipe(fs.createWriteStream(absoluteFilename))
         .on('close', () => {
@@ -852,14 +887,12 @@ class FileStorageService {
     const ext = FileStorage.getExtensionByMimeType(payload.mimeType);
     const absoluteFilename = path.join(temporaryAbsolutePath, `${filename}.${ext}`);
     if (!fs.existsSync(absoluteFilename)) {
-      throw new ServerError(`File ${id} not exists`);
+      throw new ServerError(`File ${id} not exists in path ${absoluteFilename}`);
     }
 
     const stream = fs.createReadStream(absoluteFilename);
     const fileData = await this.createFile(stream, {
       ...payload,
-      createdAt: moment(payload.createdAt).format(),
-      updatedAt: moment(payload.updatedAt).format(),
       isLocalFile: true,
     });
 
