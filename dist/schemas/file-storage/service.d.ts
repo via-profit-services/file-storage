@@ -68,8 +68,8 @@ declare class FileStorageService {
      */
     static resolveMimeType(filename: string, mimeType: string): string;
     getTemporaryFileStream(fileInfo: {
-        id?: string;
         mimeType: string;
+        id?: string;
         expireAt?: number;
     }): Promise<{
         stream: fs.WriteStream;
@@ -82,7 +82,7 @@ declare class FileStorageService {
     getFile(id: string): Promise<IFileBag | false>;
     preparePayloadToSQL(fileData: Partial<IFileBag>): Partial<IFileBagTableInput>;
     updateFile(id: string, fileData: Partial<IFileBag>): Promise<string[]>;
-    createTemporaryFile(fileStream: ReadStream, fileInfo: IUploadFileInput, expireAt?: number): Promise<{
+    createTemporaryFile(fileStream: ReadStream | null, fileInfo: IUploadFileInput, expireAt?: number): Promise<{
         id: string;
         absoluteFilename: string;
     }>;
