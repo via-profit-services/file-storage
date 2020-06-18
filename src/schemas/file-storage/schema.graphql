@@ -154,7 +154,7 @@ type FileStorageQuery {
     Image transform options
     """
     transform: ImageTransformInput
-  ): File!
+  ): File
 }
 
 
