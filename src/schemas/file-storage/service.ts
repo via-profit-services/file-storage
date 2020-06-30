@@ -28,6 +28,7 @@ import {
   IMAGE_TRANSFORM_MAX_HEIGHT,
   IMAGE_TRANSFORM_MAX_WITH,
 } from './constants';
+import createLoaders from './loaders';
 import { getParams } from './paramsBuffer';
 import {
   IFileBag, IFileBagTable, IFileBagTableInput, FileType, IImageTransform, ITransformUrlPayload,
@@ -859,6 +860,8 @@ class FileStorageService {
   }
 
   public async deleteFilesByOwner(owner: string | string[]): Promise<string[] | false> {
+    const { context } = this.props;
+    const loader = createLoaders(context);
     const owners = Array.isArray(owner) ? owner : [owner];
     const files = await this.getFiles({
       where: [
@@ -868,6 +871,9 @@ class FileStorageService {
     const idsByOwner = files.nodes.map((node) => node.id);
     if (idsByOwner.length) {
       const deletedIds = await this.deleteStaticFiles(idsByOwner);
+      deletedIds.forEach((deletedId) => {
+        loader.files.clear(deletedId);
+      });
       return deletedIds;
     }
 
@@ -875,7 +881,8 @@ class FileStorageService {
   }
 
   public async deleteStaticFiles(ids: string[]): Promise<string[]> {
-    const { knex } = this.props.context;
+    const { context } = this.props;
+    const { knex } = context;
     const filesList = await this.getFilesByIds(ids);
     const { staticDelimiter, rootPath } = getParams();
 
