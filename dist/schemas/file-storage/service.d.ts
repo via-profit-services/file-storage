@@ -95,6 +95,7 @@ declare class FileStorageService {
         id: string;
         absoluteFilename: string;
     }>;
+    deleteFilesByOwner(owner: string | string[]): Promise<string[] | false>;
     deleteStaticFiles(ids: string[]): Promise<string[]>;
 }
 export default FileStorageService;
