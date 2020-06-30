@@ -1,4 +1,3 @@
-import { ServerError } from '@via-profit-services/core';
 import { IResolverObject, IFieldResolver } from 'graphql-tools';
 
 import createDataloaders from '../loaders';
