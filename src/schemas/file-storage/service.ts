@@ -858,6 +858,21 @@ class FileStorageService {
     return fileData;
   }
 
+  public async deleteFilesByOwner(owner: string | string[]): Promise<string[] | false> {
+    const owners = Array.isArray(owner) ? owner : [owner];
+    const files = await this.getFiles({
+      where: [
+        ['owner', TWhereAction.IN, owners],
+      ],
+    });
+    const idsByOwner = files.nodes.map((node) => node.id);
+    if (idsByOwner.length) {
+      const deletedIds = await this.deleteStaticFiles(idsByOwner);
+      return deletedIds;
+    }
+
+    return false;
+  }
 
   public async deleteStaticFiles(ids: string[]): Promise<string[]> {
     const { knex } = this.props.context;
