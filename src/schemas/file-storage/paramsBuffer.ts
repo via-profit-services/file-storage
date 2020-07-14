@@ -61,11 +61,11 @@ export const setParams = (params?: Partial<IFileStorageInitialProps>) => {
 
   // fuse for timout max value
   paramsBuffer.params.cacheTTL = Math.min(
-    TIMEOUT_MAX_VALUE / 1000, paramsBuffer.params.cacheTTL,
+    TIMEOUT_MAX_VALUE / 1000, paramsBuffer.params.cacheTTL || CACHE_FILES_DEFAULT_TTL,
   );
 
   paramsBuffer.params.temporaryTTL = Math.min(
-    TIMEOUT_MAX_VALUE / 1000, paramsBuffer.params.temporaryTTL,
+    TIMEOUT_MAX_VALUE / 1000, paramsBuffer.params.temporaryTTL || TEMPORARY_FILES_DEFAULT_TTL,
   );
 
   // resolve absolute paths

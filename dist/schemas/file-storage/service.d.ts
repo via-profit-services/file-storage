@@ -67,6 +67,21 @@ declare class FileStorageService {
      * when uploading files to the server
      */
     static resolveMimeType(filename: string, mimeType: string): string;
+    /**
+     * Create WriteStream and reutn it with the file data/
+     * File will be registered in common file store
+     */
+    getFileStream(fileInfo: {
+        mimeType: string;
+        id?: string;
+    }): Promise<{
+        stream: fs.WriteStream;
+        file: IFileBag;
+    }>;
+    /**
+     * Create WriteStream and reutn it with the file data/
+     * File will be registered in temporary file store and will be deleted at `expireAt`
+     */
     getTemporaryFileStream(fileInfo: {
         mimeType: string;
         id?: string;
@@ -87,7 +102,7 @@ declare class FileStorageService {
         absoluteFilename: string;
     }>;
     compressImage(absoluteFilename: string): Promise<void>;
-    createFile(fileStream: ReadStream, fileInfo: IFileBagCreate): Promise<{
+    createFile(fileStream: ReadStream | null, fileInfo: IFileBagCreate): Promise<{
         id: string;
         absoluteFilename: string;
     }>;

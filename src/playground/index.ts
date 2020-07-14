@@ -4,6 +4,7 @@ import chalk from 'chalk';
 import { v4 as uuidv4 } from 'uuid';
 
 import { makeSchema } from '../schemas/file-storage';
+// import FileStorageService from '../schemas/file-storage/service';
 
 import { configureApp } from '../utils/configureApp';
 
@@ -46,6 +47,14 @@ app.bootstrap(async (props) => {
     access: 2.592e6,
     refresh: 2.592e6,
   });
+
+  // const fsService = new FileStorageService({ context });
+  // const { stream, file } = await fsService.getFileStream({
+  //   mimeType: 'application/json',
+  // });
+
+  // console.log('file', file);
+  // stream.write('{"foo": "bar"}');
 
   console.log(chalk.green('Your development token is:'));
   console.log(chalk.yellow(accessToken.token));
