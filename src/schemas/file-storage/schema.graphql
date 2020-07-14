@@ -135,7 +135,7 @@ input FileUpdateInfo {
 
 type FileStorageQuery {
   """
-  Returns Drivers list bundle
+  Returns Files list bundle
   """
   list(
     first: Int
