@@ -557,14 +557,7 @@ class FileStorageService {
       stream: fs.WriteStream;
       file: IFileBag;
     }> {
-    const { storageAbsolutePath } = getParams();
-    const id = fileInfo.id || uuidv4();
-
-    const filename = FileStorage.getPathFromUuid(id);
-    const ext = FileStorage.getExtensionByMimeType(fileInfo.mimeType);
-    const absoluteFilename = path.join(storageAbsolutePath, `${filename}.${ext}`);
-
-    await this.createFile(null, fileInfo);
+    const { id, absoluteFilename } = await this.createFile(null, fileInfo);
     const file = await this.getFile(id);
 
     if (!file) {

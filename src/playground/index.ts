@@ -3,7 +3,7 @@ import { App, schemas } from '@via-profit-services/core';
 import chalk from 'chalk';
 import { v4 as uuidv4 } from 'uuid';
 
-import { makeSchema } from '../schemas/file-storage';
+import { makeSchema, FileType } from '../schemas/file-storage';
 // import FileStorageService from '../schemas/file-storage/service';
 
 import { configureApp } from '../utils/configureApp';
@@ -51,6 +51,9 @@ app.bootstrap(async (props) => {
   // const fsService = new FileStorageService({ context });
   // const { stream, file } = await fsService.getFileStream({
   //   mimeType: 'application/json',
+  //   category: 'test',
+  //   owner: '34849cc0-0121-48e7-8091-108f04278b68',
+  //   type: FileType.document,
   // });
 
   // console.log('file', file);
