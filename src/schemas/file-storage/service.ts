@@ -553,10 +553,7 @@ class FileStorageService {
    * Create WriteStream and reutn it with the file data/
    * File will be registered in common file store
    */
-  public async getFileStream(fileInfo: {
-    mimeType: string;
-    id?: string;
-    }): Promise<{
+  public async getFileStream(fileInfo: IFileBagCreate): Promise<{
       stream: fs.WriteStream;
       file: IFileBag;
     }> {
@@ -567,14 +564,7 @@ class FileStorageService {
     const ext = FileStorage.getExtensionByMimeType(fileInfo.mimeType);
     const absoluteFilename = path.join(storageAbsolutePath, `${filename}.${ext}`);
 
-    await this.createFile(null, {
-      id,
-      isLocalFile: true,
-      mimeType: fileInfo.mimeType,
-      category: 'temporary',
-      owner: uuidv4(),
-      type: FileType.document,
-    });
+    await this.createFile(null, fileInfo);
     const file = await this.getFile(id);
 
     if (!file) {
