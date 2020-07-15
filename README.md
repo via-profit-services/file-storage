@@ -30,7 +30,7 @@
 ### Установка
 
 ```bash
-yarn add ssh://git@gitlab.com:via-profit-services/file-storage.git#semver:^0.13.3
+yarn add ssh://git@gitlab.com:via-profit-services/file-storage.git#semver:^0.13.4
 ```
 
 Список версий [см. здесь](https://gitlab.com/via-profit-services/file-storage/-/tags)
