@@ -557,14 +557,7 @@ class FileStorageService {
       stream: fs.WriteStream;
       file: IFileBag;
     }> {
-    const { storageAbsolutePath } = getParams();
-    const id = fileInfo.id || uuidv4();
-
-    const filename = FileStorage.getPathFromUuid(id);
-    const ext = FileStorage.getExtensionByMimeType(fileInfo.mimeType);
-    const absoluteFilename = path.join(storageAbsolutePath, `${filename}.${ext}`);
-
-    await this.createFile(null, fileInfo);
+    const { id, absoluteFilename } = await this.createFile(null, fileInfo);
     const file = await this.getFile(id);
 
     if (!file) {
@@ -860,18 +853,19 @@ class FileStorageService {
           throw new ServerError('Failed to create destination directory', { err });
         }
       }
-      if (fileStream !== null) {
-        fileStream
-          .pipe(fs.createWriteStream(absoluteFilename))
-          .on('close', () => {
-            resolve({
-              id, absoluteFilename,
-            });
-          });
-      } else {
+
+      const wrStream = fs.createWriteStream(absoluteFilename);
+      wrStream.on('close', async () => {
         resolve({
-          id, absoluteFilename,
+          id,
+          absoluteFilename,
         });
+      });
+
+      if (fileStream) {
+        fileStream.pipe(wrStream);
+      } else {
+        wrStream.end();
       }
     });
   }
