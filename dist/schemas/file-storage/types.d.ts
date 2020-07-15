@@ -29,7 +29,7 @@ export interface IFileBag {
     metaData?: any;
     description?: string;
 }
-export declare type IFileBagCreate = Omit<IFileBag, 'url' | 'id' | 'type' | 'createdAt' | 'updatedAt'> & {
+export declare type IFileBagCreate = Omit<IFileBag, 'url' | 'id' | 'createdAt' | 'updatedAt'> & {
     id?: string;
     url?: string;
 };
@@ -68,7 +68,7 @@ export interface IUpdateFileInput {
 }
 export interface IFileStorageInitialProps {
     /**
-     * Host or hostname without protocol ang schema (`www.example.com`)
+     * e.g. `https://www.example.com:9000`
      */
     hostname: string;
     /**

@@ -549,6 +549,40 @@ class FileStorageService {
     return FileStorageService.getMimeTypeByExtension(filename);
   }
 
+  /**
+   * Create WriteStream and reutn it with the file data/
+   * File will be registered in common file store
+   */
+  public async getFileStream(fileInfo: IFileBagCreate): Promise<{
+      stream: fs.WriteStream;
+      file: IFileBag;
+    }> {
+    const { storageAbsolutePath } = getParams();
+    const id = fileInfo.id || uuidv4();
+
+    const filename = FileStorage.getPathFromUuid(id);
+    const ext = FileStorage.getExtensionByMimeType(fileInfo.mimeType);
+    const absoluteFilename = path.join(storageAbsolutePath, `${filename}.${ext}`);
+
+    await this.createFile(null, fileInfo);
+    const file = await this.getFile(id);
+
+    if (!file) {
+      throw new ServerError('Failed to create file stream');
+    }
+
+    const stream = fs.createWriteStream(absoluteFilename);
+
+    return {
+      stream,
+      file,
+    };
+  }
+
+  /**
+   * Create WriteStream and reutn it with the file data/
+   * File will be registered in temporary file store and will be deleted at `expireAt`
+   */
   public async getTemporaryFileStream(fileInfo: {
     mimeType: string;
     id?: string;
@@ -786,7 +820,7 @@ class FileStorageService {
   }
 
   public async createFile(
-    fileStream: ReadStream,
+    fileStream: ReadStream | null,
     fileInfo: IFileBagCreate,
   ): Promise<{id: string; absoluteFilename: string; }> {
     const { knex, timezone } = this.props.context;
@@ -826,13 +860,19 @@ class FileStorageService {
           throw new ServerError('Failed to create destination directory', { err });
         }
       }
-      fileStream
-        .pipe(fs.createWriteStream(absoluteFilename))
-        .on('close', () => {
-          resolve({
-            id, absoluteFilename,
+      if (fileStream !== null) {
+        fileStream
+          .pipe(fs.createWriteStream(absoluteFilename))
+          .on('close', () => {
+            resolve({
+              id, absoluteFilename,
+            });
           });
+      } else {
+        resolve({
+          id, absoluteFilename,
         });
+      }
     });
   }
 

@@ -4,6 +4,8 @@ import resolvers from './resolvers';
 import * as typeDefs from './schema.graphql';
 import { IFileStorageInitialProps } from './types';
 
+// FIXME: Fuse for FILESTORAGE_CACHE_TTL and FILESTORAGE_TEMPORARY_TTL values they not defined
+
 export const makeSchema = (props?: IFileStorageInitialProps) => {
   setParams(props);
 
