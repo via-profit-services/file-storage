@@ -860,18 +860,19 @@ class FileStorageService {
           throw new ServerError('Failed to create destination directory', { err });
         }
       }
-      if (fileStream !== null) {
-        fileStream
-          .pipe(fs.createWriteStream(absoluteFilename))
-          .on('close', () => {
-            resolve({
-              id, absoluteFilename,
-            });
-          });
-      } else {
+
+      const wrStream = fs.createWriteStream(absoluteFilename);
+      wrStream.on('close', async () => {
         resolve({
-          id, absoluteFilename,
+          id,
+          absoluteFilename,
         });
+      });
+
+      if (fileStream) {
+        fileStream.pipe(wrStream);
+      } else {
+        wrStream.end();
       }
     });
   }
