@@ -71,10 +71,7 @@ declare class FileStorageService {
      * Create WriteStream and reutn it with the file data/
      * File will be registered in common file store
      */
-    getFileStream(fileInfo: {
-        mimeType: string;
-        id?: string;
-    }): Promise<{
+    getFileStream(fileInfo: IFileBagCreate): Promise<{
         stream: fs.WriteStream;
         file: IFileBag;
     }>;
