@@ -10,6 +10,7 @@ import { Logger } from 'winston';
 export enum FileType {
   image = 'image',
   document = 'document',
+  template = 'template',
 }
 
 

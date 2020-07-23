@@ -3,7 +3,7 @@ import { App, schemas } from '@via-profit-services/core';
 import chalk from 'chalk';
 import { v4 as uuidv4 } from 'uuid';
 
-import { makeSchema, FileType } from '../schemas/file-storage';
+import { makeSchema } from '../schemas/file-storage';
 // import FileStorageService from '../schemas/file-storage/service';
 
 import { configureApp } from '../utils/configureApp';

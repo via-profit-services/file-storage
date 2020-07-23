@@ -170,9 +170,11 @@ type FileStorageQuery {
 
 
 input FilesListFilter {
-  owner: ID
-  category: String
-  mimeType: String
+  id: [ID]
+  owner: [ID]
+  category: [String]
+  mimeType: [String]
+  type: [FileType]
 }
 
 """
@@ -205,6 +207,7 @@ enum FilesOrderField {
 enum FileType {
   image
   document
+  template
 }
 
 """

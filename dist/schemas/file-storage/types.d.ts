@@ -8,7 +8,8 @@ import { Options as ImagenimPngQuantOption } from 'imagemin-pngquant';
 import { Logger } from 'winston';
 export declare enum FileType {
     image = "image",
-    document = "document"
+    document = "document",
+    template = "template"
 }
 export declare type Context = Pick<IContext, 'knex' | 'timezone' | 'token' | 'redis' | 'endpoint'>;
 export interface ExtendedContext extends Context {
