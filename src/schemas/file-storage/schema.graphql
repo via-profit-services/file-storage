@@ -131,6 +131,11 @@ input FileUpdateInfo {
   Voluntary metadata of this file (e.g. title, alt for images)
   """
   metaData: JSON
+
+  """
+  Type of the file
+  """
+  type: FileType
 }
 
 type FileStorageQuery {
