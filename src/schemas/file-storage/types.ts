@@ -77,6 +77,7 @@ export interface IUpdateFileInput {
   category?: string;
   metaData?: any;
   description?: string;
+  type?: FileType;
 }
 
 
