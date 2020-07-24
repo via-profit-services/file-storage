@@ -71,9 +71,11 @@ class FileStorageService {
       try {
         const { exp, filename } = payload;
         if (new Date().getTime() > exp) {
-          const fullFilenamePath = path.resolve(cacheAbsolutePath, filename);
+          const fullFilenamePath = path.join(cacheAbsolutePath, filename);
           const dirname = path.dirname(fullFilenamePath);
-          const dirnamePrev = path.resolve(dirname, '..');
+          const dirnamePrev = path.join(dirname, '..');
+
+
           if (fs.existsSync(fullFilenamePath)) {
             // remove file from fs
             fs.unlinkSync(fullFilenamePath);
@@ -129,9 +131,9 @@ class FileStorageService {
       try {
         const { exp, filename } = payload;
         if (new Date().getTime() > exp) {
-          const fullFilenamePath = path.resolve(temporaryAbsolutePath, filename);
+          const fullFilenamePath = path.join(temporaryAbsolutePath, filename);
           const dirname = path.dirname(fullFilenamePath);
-          const dirnamePrev = path.resolve(dirname, '..');
+          const dirnamePrev = path.join(dirname, '..');
           if (fs.existsSync(fullFilenamePath)) {
             // remove file from fs
             fs.unlinkSync(fullFilenamePath);
@@ -930,9 +932,51 @@ class FileStorageService {
     return false;
   }
 
+  public async flush() {
+    const context = this.props.context as ExtendedContext;
+    const loaders = createLoaders(context);
+    const { storageAbsolutePath, cacheAbsolutePath, temporaryAbsolutePath } = getParams();
+    const {
+      redis, knex, logger, token,
+    } = context;
+
+    logger.fileStorage.info(
+      '!!! WARNING. All files will be deleted permanently !!!',
+      { initiator: token.uuid },
+    );
+
+    loaders.files.clearAll();
+    loaders.tremporaryFiles.clearAll();
+
+    try {
+      await redis.del(REDIS_CACHE_NAME);
+      await redis.del(REDIS_TEMPORARY_NAME);
+    } catch (err) {
+      throw new ServerError('Flush. Failed to remove files from Redis');
+    }
+
+    try {
+      await knex('fileStorage').del();
+    } catch (err) {
+      throw new ServerError('Flush. Failed to remove files from Database');
+    }
+    try {
+      fs.rmdirSync(temporaryAbsolutePath, { recursive: true });
+      fs.rmdirSync(cacheAbsolutePath, { recursive: true });
+      fs.rmdirSync(storageAbsolutePath, { recursive: true });
+    } catch (err) {
+      throw new ServerError('Flush. Failed to remove files from disk');
+    }
+
+    logger.fileStorage.info(
+      '!!! WARNING. All files has beed deleted permanently !!!',
+      { initiator: token.uuid },
+    );
+  }
+
   public async deleteStaticFiles(ids: string[]): Promise<string[]> {
-    const { context } = this.props;
-    const { knex } = context;
+    const context = this.props.context as ExtendedContext;
+    const { knex, logger } = context;
     const filesList = await this.getFilesByIds(ids);
     const { staticDelimiter, rootPath } = getParams();
 
@@ -942,10 +986,9 @@ class FileStorageService {
         if (fileData.isLocalFile || fileData.url.match(/^\/[a-z0-9]+/i)) {
           const filename = FileStorage.getFilenameFromUuid(fileData.id, staticDelimiter);
           const ext = FileStorage.getExtensionByMimeType(fileData.mimeType);
-          const fullFilenamePath = path.resolve(rootPath, `${filename}.${ext}`);
-          const dirname = path.dirname(filename);
-          const dirnamePrev = path.resolve(dirname, '..');
-
+          const fullFilenamePath = path.join(rootPath, `${filename}.${ext}`);
+          const dirname = path.join(rootPath, path.dirname(filename));
+          const dirnamePrev = path.resolve(`${dirname}/..`);
           try {
             // remove file
             if (fs.existsSync(fullFilenamePath)) {
@@ -960,6 +1003,8 @@ class FileStorageService {
               if (!fs.readdirSync(dirnamePrev).length) {
                 fs.rmdirSync(dirnamePrev);
               }
+            } else {
+              logger.fileStorage.info(`File ${fileData.id} not exists in path ${fullFilenamePath}`);
             }
           } catch (err) {
             throw new ServerError(`

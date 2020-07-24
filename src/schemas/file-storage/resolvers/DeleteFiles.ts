@@ -19,14 +19,13 @@ const DeleteFilesResolver: IFieldResolver<any, ExtendedContext, TArgs> = async (
 
   const fileService = new FileStorageService({ context });
   const loaders = createLoaders(context);
-
-  let deletedIds: string[] = [];
+  let deletedIDs: string[] = [];
 
   // get by IDs
   if (ids && Array.isArray(ids)) {
     try {
       logger.fileStorage.debug(`Will be deleted ${ids.length} file(s)`, { uuid });
-      deletedIds = await fileService.deleteStaticFiles(ids);
+      deletedIDs = await fileService.deleteStaticFiles(ids);
     } catch (err) {
       logger.fileStorage.error('Failed to Delete files', { err, uuid });
       throw new ServerError('Failed to Delete files', { err, uuid });
@@ -44,19 +43,21 @@ const DeleteFilesResolver: IFieldResolver<any, ExtendedContext, TArgs> = async (
     if (idsByOwner.length) {
       try {
         logger.fileStorage.debug(`Will be deleted ${idsByOwner} file(s)`, { uuid });
-        deletedIds = await fileService.deleteStaticFiles(idsByOwner);
+        deletedIDs = await fileService.deleteStaticFiles(idsByOwner);
       } catch (err) {
         throw new ServerError('Failed to Delete files', { err, uuid });
       }
     }
   }
 
-  deletedIds.forEach((id) => {
+  deletedIDs.forEach((id) => {
     loaders.files.clear(id);
     logger.fileStorage.debug(`File ${id} was deleted. Initiator: Account ${uuid}`);
   });
 
-  return true;
+  return {
+    deletedIDs,
+  };
 };
 
 export default DeleteFilesResolver;
