@@ -59,7 +59,7 @@ type FileStorageMutation {
     If transform is used then props noCompress will be true permanently
     """
     noCompress: Boolean
-  ): [File!]
+  ): [TemporaryFile!]
 
   """
   Move your data from temporary directory into the permanent state
@@ -251,6 +251,19 @@ type File implements FileNode & Node {
   metaData: JSON
 }
 
+type TemporaryFile implements FileNode & Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  expiredAt: DateTime!
+  owner: ID!
+  type: FileType!
+  category: String!
+  mimeType: String!
+  url: URL!
+  description: String
+  metaData: JSON
+}
 
 
 input ImageTransformInput {

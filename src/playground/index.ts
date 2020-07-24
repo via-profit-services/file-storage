@@ -9,7 +9,7 @@ import { makeSchema } from '../schemas/file-storage';
 import { configureApp } from '../utils/configureApp';
 
 const fileStorage = makeSchema({
-  hostname: `http://localhost:${process.env.PORT}`,
+  hostname: `https://localhost:${process.env.PORT}`,
   cacheTTL: 30,
   temporaryTTL: 30,
 });

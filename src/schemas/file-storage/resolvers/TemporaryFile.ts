@@ -11,10 +11,11 @@ interface IParent {
   transform?: IImageTransform;
 }
 
-const FileResolver: IResolverObject<IParent, Context, any> = new Proxy({
+const TemporaryFileResolver: IResolverObject<IParent, Context, any> = new Proxy({
   id: () => ({}),
   createdAt: () => ({}),
   updatedAt: () => ({}),
+  expiredAt: () => ({}),
   owner: () => ({}),
   category: () => ({}),
   mimeType: () => ({}),
@@ -29,7 +30,7 @@ const FileResolver: IResolverObject<IParent, Context, any> = new Proxy({
       const fileStorage = new FileStorageService({ context });
 
       const loaders = createDataloaders(context);
-      const file = await loaders.files.load(id);
+      const file = await loaders.tremporaryFiles.load(id);
 
       if (!file) {
         return null;
@@ -49,4 +50,4 @@ const FileResolver: IResolverObject<IParent, Context, any> = new Proxy({
   },
 });
 
-export default FileResolver;
+export default TemporaryFileResolver;
