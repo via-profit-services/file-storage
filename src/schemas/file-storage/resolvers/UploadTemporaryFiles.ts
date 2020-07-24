@@ -50,12 +50,11 @@ const UploadTemporaryFilesResolver: IFieldResolver<any, ExtendedContext, TArgs> 
 
     logger.fileStorage.info(
       `Temporary file «${filename}» uploaded successfully as «${absoluteFilename}»`,
-      { uuid, mimeType },
+      { uuid, mimeType, id },
     );
 
     return {
       id,
-      isTemporary: true,
     };
   });
 

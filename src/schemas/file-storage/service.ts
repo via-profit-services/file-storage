@@ -33,7 +33,7 @@ import { getParams } from './paramsBuffer';
 import {
   IFileBag, IFileBagTable, IFileBagTableInput, FileType, IImageTransform, ITransformUrlPayload,
   IImgeData, Context, ExtendedContext, IRedisFileValue, IRedisTemporaryValue,
-  IUploadFileInput, IFileBagCreate,
+  IUploadFileInput, IFileBagCreate, ITemporaryFileBag,
 } from './types';
 import { FileStorage } from '.';
 
@@ -616,7 +616,7 @@ class FileStorageService {
     };
   }
 
-  public async getTemporaryFile(id: string): Promise<IFileBag | false> {
+  public async getTemporaryFile(id: string): Promise<ITemporaryFileBag | false> {
     const { redis, logger, timezone } = this.props.context as ExtendedContext;
     const {
       temporaryAbsolutePath, hostname, temporaryDelimiter, staticPrefix,
@@ -635,9 +635,10 @@ class FileStorageService {
       return false;
     }
 
-    const { fileInfo } = payload;
+    const { fileInfo, exp } = payload;
     return {
       id,
+      expiredAt: moment.tz(exp, timezone).toDate(),
       createdAt: moment.tz(timezone).toDate(),
       updatedAt: moment.tz(timezone).toDate(),
       url: `${hostname}${staticPrefix}/${temporaryDelimiter}/${payload.filename}`,
@@ -703,6 +704,21 @@ class FileStorageService {
   public async getFile(id: string): Promise<IFileBag | false> {
     const nodes = await this.getFilesByIds([id]);
     return nodes.length ? nodes[0] : false;
+  }
+
+  public async getTemporaryFilesByIds(ids: string[]): Promise<ITemporaryFileBag[]> {
+    const files: ITemporaryFileBag[] = [];
+    await ids.reduce(async (prev, id) => {
+      await prev;
+
+      const file = await this.getTemporaryFile(id);
+
+      if (file) {
+        files.push(file);
+      }
+    }, Promise.resolve());
+
+    return files;
   }
 
   public preparePayloadToSQL(fileData: Partial<IFileBag>): Partial<IFileBagTableInput> {
