@@ -4,5 +4,5 @@ interface IParent {
     id: string;
     transform?: IImageTransform;
 }
-declare const FileResolver: IResolverObject<IParent, Context, any>;
-export default FileResolver;
+declare const TemporaryFileResolver: IResolverObject<IParent, Context, any>;
+export default TemporaryFileResolver;

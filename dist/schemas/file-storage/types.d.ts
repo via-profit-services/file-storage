@@ -30,6 +30,9 @@ export interface IFileBag {
     metaData?: any;
     description?: string;
 }
+export interface ITemporaryFileBag extends IFileBag {
+    expiredAt: Date;
+}
 export declare type IFileBagCreate = Omit<IFileBag, 'url' | 'id' | 'createdAt' | 'updatedAt'> & {
     id?: string;
     url?: string;
