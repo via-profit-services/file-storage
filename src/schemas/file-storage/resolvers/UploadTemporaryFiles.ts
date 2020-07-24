@@ -23,7 +23,6 @@ const UploadTemporaryFilesResolver: IFieldResolver<any, ExtendedContext, TArgs> 
 
   const fileService = new FileStorage({ context });
   const filesData = await Promise.all(files);
-
   const savePromises = filesData.map(async (file, index) => {
     const { createReadStream, mimeType, filename } = file;
 
@@ -39,7 +38,6 @@ const UploadTemporaryFilesResolver: IFieldResolver<any, ExtendedContext, TArgs> 
       stream,
       fileInfo,
     );
-
     if (transform && transform[index] && type === FileType.image) {
       await fileService.applyTransform(absoluteFilename, transform[index]);
     }

@@ -632,6 +632,10 @@ class FileStorageService {
       logger.fileStorage.error('Failed to decode temporary data JSON', { err });
     }
 
+    if (payload === null) {
+      return false;
+    }
+
     const absoluteFilename = path.join(temporaryAbsolutePath, payload.filename);
     if (!fs.existsSync(absoluteFilename)) {
       return false;
@@ -892,6 +896,8 @@ class FileStorageService {
     const { temporaryAbsolutePath } = getParams();
     const payload = await this.getTemporaryFile(id);
     const filename = FileStorage.getPathFromUuid(id);
+
+
     if (!payload) {
       throw new ServerError(`File ${id} does not have in temporary cache`);
     }
@@ -903,8 +909,10 @@ class FileStorageService {
     }
 
     const stream = fs.createReadStream(absoluteFilename);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { expiredAt, ...otherFileData } = payload;
     const fileData = await this.createFile(stream, {
-      ...payload,
+      ...otherFileData,
       isLocalFile: true,
     });
 
