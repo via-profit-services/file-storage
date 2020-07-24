@@ -11,7 +11,7 @@ type FileStorageMutation {
   """
   Delete files by IDs
   """
-  delete(ids: [ID!] owners: [ID!]): Boolean
+  delete(ids: [ID!] owners: [ID!]): FileStorageDeleteResponse!
   
   """
   Upload files
@@ -80,6 +80,10 @@ type FileStorageMutation {
     """
     transform: [ImageTransformInput!]
   ): [File!]
+}
+
+type FileStorageDeleteResponse {
+  deletedIDs: [ID!]!
 }
 
 """
