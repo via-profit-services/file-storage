@@ -9,7 +9,7 @@ import { makeSchema } from '../schemas/file-storage';
 import { configureApp } from '../utils/configureApp';
 
 const fileStorage = makeSchema({
-  hostname: `https://localhost:${process.env.PORT}`,
+  hostname: `http://localhost:${process.env.PORT}`,
   cacheTTL: 30,
   temporaryTTL: 30,
 });
@@ -68,9 +68,6 @@ app.bootstrap(async (props) => {
   console.log('');
   console.log(`${chalk.green('GraphQL server')}:     ${chalk.yellow(resolveUrl.graphql)}`);
 
-  if (resolveUrl.playground) {
-    console.log(`${chalk.magenta('GraphQL playground')}: ${chalk.yellow(resolveUrl.playground)}`);
-  }
   if (resolveUrl.voyager) {
     console.log(`${chalk.magenta('GraphQL voyager')}:    ${chalk.yellow(resolveUrl.voyager)}`);
   }
