@@ -1,5 +1,5 @@
 /* eslint-disable import/max-dependencies */
-import { IResolvers } from 'graphql-tools';
+import { IResolvers } from '@via-profit-services/core';
 
 import FileUpload from '../FileUploadScalar';
 import { ExtendedContext } from '../types';

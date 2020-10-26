@@ -1,5 +1,6 @@
 import { GraphQLScalarType, GraphQLError } from 'graphql';
 
+
 import FileUploadInstance from './FileUploadInstance';
 
 const FileUpload = new GraphQLScalarType({

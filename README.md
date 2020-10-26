@@ -70,7 +70,7 @@ extend type Mutation {
 _./resolvers.ts_
 
 ```ts
-import { IResolvers } from 'graphql-tools';
+import { IResolvers } from '@via-profit-services/core';
 import path from 'path';
 import { IContext } from '@via-profit-services/core';
 import { IFile, FileStorage } from '@via-profit-services/file-storage';

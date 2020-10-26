@@ -1,4 +1,4 @@
-import { IResolverObject, IFieldResolver } from 'graphql-tools';
+import { IObjectTypeResolver, IFieldResolver } from '@via-profit-services/core';
 
 import createDataloaders from '../loaders';
 import FileStorageService from '../service';
@@ -11,7 +11,8 @@ interface IParent {
   transform?: IImageTransform;
 }
 
-const FileResolver: IResolverObject<IParent, Context, any> = new Proxy({
+
+const FileResolver: IObjectTypeResolver<IParent, Context, any> = new Proxy({
   id: () => ({}),
   createdAt: () => ({}),
   updatedAt: () => ({}),

@@ -1,5 +1,4 @@
-import { ServerError, TWhereAction } from '@via-profit-services/core';
-import { IFieldResolver } from 'graphql-tools';
+import { IFieldResolver, ServerError, TWhereAction } from '@via-profit-services/core';
 
 import createLoaders from '../loaders';
 import FileStorageService from '../service';
