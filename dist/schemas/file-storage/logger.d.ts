@@ -1,5 +1,5 @@
-import 'winston-daily-rotate-file';
-export declare const configureFileStorageLogger: (config: Config) => import("winston").Logger;
+import { Winston } from '@via-profit-services/core';
+export declare const configureFileStorageLogger: (config: Config) => Winston.Logger;
 interface Config {
     logDir: string;
     logFilenamePattern?: string;

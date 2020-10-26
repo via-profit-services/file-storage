@@ -1,5 +1,4 @@
-import { transports, createLogger, format } from 'winston';
-import 'winston-daily-rotate-file';
+import { Winston } from '@via-profit-services/core';
 
 import {
   LOG_DATE_PATTERNT,
@@ -10,6 +9,7 @@ import {
   LOG_FILENAME_FILES_STORAGE,
 } from './constants';
 
+const { format, transports, createLogger } = Winston;
 
 const loggerFormatter = format.combine(
   format.metadata(),

@@ -1,5 +1,4 @@
-import { ServerError } from '@via-profit-services/core';
-import { IFieldResolver } from 'graphql-tools';
+import { ServerError, IFieldResolver } from '@via-profit-services/core';
 
 import { FileStorage } from '..';
 import createLoaders from '../loaders';

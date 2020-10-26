@@ -1,5 +1,4 @@
-import { ServerError } from '@via-profit-services/core';
-import { IFieldResolver } from 'graphql-tools';
+import { ServerError, IFieldResolver } from '@via-profit-services/core';
 
 import FileStorageService from '../service';
 import { ExtendedContext, IUpdateFileInput } from '../types';

@@ -1,4 +1,4 @@
-import { IFieldResolver } from 'graphql-tools';
+import { IFieldResolver } from '@via-profit-services/core';
 
 import FileStorage from '../service';
 import {

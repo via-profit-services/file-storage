@@ -1,1 +1,1 @@
-import 'graphql-import-node';
+export {};

@@ -30,7 +30,7 @@
 ### Установка
 
 ```bash
-yarn add ssh://git@gitlab.com:via-profit-services/file-storage.git#semver:^0.14.5
+yarn add ssh://git@gitlab.com:via-profit-services/file-storage.git#semver:^0.14.6
 ```
 
 Список версий [см. здесь](https://gitlab.com/via-profit-services/file-storage/-/tags)
@@ -70,7 +70,7 @@ extend type Mutation {
 _./resolvers.ts_
 
 ```ts
-import { IResolvers } from 'graphql-tools';
+import { IResolvers } from '@via-profit-services/core';
 import path from 'path';
 import { IContext } from '@via-profit-services/core';
 import { IFile, FileStorage } from '@via-profit-services/file-storage';

@@ -1,4 +1,4 @@
-import { IFieldResolver } from 'graphql-tools';
+import { IFieldResolver } from '@via-profit-services/core';
 import { ExtendedContext, IUpdateFileInput, IImageTransform } from '../types';
 interface TArgs {
     info: IUpdateFileInput[];

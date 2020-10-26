@@ -1,10 +1,9 @@
 import { ReadStream } from 'fs';
-import { IContext, ILoggerCollection } from '@via-profit-services/core';
+import { IContext, ILoggerCollection, Winston } from '@via-profit-services/core';
 import { WriteStream } from 'fs-capacitor';
 import { Options as ImagenimMozjpegOption } from 'imagemin-mozjpeg';
 import { Options as ImagenimOptiPngOption } from 'imagemin-optipng';
 import { Options as ImagenimPngQuantOption } from 'imagemin-pngquant';
-import { Logger } from 'winston';
 
 
 export enum FileType {
@@ -18,7 +17,7 @@ export type Context = Pick<IContext, 'knex' | 'timezone' | 'token' | 'redis' | '
 
 export interface ExtendedContext extends Context {
   logger: ILoggerCollection & {
-    fileStorage: Logger;
+    fileStorage: Winston.Logger;
   };
 }
 
