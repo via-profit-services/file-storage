@@ -2050,9 +2050,9 @@
     semver "^6.3.0"
     tsutils "^3.17.1"
 
-"@via-profit-services/core@ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.30.7":
+"@via-profit-services/core@ssh://git@github.com:via-profit-services/core.git#semver:^0.30.7":
   version "0.30.7"
-  resolved "ssh://git@gitlab.com:via-profit-services/core.git#ff65fd36ca1a69a0e411e48dbd8bd7710d45f7d3"
+  resolved "ssh://git@github.com:via-profit-services/core.git#ff65fd36ca1a69a0e411e48dbd8bd7710d45f7d3"
   dependencies:
     "@graphql-toolkit/core" "^0.9.1"
     "@graphql-toolkit/schema-merging" "^0.9.1"
