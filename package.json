@@ -36,12 +36,12 @@
     },
     "repository": {
         "type": "git",
-        "url": "git@gitlab.com:via-profit-services/file-storage.git"
+        "url": "git@github.com:via-profit-services/file-storage.git"
     },
     "author": "Via Profit <promo@via-profit.ru>",
     "license": "MIT",
     "dependencies": {
-        "@via-profit-services/core": "ssh://git@gitlab.com:via-profit-services/core.git#semver:^0.30.7",
+        "@via-profit-services/core": "ssh://git@github.com:via-profit-services/core.git#semver:^0.30.7",
         "busboy": "^0.3.1",
         "fs-capacitor": "^6.1.0",
         "graphql": "^15.4.0",
