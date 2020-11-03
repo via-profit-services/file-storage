@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
 import { App, schemas } from '@via-profit-services/core';
 import chalk from 'chalk';
@@ -35,6 +36,7 @@ app.bootstrap(async (props) => {
 
   if (process.env.NODE_ENV !== 'development') {
     console.log(`GraphQL server was started at ${resolveUrl.graphql}`);
+
     return;
   }
 

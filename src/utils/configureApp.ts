@@ -88,6 +88,7 @@ const configureApp = (props?: IProps): IInitProps => {
   const {
     typeDefs, resolvers, expressMiddlewares,
   } = props || {};
+
   return {
     ...serverConfig,
     typeDefs,

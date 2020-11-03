@@ -210,12 +210,15 @@ class FileStorageService {
     if (res) {
       try {
         const payload = JSON.parse(res) as IRedisFileValue;
+
         return payload;
       } catch (err) {
         logger.fileStorage.error('Failed to parse payload', { err, imageDataHash });
+
         return null;
       }
     }
+
     return null;
   }
 
@@ -319,6 +322,7 @@ class FileStorageService {
     } catch (err) {
       logger.fileStorage.error(`Failed to apply transformation with file ${newFilename}`, { err, transform });
     }
+
     return [
       `${hostname}${staticPrefix}`,
       cacheDelimiter,
@@ -351,6 +355,7 @@ class FileStorageService {
     const { storagePath, storageAbsolutePath } = getParams();
     const ext = FileStorage.getExtensionByMimeType(mimeType);
     const fileLocation = FileStorage.getPathFromUuid(id);
+
     return {
       resolvePath: path.join(storagePath, `${fileLocation}.${ext}`),
       resolveAbsolutePath: path.join(storageAbsolutePath, `${fileLocation}.${ext}`),
@@ -361,12 +366,14 @@ class FileStorageService {
     if (!fs.existsSync(filepath)) {
       const { logger } = this.props.context as ExtendedContext;
       logger.fileStorage.error(`Transform error. File «${filepath}» not found`);
+
       return;
     }
 
     if (!fs.readFileSync(filepath)) {
       const { logger } = this.props.context as ExtendedContext;
       logger.fileStorage.error(`Transform error. File «${filepath}» not readable`);
+
       return;
     }
 
@@ -465,6 +472,7 @@ class FileStorageService {
 
   public static getStoragePath() {
     const { storagePath, storageAbsolutePath } = getParams();
+
     return {
       storagePath,
       storageAbsolutePath,
@@ -473,6 +481,7 @@ class FileStorageService {
 
   public static getCachePath() {
     const { cachePath, cacheAbsolutePath } = getParams();
+
     return {
       cachePath,
       cacheAbsolutePath,
@@ -481,6 +490,7 @@ class FileStorageService {
 
   public static getTemporaryPath() {
     const { temporaryPath, temporaryAbsolutePath } = getParams();
+
     return {
       temporaryPath,
       temporaryAbsolutePath,
@@ -529,6 +539,7 @@ class FileStorageService {
    */
   public static getMimeTypeByFilename(filename: string) {
     const ext = FileStorageService.extractExtensionFromFilename(filename);
+
     return FileStorageService.getMimeTypeByExtension(ext);
   }
 
@@ -642,6 +653,7 @@ class FileStorageService {
     }
 
     const { fileInfo, exp } = payload;
+
     return {
       id,
       expiredAt: moment.tz(exp, timezone).toDate(),
@@ -675,14 +687,12 @@ class FileStorageService {
       .then((nodes) => ({
         totalCount: nodes.length ? Number(nodes[0].totalCount) : 0,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        nodes: nodes.map(({ totalCount, url, ...nodeData }) => {
-          return {
+        nodes: nodes.map(({ totalCount, url, ...nodeData }) => ({
             ...nodeData,
             url: nodeData.isLocalFile
               ? `${hostname}${staticPrefix}/${staticDelimiter}/${url}`
               : url,
-          };
-        }),
+          })),
       }));
 
     const { totalCount, nodes } = dbResponse;
@@ -709,6 +719,7 @@ class FileStorageService {
 
   public async getFile(id: string): Promise<IFileBag | false> {
     const nodes = await this.getFilesByIds([id]);
+
     return nodes.length ? nodes[0] : false;
   }
 
@@ -760,6 +771,7 @@ class FileStorageService {
       })
       .where('id', id)
       .returning('id');
+
     return result;
   }
 
@@ -934,6 +946,7 @@ class FileStorageService {
       deletedIds.forEach((deletedId) => {
         loader.files.clear(deletedId);
       });
+
       return deletedIds;
     }
 

@@ -4,6 +4,9 @@
 
 > Via Profit services / **File-Storage** - это пакет, который является частью сервиса, базирующегося на `via-profit-services` и представляет собой реализацию схемы для хранения каких-либо файлов, изображений и прочих документов.
 
+![npm (scoped)](https://img.shields.io/npm/v/@via-profit-services/file-storage?color=blue)
+![Libraries.io dependency status for latest release, scoped npm package](https://img.shields.io/librariesio/release/npm/@via-profit-services/file-storage?color=red)
+
 ## TODO
 
 - [ ] трансформации типа Crop и кадрирование при создании изоражения
@@ -22,6 +25,7 @@
 
 ## <a name="dependencies"></a> Зависимости
 
+- [@via-profit-services/core](https://github.com/via-profit-services/core) - Основной graphql-сервер
 - [Jimp](https://www.npmjs.com/package/jimp) - Трансформации с изображениями
 - [Imagemin](https://github.com/imagemin/imagemin) - Сжатие изображений
 
@@ -30,10 +34,8 @@
 ### Установка
 
 ```bash
-yarn add ssh://git@github.com:via-profit-services/file-storage.git#semver:^0.14.6
+yarn add @via-profit-services/core
 ```
-
-Список версий [см. здесь](https://github.com/via-profit-services/file-storage/-/tags)
 
 ### Миграции
 

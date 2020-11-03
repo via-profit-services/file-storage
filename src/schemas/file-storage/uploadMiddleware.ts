@@ -38,6 +38,7 @@ const graphqlUploadExpress = (props: IUploadExpressMiddlewareProps) => {
   return async (request: Express.Request, response: any, next: Express.NextFunction) => {
     if (!request.is('multipart/form-data')) {
       next();
+
       return;
     }
 
@@ -114,6 +115,7 @@ const graphqlUploadExpress = (props: IUploadExpressMiddlewareProps) => {
               logger.fileStorage.error(`Can't assing file with index «${index}»`);
               throw new ServerError(`Can't assing file with index «${index}»`);
             }
+
             return file;
           });
         } catch (err) {
