@@ -1328,10 +1328,10 @@
     "@typescript-eslint/types" "4.6.1"
     eslint-visitor-keys "^2.0.0"
 
-"@via-profit-services/core@^0.30.9":
-  version "0.30.9"
-  resolved "https://registry.yarnpkg.com/@via-profit-services/core/-/core-0.30.9.tgz#ff2777803d5a079a472f5eea6bcc920b4145ba6b"
-  integrity sha512-wDhsmGICxtmj2UVX2eZRY42DxUWLXFqV01AUQBJt67MGvSxUaZb7pjow4ScF0aB9ayqUhVsoGDrziTxW66f6jQ==
+"@via-profit-services/core@^0.30.10":
+  version "0.30.10"
+  resolved "https://registry.yarnpkg.com/@via-profit-services/core/-/core-0.30.10.tgz#eca4218e67c964d280f42ecc907cfea53d810e83"
+  integrity sha512-PGR0exkrztGTxoHbGDwlqcB2yF+ql1fWI14ROAg5trA5ha8/NKMWU/Q3cPDJytTqXewItyZxj1Yl30pK3Bsuow==
   dependencies:
     "@graphql-tools/schema" "^7.0.0"
     "@graphql-tools/utils" "^7.0.0"

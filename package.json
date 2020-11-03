@@ -1,7 +1,7 @@
 {
     "name": "@via-profit-services/file-storage",
     "support": "https://via-profit.ru",
-    "version": "0.14.8",
+    "version": "0.14.9",
     "description": "Via Profit File Storage Schema",
     "main": "dist/index.js",
     "engines": {
@@ -34,7 +34,6 @@
         "knex:migrate:rollback:all": "yarn via-profit-core:knex migrate rollback-all",
         "knex:seed:make": "yarn via-profit-core:knex seed make --name",
         "knex:seed:run": "yarn via-profit-core:knex seed run --name",
-        "preversion": "yarn dist && git add --all && git commit -m \"Build\"",
         "postversion": "git push --tags",
         "release:patch": "yarn version --patch",
         "release:minor": "yarn version --minor",
@@ -56,7 +55,7 @@
     ],
     "license": "MIT",
     "dependencies": {
-        "@via-profit-services/core": "^0.30.9",
+        "@via-profit-services/core": "^0.30.10",
         "busboy": "^0.3.1",
         "fs-capacitor": "^6.1.0",
         "graphql": "^15.4.0",
