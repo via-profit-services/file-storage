@@ -22,6 +22,7 @@
 
 ## <a name="dependencies"></a> Зависимости
 
+- [@via-profit-services/core](https://github.com/via-profit-services/core) - Основной graphql-сервер
 - [Jimp](https://www.npmjs.com/package/jimp) - Трансформации с изображениями
 - [Imagemin](https://github.com/imagemin/imagemin) - Сжатие изображений
 
@@ -30,10 +31,8 @@
 ### Установка
 
 ```bash
-yarn add ssh://git@github.com:via-profit-services/file-storage.git#semver:^0.14.6
+yarn add @via-profit-services/core
 ```
-
-Список версий [см. здесь](https://github.com/via-profit-services/file-storage/-/tags)
 
 ### Миграции
 

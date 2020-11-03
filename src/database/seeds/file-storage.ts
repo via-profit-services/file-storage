@@ -17,7 +17,7 @@ interface AttachementField {
   isLocalFile?: boolean;
   label?: string;
   description?: string;
-  metaData?: Object;
+  metaData?: any;
 }
 
 export async function seed(knex: Knex): Promise<any> {

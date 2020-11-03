@@ -10,6 +10,7 @@ export const makeSchema = (props?: IFileStorageInitialProps) => {
   setParams(props);
 
   const expressMiddleware = expressMiddlewareFactory(getParams());
+
   return {
     typeDefs,
     resolvers,

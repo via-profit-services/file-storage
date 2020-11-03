@@ -8,8 +8,9 @@ import {
 } from './types';
 import uploadMiddleware from './uploadMiddleware';
 
-const expressMiddlewareFactory = (props: IFileStorageInitialProps): IExpressMidlewareContainer => {
-  return (middlewareProps) => {
+type MiddlewareFactory = (props: IFileStorageInitialProps) => IExpressMidlewareContainer;
+
+const expressMiddlewareFactory: MiddlewareFactory = (props) => (middlewareProps) => {
     const context = middlewareProps.context as Context;
     const { staticPrefix } = props;
     const { logger, endpoint } = context as ExtendedContext;
@@ -42,6 +43,5 @@ const expressMiddlewareFactory = (props: IFileStorageInitialProps): IExpressMidl
 
     return router;
   };
-};
 
 export default expressMiddlewareFactory;

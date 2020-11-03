@@ -24,11 +24,13 @@ export default function createLoaders(context: Context) {
 
   loaders.files = new DataLoader(async (ids: string[]) => {
     const nodes = await service.getFilesByIds(ids);
+
     return collateForDataloader(ids, nodes);
   });
 
   loaders.tremporaryFiles = new DataLoader(async (ids: string[]) => {
     const nodes = await service.getTemporaryFilesByIds(ids);
+
     return collateForDataloader(ids, nodes);
   });
 
