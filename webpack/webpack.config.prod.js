@@ -1,8 +1,11 @@
+/* eslint-disable import/order */
+/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
 const { ProgressPlugin, IgnorePlugin, BannerPlugin } = require('webpack');
 const merge = require('webpack-merge');
 const nodeExternals = require('webpack-node-externals');
+const packageInfo = require('../package.json');
 const baseConfig = require('./webpack.config.base');
 
 module.exports = merge(baseConfig, {
@@ -23,11 +26,10 @@ module.exports = merge(baseConfig, {
     new IgnorePlugin(/pg-query-stream/),
     new BannerPlugin({
       banner: `
- Via Profit Services / File Storage
+Via Profit Services / FileStorage
 
- Repository https://github.com/via-profit-services/file-storage
- Contact    promo@via-profit.ru
- Website    https://via-profit.ru
+Repository ${packageInfo.repository.url}
+Contact    ${packageInfo.support}
       `,
     }),
     new FileManagerPlugin({
