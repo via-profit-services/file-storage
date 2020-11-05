@@ -1,21 +1,27 @@
+import { IExpressMidlewareContainer } from '@via-profit-services/core';
+
 import expressMiddlewareFactory from './expressMiddleware';
 import { setParams, getParams } from './paramsBuffer';
 import resolvers from './resolvers';
 import * as typeDefs from './schema.graphql';
 import { IFileStorageInitialProps } from './types';
 
-// FIXME: Fuse for FILESTORAGE_CACHE_TTL and FILESTORAGE_TEMPORARY_TTL values they not defined
+type MakeSchema = (props?: IFileStorageInitialProps) => {
+  typeDefs: typeof typeDefs;
+  resolvers: typeof resolvers;
+  expressMiddleware: IExpressMidlewareContainer;
+}
 
-export const makeSchema = (props?: IFileStorageInitialProps) => {
+export const makeSchema: MakeSchema = (props) => {
   setParams(props);
 
   const expressMiddleware = expressMiddlewareFactory(getParams());
 
-  return {
+   return {
     typeDefs,
     resolvers,
     expressMiddleware,
-  };
-};
+  }
+}
 
 export default makeSchema;

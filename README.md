@@ -11,7 +11,6 @@
 
 - [ ] трансформации типа Crop и кадрирование при создании изоражения
 - [ ] Описание методов класса сервиса
-- [ ] CONTRIBUTING docs
 - [ ] Тесты
 - [ ] Subscriptions
 
@@ -25,9 +24,11 @@
 
 ## <a name="dependencies"></a> Зависимости
 
+  Модули, которые необходимо установить вручную
 - [@via-profit-services/core](https://github.com/via-profit-services/core) - Основной graphql-сервер
-- [Jimp](https://www.npmjs.com/package/jimp) - Трансформации с изображениями
-- [Imagemin](https://github.com/imagemin/imagemin) - Сжатие изображений
+ - [moment](https://github.com/moment/moment)
+ - [moment-timezone](https://github.com/moment/moment-timezone)
+ - [uuid](https://github.com/uuidjs/uuid)
 
 ## <a name="setup"></a> Установка и настройка
 

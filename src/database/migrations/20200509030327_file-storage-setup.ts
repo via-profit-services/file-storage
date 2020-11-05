@@ -1,7 +1,4 @@
-import { Knex } from '@via-profit-services/core';
-
-
-export async function up(knex: Knex): Promise<any> {
+export async function up(knex: any): Promise<any> {
   return knex.raw(`
 
     drop type if exists "fileStorageType" cascade;
@@ -33,7 +30,7 @@ export async function up(knex: Knex): Promise<any> {
 }
 
 
-export async function down(knex: Knex): Promise<any> {
+export async function down(knex: any): Promise<any> {
   return knex.raw(`
     drop table if exists "fileStorage" cascade;
     drop type if exists "fileStorageType" cascade;

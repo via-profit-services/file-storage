@@ -58,13 +58,11 @@ const jwtConfig: IInitProps['jwt'] = {
 };
 
 const serverConfig: IInitProps = {
-  enableIntrospection: process.env.NODE_ENV === 'development',
+  enableIntrospection: true,
   port: Number(process.env.PORT),
   debug: process.env.NODE_ENV === 'development',
   endpoint: process.env.GQL_ENDPOINT,
   subscriptionEndpoint: process.env.GQL_SUBSCRIPTIONENDPOINT,
-  usePlayground: process.env.GQL_USE_PLAYGROUND === 'true',
-  useVoyager: process.env.GQL_USE_VOYAGER === 'true',
   timezone: process.env.TIMEZONE,
   database: databaseConfig,
   redis: {
