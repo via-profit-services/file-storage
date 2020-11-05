@@ -26,16 +26,15 @@
 
   Модули, которые необходимо установить вручную
 - [@via-profit-services/core](https://github.com/via-profit-services/core) - Основной graphql-сервер
- - [moment](https://github.com/moment/moment)
- - [moment-timezone](https://github.com/moment/moment-timezone)
- - [uuid](https://github.com/uuidjs/uuid)
 
 ## <a name="setup"></a> Установка и настройка
 
 ### Установка
 
+Предполагается, что у вас уже установлен пакет [@via-profit-services/core](https://github.com/via-profit-services/core). Если нет, то перейдите на страницу проекта и установите модуль согласно документации
+
 ```bash
-yarn add @via-profit-services/core
+yarn add @via-profit-services/file-storage
 ```
 
 ### Миграции
