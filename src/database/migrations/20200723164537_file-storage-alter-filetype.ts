@@ -1,7 +1,4 @@
-import { Knex } from '@via-profit-services/core';
-
-
-export async function up(knex: Knex): Promise<any> {
+export async function up(knex: any): Promise<any> {
   return knex.raw(`
     ALTER TYPE "fileStorageType" RENAME TO "fileStorageTypeOLD";
     create type "fileStorageType" as enum (
@@ -15,7 +12,7 @@ export async function up(knex: Knex): Promise<any> {
 }
 
 
-export async function down(knex: Knex): Promise<any> {
+export async function down(knex: any): Promise<any> {
   return knex.raw(`
     ALTER TYPE "fileStorageType" RENAME TO "fileStorageTypeOLD";
     create type "fileStorageType" as enum (
