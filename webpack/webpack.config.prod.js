@@ -57,7 +57,6 @@ Contact    ${packageInfo.support}
       },
     }),
   ],
-  devtool:'source-map',
   externals: {
     '@via-profit-services/core': {
       commonjs2: '@via-profit-services/core',
@@ -71,8 +70,5 @@ Contact    ${packageInfo.support}
     uuid: {
       commonjs2: 'uuid',
     },
-  },
-  optimization: {
-    minimize: false,
   },
 });
