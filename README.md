@@ -42,7 +42,8 @@ yarn add @via-profit-services/file-storage
 После первой установки примените все необходимые миграции:
 
 ```bash
-yarn knex:migrate:latest
+yarn via-profit-core get-migrations -m ./src/database/migrations
+yarn via-profit-core knex migrate latest --knexfile ./src/utils/knexfile.ts
 ```
 
 После применения миграций будут созданы все необходимые таблицы в вашей базе данных
