@@ -150,7 +150,7 @@ type FileStorageQuery {
     first: Int
     offset: Int
     after: String
-    orderBy: [FilesOrderBy]
+    orderBy: [FilesOrderBy!]
     filter: FilesListFilter
 
     """
@@ -179,11 +179,11 @@ type FileStorageQuery {
 
 
 input FilesListFilter {
-  id: [ID]
-  owner: [ID]
-  category: [String]
-  mimeType: [String]
-  type: [FileType]
+  id: [ID!]
+  owner: [ID!]
+  category: [String!]
+  mimeType: [String!]
+  type: [FileType!]
 }
 
 """
@@ -225,7 +225,7 @@ Files list connection
 type FilesListConnection implements Connection {
   totalCount: Int!
   pageInfo: PageInfo!
-  edges: [FilesEdge]!
+  edges: [FilesEdge!]!
 }
 
 interface FileNode {
