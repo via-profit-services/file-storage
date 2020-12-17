@@ -1,4 +1,6 @@
-export async function up(knex: any): Promise<any> {
+import type Knex from 'knex';
+
+export async function up(knex: Knex): Promise<any> {
   return knex.raw(`
 
     drop type if exists "fileStorageType" cascade;
@@ -30,7 +32,7 @@ export async function up(knex: any): Promise<any> {
 }
 
 
-export async function down(knex: any): Promise<any> {
+export async function down(knex: Knex): Promise<any> {
   return knex.raw(`
     drop table if exists "fileStorage" cascade;
     drop type if exists "fileStorageType" cascade;

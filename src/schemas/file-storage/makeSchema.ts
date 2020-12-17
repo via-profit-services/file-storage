@@ -4,9 +4,9 @@ import expressMiddlewareFactory from './expressMiddleware';
 import { setParams, getParams } from './paramsBuffer';
 import resolvers from './resolvers';
 import * as typeDefs from './schema.graphql';
-import { IFileStorageInitialProps } from './types';
+import { FileStorageInitialProps } from './types';
 
-type MakeSchema = (props?: IFileStorageInitialProps) => {
+type MakeSchema = (props?: FileStorageInitialProps) => {
   typeDefs: typeof typeDefs;
   resolvers: typeof resolvers;
   expressMiddleware: IExpressMidlewareContainer;

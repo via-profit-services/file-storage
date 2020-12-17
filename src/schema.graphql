@@ -1,0 +1,315 @@
+
+extend type Query {
+  fileStorage: FileStorageQuery!
+}
+
+extend type Mutation {
+  fileStorage: FileStorageMutation!
+}
+
+type FileStorageMutation {
+  """
+  Delete files by IDs
+  """
+  delete(ids: [ID!] owners: [ID!]): FileStorageDeleteResponse!
+  
+  """
+  Upload files
+  """
+  upload(
+    """
+    GraphQL multipart request specification: https://github.com/jaydenseric/graphql-multipart-request-spec#graphql-multipart-request-specification
+    For example `curl` request will be:
+    curl localhost:9000/graphql \
+    -F operations='{ "query": "mutation($files: [FileUpload!]! $info: [FileUploadInfo!]!) { multipleUpload(files: $files info: $info) { id url } }", "variables": { "files": [null, null] }, "info": [{"owner": "xxxx-xxx-xxx", "category": "other"}, {"owner": "xxxx-xxx-xxx", "category": "other"}] }' \
+    -F map='{ "0": ["variables.files.0"], "1": ["variables.files.1"] }' \
+    -F 0=@b.txt \
+    -F 1=@c.txt
+    """
+    files: [FileUpload!]!
+    info: [FileUploadInfo!]!
+    """
+    Only for images and only for local images
+    Image transform options
+    """
+    transform: [ImageTransformInput!]
+    """
+    Only for images and only for local images
+    If true, the image will not be compressed
+    If transform is used then props noCompress will be true permanently
+    """
+    noCompress: Boolean
+
+  ): [File!]
+
+  """
+  Upload the file temporarily. When the specified time limit (TTL) expires the file will be deleted
+  """
+  uploadTemporary (
+    files: [FileUpload!]!
+    info: [FileUploadInfo!]!
+    """
+    Only for images and only for local images
+    Image transform options
+    """
+    transform: [ImageTransformInput!]
+    """
+    Only for images and only for local images
+    If true, the image will not be compressed
+    If transform is used then props noCompress will be true permanently
+    """
+    noCompress: Boolean
+  ): [TemporaryFile!]
+
+  """
+  Move your data from temporary directory into the permanent state
+  """
+  applyTemporary (
+    ids: [ID!]!
+    info: [FileUpdateInfo!]
+  ): [File!]
+
+  """
+  Update existings file info
+  """
+  update (
+    info: [FileUpdateInfo!]!
+    """
+    Only for images and only for local images
+    Image transform options
+    """
+    transform: [ImageTransformInput!]
+  ): [File!]
+}
+
+type FileStorageDeleteResponse {
+  deletedIDs: [ID!]!
+}
+
+"""
+Information about uploaded file
+"""
+input FileUploadInfo {
+  id: ID
+
+  """
+  Your file owner
+  """
+  owner: ID!
+
+  """
+  Voluntary name of category
+  """
+  category: String!
+
+  """
+  Description of this file
+  """
+  description: String
+
+  """
+  Voluntary metadata of this file (e.g. title, alt for images)
+  """
+  metaData: JSON
+}
+
+input FileUpdateInfo {
+  id: ID!
+
+  """
+  Your file owner
+  """
+  owner: ID
+
+  """
+  Voluntary name of category
+  """
+  category: String
+
+  """
+  Description of this file
+  """
+  description: String
+
+  """
+  Voluntary metadata of this file (e.g. title, alt for images)
+  """
+  metaData: JSON
+
+  """
+  Type of the file
+  """
+  type: FileType
+}
+
+type FileStorageQuery {
+  """
+  Returns Files list bundle
+  """
+  list(
+    first: Int
+    offset: Int
+    after: String
+    orderBy: [FilesOrderBy!]
+    filter: FilesListFilter
+
+    """
+    Only for images and only for local images
+    Image transform options
+    """
+    transform: ImageTransformInput
+  ): FilesListConnection!
+
+  """
+  Returns single file
+  """
+  file(
+    """
+    File ID
+    """
+    id: ID!
+    
+    """
+    Only for images and only for local images
+    Image transform options
+    """
+    transform: ImageTransformInput
+  ): File
+}
+
+
+input FilesListFilter {
+  id: [ID!]
+  owner: [ID!]
+  category: [String!]
+  mimeType: [String!]
+  type: [FileType!]
+}
+
+"""
+File adge bundle
+"""
+type FilesEdge implements Edge {
+  node: File!
+  cursor: String!
+}
+
+"""
+Possible data to order list of files
+"""
+input FilesOrderBy {
+  field: FilesOrderField!
+  direction: OrderDirection!
+}
+
+
+"""
+Possible data to sort of files list
+"""
+enum FilesOrderField {
+  category
+  mimeType
+  createdAt
+  updatedAt
+}
+
+enum FileType {
+  image
+  document
+  template
+}
+
+"""
+Files list connection
+"""
+type FilesListConnection implements Connection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [FilesEdge!]!
+}
+
+interface FileNode {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  owner: ID!
+  type: FileType!
+  category: String!
+  mimeType: String!
+  url: URL!
+  description: String
+  metaData: JSON
+}
+
+
+type File implements FileNode & Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  owner: ID!
+  type: FileType!
+  category: String!
+  mimeType: String!
+  url: URL!
+  description: String
+  metaData: JSON
+}
+
+type TemporaryFile implements FileNode & Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  expiredAt: DateTime!
+  owner: ID!
+  type: FileType!
+  category: String!
+  mimeType: String!
+  url: URL!
+  description: String
+  metaData: JSON
+}
+
+
+input ImageTransformInput {
+  resize: ImageTransformInputResize
+  cover: ImageTransformInputCover
+  contain: ImageTransformInputContain
+  scaleToFit: ImageTransformInputScaleToFit
+  crop: ImageTransformInputCrop
+  gaussian: Int
+  blur: Int
+  quality: Int
+  greyscale: Boolean
+}
+
+input ImageTransformInputResize {
+  w: Int!
+  h: Int!
+}
+
+input ImageTransformInputCover {
+  w: Int!
+  h: Int!
+}
+
+input ImageTransformInputContain {
+  w: Int!
+  h: Int!
+}
+
+input ImageTransformInputScaleToFit {
+  w: Int!
+  h: Int!
+}
+
+input ImageTransformInputCrop {
+  w: Int!
+  h: Int!
+  x: Int!
+  y: Int!
+}
+
+"""
+A GraphQL `FileUpload` scalar as specified GraphQL multipart request specification: https://github.com/jaydenseric/graphql-multipart-request-spec#graphql-multipart-request-specification
+"""
+scalar FileUpload

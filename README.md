@@ -76,10 +76,10 @@ _./resolvers.ts_
 import { IResolvers } from '@via-profit-services/core';
 import path from 'path';
 import { IContext } from '@via-profit-services/core';
-import { IFile, FileStorage } from '@via-profit-services/file-storage';
+import { File, FileStorage } from '@via-profit-services/file-storage';
 
 interface UploadArgs {
-  files: IFilePayload[];
+  files: FilePayload[];
 }
 
 const resolvers: IResolvers<any, IContext> = {

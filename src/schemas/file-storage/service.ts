@@ -1,7 +1,5 @@
 /* eslint-disable import/max-dependencies */
 /* eslint-disable class-methods-use-this */
-import fs, { ReadStream } from 'fs';
-import path from 'path';
 import {
   IListResponse,
   TOutputFilter,
@@ -10,6 +8,7 @@ import {
   TWhereAction,
   ServerError,
 } from '@via-profit-services/core';
+import fs, { ReadStream } from 'fs';
 // import imagemin from 'imagemin';
 // import imageminMozjpeg from 'imagemin-mozjpeg';
 // import imageminOptipng from 'imagemin-optipng';
@@ -17,9 +16,11 @@ import {
 import Jimp from 'jimp';
 import mime from 'mime-types';
 import moment from 'moment-timezone';
+import path from 'path';
 import rimraf from 'rimraf';
 import { v4 as uuidv4 } from 'uuid';
 
+import { FileStorage } from '.';
 import {
   REDIS_CACHE_NAME,
   REDIS_TEMPORARY_NAME,
@@ -31,11 +32,10 @@ import {
 import createLoaders from './loaders';
 import { getParams } from './paramsBuffer';
 import {
-  IFileBag, IFileBagTable, IFileBagTableInput, FileType, IImageTransform, ITransformUrlPayload,
-  IImgeData, Context, ExtendedContext, IRedisFileValue, IRedisTemporaryValue,
-  IUploadFileInput, IFileBagCreate, ITemporaryFileBag,
+  FileBag, FileBagTable, FileBagTableInput, FileType, ImageTransform, TransformUrlPayload,
+  ImgeData, Context, ExtendedContext, IRedisFileValue, RedisTemporaryValue,
+  UploadFileInput, FileBagCreate, TemporaryFileBag,
 } from './types';
-import { FileStorage } from '.';
 
 interface IProps {
   context: Context;
@@ -119,11 +119,11 @@ class FileStorageService {
     const allFiles = await redis.hgetall(REDIS_TEMPORARY_NAME);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Object.entries(allFiles).forEach(async ([hash, payloadStr]) => {
-      let payload: IRedisTemporaryValue;
+      let payload: RedisTemporaryValue;
       counter.allFiles += 1;
 
       try {
-        payload = JSON.parse(payloadStr) as IRedisTemporaryValue;
+        payload = JSON.parse(payloadStr) as RedisTemporaryValue;
       } catch (err) {
         logger.fileStorage.error('Cache clean. Failed to decode transform JSON', { err });
       }
@@ -222,7 +222,7 @@ class FileStorageService {
     return null;
   }
 
-  public async makeImageCache(imageData: IImgeData, imageBuffer: Buffer) {
+  public async makeImageCache(imageData: ImgeData, imageBuffer: Buffer) {
     const { redis } = this.props.context;
     const { payload, token } = imageData;
     const { cacheAbsolutePath } = getParams();
@@ -258,8 +258,8 @@ class FileStorageService {
   }
 
   public async getUrlWithTransform(
-    imageData: Pick<IFileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>,
-    transform: IImageTransform,
+    imageData: Pick<FileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>,
+    transform: ImageTransform,
   ) {
     const { redis, logger } = this.props.context as ExtendedContext;
     const {
@@ -275,7 +275,7 @@ class FileStorageService {
     const type = FileStorageService.getFileTypeByMimeType(mimeType);
     const ext = FileStorageService.getExtensionByMimeType(mimeType);
 
-    const hashPayload: ITransformUrlPayload = {
+    const hashPayload: TransformUrlPayload = {
       id,
       ext,
       transform,
@@ -341,7 +341,7 @@ class FileStorageService {
     ].join('/');
   }
 
-  public static resolveFile(filedata: Pick<IFileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>) {
+  public static resolveFile(filedata: Pick<FileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>) {
     const {
       mimeType, isLocalFile, url, id,
     } = filedata;
@@ -362,7 +362,7 @@ class FileStorageService {
     };
   }
 
-  public async applyTransform(filepath: string, transform: IImageTransform) {
+  public async applyTransform(filepath: string, transform: ImageTransform) {
     if (!fs.existsSync(filepath)) {
       const { logger } = this.props.context as ExtendedContext;
       logger.fileStorage.error(`Transform error. File «${filepath}» not found`);
@@ -381,7 +381,7 @@ class FileStorageService {
 
     Object.entries(transform).forEach(([method, options]) => {
       if (method === 'resize') {
-        const { w, h } = options as IImageTransform['resize'];
+        const { w, h } = options as ImageTransform['resize'];
         jimpHandle = jimpHandle.resize(
           Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
           Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
@@ -389,7 +389,7 @@ class FileStorageService {
       }
 
       if (method === 'cover') {
-        const { w, h } = options as IImageTransform['cover'];
+        const { w, h } = options as ImageTransform['cover'];
         jimpHandle = jimpHandle.cover(
           Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
           Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
@@ -397,7 +397,7 @@ class FileStorageService {
       }
 
       if (method === 'contain') {
-        const { w, h } = options as IImageTransform['contain'];
+        const { w, h } = options as ImageTransform['contain'];
         jimpHandle = jimpHandle.contain(
           Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
           Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
@@ -405,7 +405,7 @@ class FileStorageService {
       }
 
       if (method === 'scaleToFit') {
-        const { w, h } = options as IImageTransform['scaleToFit'];
+        const { w, h } = options as ImageTransform['scaleToFit'];
         jimpHandle = jimpHandle.scaleToFit(
           Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
           Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
@@ -413,21 +413,21 @@ class FileStorageService {
       }
 
       if (method === 'gaussian') {
-        const gaussian = options as IImageTransform['gaussian'];
+        const gaussian = options as ImageTransform['gaussian'];
         jimpHandle = jimpHandle.gaussian(
           Math.min(gaussian, IMAGE_TRANSFORM_MAX_GAUSSIAN),
         );
       }
 
       if (method === 'blur') {
-        const blur = options as IImageTransform['blur'];
+        const blur = options as ImageTransform['blur'];
         jimpHandle = jimpHandle.blur(
           Math.min(blur, IMAGE_TRANSFORM_MAX_BLUR),
         );
       }
 
       if (method === 'greyscale') {
-        const greyscale = options as IImageTransform['greyscale'];
+        const greyscale = options as ImageTransform['greyscale'];
         if (greyscale === true) {
           jimpHandle = jimpHandle.grayscale();
         }
@@ -436,7 +436,7 @@ class FileStorageService {
       if (method === 'crop') {
         const {
           x, y, w, h,
-        } = options as IImageTransform['crop'];
+        } = options as ImageTransform['crop'];
         jimpHandle = jimpHandle.crop(
           Math.min(x, IMAGE_TRANSFORM_MAX_WITH),
           Math.min(y, IMAGE_TRANSFORM_MAX_HEIGHT),
@@ -566,9 +566,9 @@ class FileStorageService {
    * Create WriteStream and reutn it with the file data/
    * File will be registered in common file store
    */
-  public async getFileStream(fileInfo: IFileBagCreate): Promise<{
+  public async getFileStream(fileInfo: FileBagCreate): Promise<{
       stream: fs.WriteStream;
-      file: IFileBag;
+      file: FileBag;
     }> {
     const { id, absoluteFilename } = await this.createFile(null, fileInfo);
     const file = await this.getFile(id);
@@ -595,7 +595,7 @@ class FileStorageService {
     expireAt?: number,
     }): Promise<{
       stream: fs.WriteStream;
-      file: IFileBag;
+      file: FileBag;
       expireAt: Date;
     }> {
     const { timezone } = this.props.context;
@@ -629,16 +629,16 @@ class FileStorageService {
     };
   }
 
-  public async getTemporaryFile(id: string): Promise<ITemporaryFileBag | false> {
+  public async getTemporaryFile(id: string): Promise<TemporaryFileBag | false> {
     const { redis, logger, timezone } = this.props.context as ExtendedContext;
     const {
       temporaryAbsolutePath, hostname, temporaryDelimiter, staticPrefix,
     } = getParams();
     const payloadStr = await redis.hget(REDIS_TEMPORARY_NAME, id);
-    let payload: IRedisTemporaryValue;
+    let payload: RedisTemporaryValue;
 
     try {
-      payload = JSON.parse(payloadStr) as IRedisTemporaryValue;
+      payload = JSON.parse(payloadStr) as RedisTemporaryValue;
     } catch (err) {
       logger.fileStorage.error('Failed to decode temporary data JSON', { err });
     }
@@ -664,7 +664,7 @@ class FileStorageService {
     };
   }
 
-  public async getFiles(filter: Partial<TOutputFilter>): Promise<IListResponse<IFileBag>> {
+  public async getFiles(filter: Partial<TOutputFilter>): Promise<IListResponse<FileBag>> {
     const { context } = this.props;
     const { knex } = context;
     const {
@@ -679,7 +679,7 @@ class FileStorageService {
         knex.raw('count(*) over() as "totalCount"'),
       ])
       .orderBy(convertOrderByToKnex(orderBy))
-      .from<any, IFileBagTable[]>('fileStorage')
+      .from<any, FileBagTable[]>('fileStorage')
       .limit(limit || 1)
       .offset(offset || 0)
       .where((builder) => convertWhereToKnex(builder, where))
@@ -707,7 +707,7 @@ class FileStorageService {
     };
   }
 
-  public async getFilesByIds(ids: string[]): Promise<IFileBag[]> {
+  public async getFilesByIds(ids: string[]): Promise<FileBag[]> {
     const { nodes } = await this.getFiles({
       where: [['id', TWhereAction.IN, ids]],
       offset: 0,
@@ -717,14 +717,14 @@ class FileStorageService {
     return nodes;
   }
 
-  public async getFile(id: string): Promise<IFileBag | false> {
+  public async getFile(id: string): Promise<FileBag | false> {
     const nodes = await this.getFilesByIds([id]);
 
     return nodes.length ? nodes[0] : false;
   }
 
-  public async getTemporaryFilesByIds(ids: string[]): Promise<ITemporaryFileBag[]> {
-    const files: ITemporaryFileBag[] = [];
+  public async getTemporaryFilesByIds(ids: string[]): Promise<TemporaryFileBag[]> {
+    const files: TemporaryFileBag[] = [];
     await ids.reduce(async (prev, id) => {
       await prev;
 
@@ -738,14 +738,14 @@ class FileStorageService {
     return files;
   }
 
-  public preparePayloadToSQL(fileData: Partial<IFileBag>): Partial<IFileBagTableInput> {
+  public preparePayloadToSQL(fileData: Partial<FileBag>): Partial<FileBagTableInput> {
     const { timezone } = this.props.context;
 
     const {
       metaData, createdAt, updatedAt, ...otherFileData
     } = fileData;
 
-    const retDataInput: Partial<IFileBagTableInput> = otherFileData;
+    const retDataInput: Partial<FileBagTableInput> = otherFileData;
 
     if (metaData) {
       retDataInput.metaData = JSON.stringify(metaData);
@@ -762,9 +762,9 @@ class FileStorageService {
     return retDataInput;
   }
 
-  public async updateFile(id: string, fileData: Partial<IFileBag>) {
+  public async updateFile(id: string, fileData: Partial<FileBag>) {
     const { knex, timezone } = this.props.context;
-    const result = await knex<IFileBagTableInput>('fileStorage')
+    const result = await knex<FileBagTableInput>('fileStorage')
       .update({
         ...this.preparePayloadToSQL(fileData),
         updatedAt: moment.tz(timezone).format(),
@@ -778,7 +778,7 @@ class FileStorageService {
 
   public async createTemporaryFile(
     fileStream: ReadStream | null,
-    fileInfo: IUploadFileInput,
+    fileInfo: UploadFileInput,
     expireAt?: number,
   ): Promise<{id: string; absoluteFilename: string; }> {
     const { temporaryAbsolutePath, temporaryTTL } = getParams();
@@ -793,7 +793,7 @@ class FileStorageService {
     const dirname = path.dirname(absoluteFilename);
     const exp = (new Date().getTime() + ((expireAt || temporaryTTL) * 1000));
     const token = id;
-    const payload: IRedisTemporaryValue = {
+    const payload: RedisTemporaryValue = {
       id,
       filename,
       exp,
@@ -848,7 +848,7 @@ class FileStorageService {
 
   public async createFile(
     fileStream: ReadStream | null,
-    fileInfo: IFileBagCreate,
+    fileInfo: FileBagCreate,
   ): Promise<{id: string; absoluteFilename: string; }> {
     const { knex, timezone } = this.props.context;
     const {
@@ -861,7 +861,7 @@ class FileStorageService {
     const url = (fileInfo.isLocalFile || !fileInfo.url) ? localFilename : fileInfo.url;
 
     try {
-      await knex<IFileBagTableInput>('fileStorage')
+      await knex<FileBagTableInput>('fileStorage')
         .insert({
           ...this.preparePayloadToSQL(fileInfo),
           id,

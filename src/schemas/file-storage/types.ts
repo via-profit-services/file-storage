@@ -1,5 +1,5 @@
-import { ReadStream } from 'fs';
 import { IContext, ILoggerCollection, Winston } from '@via-profit-services/core';
+import { ReadStream } from 'fs';
 import { WriteStream } from 'fs-capacitor';
 import { Options as ImagenimMozjpegOption } from 'imagemin-mozjpeg';
 import { Options as ImagenimOptiPngOption } from 'imagemin-optipng';
@@ -22,7 +22,7 @@ export interface ExtendedContext extends Context {
 }
 
 
-export interface IFileBag {
+export interface FileBag {
   id: string;
   owner: string | null;
   url: string;
@@ -36,20 +36,20 @@ export interface IFileBag {
   description?: string;
 }
 
-export interface ITemporaryFileBag extends IFileBag {
+export interface TemporaryFileBag extends FileBag {
   expiredAt: Date;
 }
 
-export type IFileBagCreate = Omit<IFileBag, 'url' | 'id' | 'createdAt' | 'updatedAt'> & {
+export type FileBagCreate = Omit<FileBag, 'url' | 'id' | 'createdAt' | 'updatedAt'> & {
   id?: string;
   url?: string;
 }
 
-export type IFileBagTable = IFileBag & {
+export type FileBagTable = FileBag & {
   totalCount: number;
 };
 
-export interface IFileBagTableInput {
+export interface FileBagTableInput {
   id?: string;
   type?: FileType;
   category: string;
@@ -63,7 +63,7 @@ export interface IFileBagTableInput {
   mimeType: string;
 }
 
-export interface IUploadFileInput {
+export interface UploadFileInput {
   id?: string;
   category: string;
   type: FileType;
@@ -74,7 +74,7 @@ export interface IUploadFileInput {
   description?: string;
 }
 
-export interface IUpdateFileInput {
+export interface UpdateFileInput {
   id: string;
   owner?: string;
   category?: string;
@@ -84,7 +84,7 @@ export interface IUpdateFileInput {
 }
 
 
-export interface IFileStorageInitialProps {
+export interface FileStorageInitialProps {
 
   /**
    * e.g. `https://www.example.com:9000`
@@ -165,7 +165,7 @@ export interface IFileStorageInitialProps {
 }
 
 
-export type IFileStorageParams = IFileStorageInitialProps & {
+export type FileStorageParams = FileStorageInitialProps & {
   staticPrefixAbsolutePath: string;
   storageAbsolutePath: string;
   cacheAbsolutePath: string;
@@ -185,7 +185,7 @@ export type IFileStorageParams = IFileStorageInitialProps & {
 }
 
 
-export interface IImageTransform {
+export interface ImageTransform {
   resize: {
     w: number;
     h: number;
@@ -213,7 +213,7 @@ export interface IImageTransform {
   greyscale: boolean;
 }
 
-export interface ITransformUrlPayload {
+export interface TransformUrlPayload {
 
   /** File extension */
   ext: string;
@@ -222,17 +222,17 @@ export interface ITransformUrlPayload {
   id: string;
 
   /** Image transform options */
-  transform: IImageTransform;
+  transform: ImageTransform;
 }
 
 
-export interface IImgeData {
-  payload: ITransformUrlPayload;
+export interface ImgeData {
+  payload: TransformUrlPayload;
   token: string;
 }
 
 
-export interface IFilePayload {
+export interface FilePayload {
   filename: string;
   mimeType: string;
   encoding: string;
@@ -240,17 +240,17 @@ export interface IFilePayload {
   createReadStream: (name?: string) => ReadStream;
 }
 
-export declare type IFile = Promise<IFilePayload>;
+export declare type File = Promise<FilePayload>;
 
-export interface IUploadLimits {
+export interface UploadLimits {
   maxFieldSize: number;
   maxFileSize: number;
   maxFiles: number;
 }
 
-export interface IUploadExpressMiddlewareProps {
+export interface UploadExpressMiddlewareProps {
   context: Context;
-  limits?: Partial<IUploadLimits>
+  limits?: Partial<UploadLimits>
 }
 
 export interface IRedisFileValue {
@@ -259,9 +259,9 @@ export interface IRedisFileValue {
   exp: number;
 }
 
-export interface IRedisTemporaryValue {
+export interface RedisTemporaryValue {
   id: string;
   filename: string;
   exp: number;
-  fileInfo: IUploadFileInput;
+  fileInfo: UploadFileInput;
 }

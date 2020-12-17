@@ -7,13 +7,13 @@ import FileUploadInstance from './FileUploadInstance';
 import { getParams } from './paramsBuffer';
 import FileStorage from './service';
 import {
-  IFilePayload, IUploadExpressMiddlewareProps, IUploadLimits, ExtendedContext,
+  FilePayload, UploadExpressMiddlewareProps, UploadLimits, ExtendedContext,
 } from './types';
 
 let cacheTimeoutId: NodeJS.Timeout;
 let temporaryTimeoutId: NodeJS.Timeout;
 
-const graphqlUploadExpress = (props: IUploadExpressMiddlewareProps) => {
+const graphqlUploadExpress = (props: UploadExpressMiddlewareProps) => {
   const { context, limits } = props;
   const { cacheTTL, temporaryTTL } = getParams();
   const { logger } = context as ExtendedContext;
@@ -52,7 +52,7 @@ const graphqlUploadExpress = (props: IUploadExpressMiddlewareProps) => {
       });
     };
 
-    const defaultLimits: IUploadLimits = {
+    const defaultLimits: UploadLimits = {
       maxFieldSize: 1000000 * 64, // 64MB
       maxFileSize: Infinity,
       maxFiles: Infinity,
@@ -158,7 +158,7 @@ const graphqlUploadExpress = (props: IUploadExpressMiddlewareProps) => {
         capacitor.destroy(new ServerError('Upload error', { error }));
       });
 
-      const file: IFilePayload = {
+      const file: FilePayload = {
         filename,
         mimeType,
         encoding,

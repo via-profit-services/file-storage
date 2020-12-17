@@ -1,17 +1,17 @@
-import { IFilePayload } from './types';
+import { FilePayload } from './types';
 
 class FileUploadInstance {
   public promise: Promise<any>;
 
-  public resolve: (file: IFilePayload) => void;
+  public resolve: (file: FilePayload) => void;
 
-  public file: IFilePayload;
+  public file: FilePayload;
 
   public reject: any;
 
   constructor() {
     this.promise = new Promise((resolve, reject) => {
-      this.resolve = (file: IFilePayload) => {
+      this.resolve = (file: FilePayload) => {
         this.file = file;
         resolve(file);
       };

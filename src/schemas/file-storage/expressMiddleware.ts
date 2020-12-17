@@ -4,11 +4,11 @@ import {
 
 import { getParams } from './paramsBuffer';
 import {
-  IFileStorageInitialProps, Context, ExtendedContext,
+  FileStorageInitialProps, Context, ExtendedContext,
 } from './types';
 import uploadMiddleware from './uploadMiddleware';
 
-type MiddlewareFactory = (props: IFileStorageInitialProps) => IExpressMidlewareContainer;
+type MiddlewareFactory = (props: FileStorageInitialProps) => IExpressMidlewareContainer;
 
 const expressMiddlewareFactory: MiddlewareFactory = (props) => (middlewareProps) => {
     const context = middlewareProps.context as Context;

@@ -1,74 +1,71 @@
 /* eslint-disable no-console */
-/* eslint-disable import/no-extraneous-dependencies */
-import { App, schemas } from '@via-profit-services/core';
-import chalk from 'chalk';
-import { v4 as uuidv4 } from 'uuid';
-
-import { makeSchema } from '../schemas/file-storage';
-// import FileStorageService from '../schemas/file-storage/service';
-
-import { configureApp } from '../utils/configureApp';
-
-const fileStorage = makeSchema({
-  hostname: `http://localhost:${process.env.PORT}`,
-  cacheTTL: 30,
-  temporaryTTL: 30,
-});
+import { makeExecutableSchema } from '@graphql-tools/schema';
+import * as accounts from '@via-profit-services/accounts';
+import * as core from '@via-profit-services/core';
+import * as knex from '@via-profit-services/knex';
+import * as subscriptions from '@via-profit-services/subscriptions';
+import dotenv from 'dotenv';
+import express from 'express';
+import http from 'http';
+import path from 'path';
 
 
-const config = configureApp({
-  typeDefs: [
-    fileStorage.typeDefs,
-  ],
-  resolvers: [
-    fileStorage.resolvers,
-  ],
-  expressMiddlewares: [
-    fileStorage.expressMiddleware,
-  ],
-});
+dotenv.config();
 
-const app = new App(config);
-const AuthService = schemas.auth.service;
+const PORT = 9005;
+const app = express();
+const server = http.createServer(app);
+(async () => {
 
-app.bootstrap(async (props) => {
-  const { resolveUrl, context } = props;
-
-  if (process.env.NODE_ENV !== 'development') {
-    console.log(`GraphQL server was started at ${resolveUrl.graphql}`);
-
-    return;
-  }
-
-  console.log('');
-  const authService = new AuthService({ context });
-  const { accessToken } = authService.generateTokens({
-    uuid: uuidv4(),
-    roles: ['developer'],
-  }, {
-    access: 2.592e6,
-    refresh: 2.592e6,
+  const knexMiddleware = knex.factory({
+    connection: {
+      user: process.env.DB_USER,
+      database: process.env.DB_NAME,
+      password: process.env.DB_PASSWORD,
+      host: process.env.DB_HOST,
+    },
   });
 
-  // const fsService = new FileStorageService({ context });
-  // const { stream, file } = await fsService.getFileStream({
-  //   mimeType: 'application/json',
-  //   category: 'test',
-  //   owner: '34849cc0-0121-48e7-8091-108f04278b68',
-  //   type: FileType.document,
-  // });
+  const pubSubMiddleware = subscriptions.factory({
+    endpoint: '/graphql',
+    server,
+  })
 
-  // console.log('file', file);
-  // stream.write('{"foo": "bar"}');
+  const accountsMiddleware = await accounts.factory({
+    privateKey: path.resolve(__dirname, './jwtRS256.key'),
+    publicKey: path.resolve(__dirname, './jwtRS256.key.pub'),
+  });
 
-  console.log(chalk.green('Your development token is:'));
-  console.log(chalk.yellow(accessToken.token));
-  console.log('');
+  const schema = makeExecutableSchema({
+    typeDefs: [
+      core.typeDefs,
+      accounts.typeDefs,
+      subscriptions.typeDefs,
+    ],
+    resolvers: [
+      core.resolvers,
+      accounts.resolvers,
+      subscriptions.resolvers,
+    ],
+  });
 
-  console.log('');
-  console.log(chalk.green('============== Server =============='));
-  console.log('');
-  console.log(`${chalk.green('GraphQL server')}:     ${chalk.yellow(resolveUrl.graphql)}`);
 
-  console.log('');
-});
+  const { viaProfitGraphql } = await core.factory({
+    server,
+    schema,
+    debug: true,
+    enableIntrospection: true,
+    middleware: [
+      accountsMiddleware,
+      knexMiddleware,
+      pubSubMiddleware,
+    ],
+  });
+
+  app.use(viaProfitGraphql);
+  server.listen(PORT, () => {
+    console.log(`GraphQL Server started at http://localhost:${PORT}/graphql`);
+    console.log(`Subscriptions server started at ws://localhost:${PORT}/graphql`);
+  })
+
+})();

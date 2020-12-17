@@ -14,10 +14,10 @@ import {
   DEFAULT_TEMPORARY_DELIMITER,
   TIMEOUT_MAX_VALUE,
 } from './constants';
-import { IFileStorageInitialProps, IFileStorageParams } from './types';
+import { FileStorageInitialProps, FileStorageParams } from './types';
 
 interface IParamsBuffer {
-  params: IFileStorageParams;
+  params: FileStorageParams;
 }
 
 const isDev = process.env.NODE_ENV === 'development';
@@ -52,7 +52,7 @@ const paramsBuffer: IParamsBuffer = {
   },
 };
 
-export const setParams = (params?: Partial<IFileStorageInitialProps>) => {
+export const setParams = (params?: Partial<FileStorageInitialProps>) => {
   // merge options with defaults
   paramsBuffer.params = {
     ...paramsBuffer.params,
