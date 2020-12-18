@@ -1,13 +1,12 @@
 import { collateForDataloader } from '@via-profit-services/core';
-import type { ContextMiddleware } from '@via-profit-services/file-storage';
+import type { ContextMiddlewareFactory } from '@via-profit-services/file-storage';
 import DataLoader from 'dataloader';
 
 import filesLogger from './files-logger';
 import FileStorageService from './FileStorageService';
 
 
-
-const contextMiddleware: ContextMiddleware = (props) => {
+const contextMiddlewareFactory: ContextMiddlewareFactory = (props) => {
   const { context, config, configuration } = props;
   const { logDir } = config;
 
@@ -37,4 +36,4 @@ const contextMiddleware: ContextMiddleware = (props) => {
   return context;
 }
 
-export default contextMiddleware;
+export default contextMiddlewareFactory;

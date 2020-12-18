@@ -9,13 +9,19 @@ import express from 'express';
 import http from 'http';
 import path from 'path';
 
+import * as files from '../index';
 
 dotenv.config();
 
+const endpoint = '/graphql';
 const PORT = 9005;
 const app = express();
 const server = http.createServer(app);
 (async () => {
+
+  const { fileStorageMiddleware, graphQLFilesExpress } = files.factory({
+    hostname: 'http://localhost:9005',
+  });
 
   const knexMiddleware = knex.factory({
     connection: {
@@ -27,7 +33,7 @@ const server = http.createServer(app);
   });
 
   const pubSubMiddleware = subscriptions.factory({
-    endpoint: '/graphql',
+    endpoint,
     server,
   })
 
@@ -41,16 +47,18 @@ const server = http.createServer(app);
       core.typeDefs,
       accounts.typeDefs,
       subscriptions.typeDefs,
+      files.typeDefs,
     ],
     resolvers: [
       core.resolvers,
       accounts.resolvers,
       subscriptions.resolvers,
+      files.resolvers,
     ],
   });
 
 
-  const { viaProfitGraphql } = await core.factory({
+  const { graphQLExpress } = await core.factory({
     server,
     schema,
     debug: true,
@@ -59,10 +67,13 @@ const server = http.createServer(app);
       accountsMiddleware,
       knexMiddleware,
       pubSubMiddleware,
+      fileStorageMiddleware,
     ],
   });
 
-  app.use(viaProfitGraphql);
+  app.use(endpoint, graphQLExpress);
+  app.use(endpoint, graphQLFilesExpress)
+
   server.listen(PORT, () => {
     console.log(`GraphQL Server started at http://localhost:${PORT}/graphql`);
     console.log(`Subscriptions server started at ws://localhost:${PORT}/graphql`);

@@ -40,7 +40,7 @@ type FileStorageMutation {
     """
     noCompress: Boolean
 
-  ): [File!]
+  ): [File!]!
 
   """
   Upload the file temporarily. When the specified time limit (TTL) expires the file will be deleted

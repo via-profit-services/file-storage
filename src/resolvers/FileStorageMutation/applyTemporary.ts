@@ -7,7 +7,7 @@ interface ApplyTemporaryArgs {
   info: UpdateFileInput[];
 }
 
-const ApplyTemporaryResolver: IFieldResolver<any, Context, ApplyTemporaryArgs> = async (
+const applyTemporary: IFieldResolver<any, Context, ApplyTemporaryArgs> = async (
   parent, args, context,
 ) => {
   const { ids, info } = args;
@@ -33,4 +33,4 @@ const ApplyTemporaryResolver: IFieldResolver<any, Context, ApplyTemporaryArgs> =
   return ids.map((id) => ({ id }));
 };
 
-export default ApplyTemporaryResolver;
+export default applyTemporary;

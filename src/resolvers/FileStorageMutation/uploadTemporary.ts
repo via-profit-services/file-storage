@@ -9,7 +9,7 @@ interface UploadTemporaryFilesArgs {
   noCompress?: boolean;
 }
 
-const UploadTemporaryFilesResolver: IFieldResolver<any, Context, UploadTemporaryFilesArgs> = async (
+const uploadTemporaryResolver: IFieldResolver<any, Context, UploadTemporaryFilesArgs> = async (
   parent, args, context,
 ) => {
   const {
@@ -55,4 +55,4 @@ const UploadTemporaryFilesResolver: IFieldResolver<any, Context, UploadTemporary
   return Promise.all(savePromises);
 };
 
-export default UploadTemporaryFilesResolver;
+export default uploadTemporaryResolver;

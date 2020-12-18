@@ -1,6 +1,6 @@
 import type { IObjectTypeResolver, IFieldResolver } from '@graphql-tools/utils';
-import type { FileBag, ImageTransform } from '@via-profit-services/file-storage';
 import type { Context } from '@via-profit-services/core';
+import type { FileBag, ImageTransform } from '@via-profit-services/file-storage';
 
 interface IParent {
   id: string;

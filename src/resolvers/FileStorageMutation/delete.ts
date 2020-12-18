@@ -7,7 +7,7 @@ interface DeleteFilesArgs {
   owners?: string[];
 }
 
-const DeleteFilesResolver: IFieldResolver<any, Context, DeleteFilesArgs> = async (
+const deleteResolver: IFieldResolver<any, Context, DeleteFilesArgs> = async (
   parent, args, context,
 ) => {
   const { ids, owners } = args;
@@ -54,4 +54,4 @@ const DeleteFilesResolver: IFieldResolver<any, Context, DeleteFilesArgs> = async
   };
 };
 
-export default DeleteFilesResolver;
+export default deleteResolver;

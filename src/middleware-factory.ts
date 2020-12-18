@@ -1,8 +1,8 @@
 import { Middleware } from '@via-profit-services/core';
-import { FileStorageMiddlewareFactory, ExpressMiddleware } from '@via-profit-services/file-storage';
+import { FileStorageMiddlewareFactory } from '@via-profit-services/file-storage';
 
-import contextMiddleware from './context-middleware';
-import expressMiddleware from './express-middleware';
+import contextMiddlewareFactory from './context-middleware';
+import expressMiddlewareFactory from './express-middleware';
 
 const middlewareFactory: FileStorageMiddlewareFactory = (configuration) => {
 
@@ -13,7 +13,7 @@ const middlewareFactory: FileStorageMiddlewareFactory = (configuration) => {
   const fileStorageMiddleware: Middleware = async (props) => {
     const { context } = props;
 
-    pool.context = pool.context ?? contextMiddleware({
+    pool.context = pool.context ?? contextMiddlewareFactory({
       configuration,
       context,
       config: props.config,
@@ -22,11 +22,11 @@ const middlewareFactory: FileStorageMiddlewareFactory = (configuration) => {
     return pool;
   }
 
-  // const fileStorageExpress = expressMiddleware({ context: pool.context });
+  const graphQLFilesExpress = expressMiddlewareFactory({ configuration });
 
   return {
     fileStorageMiddleware,
-    // fileStorageExpress,
+    graphQLFilesExpress,
   }
 }
 

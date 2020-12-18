@@ -1,14 +1,14 @@
+import type { IFieldResolver } from '@graphql-tools/utils';
 import { ServerError } from '@via-profit-services/core';
 import type { Context } from '@via-profit-services/core';
 import type { UpdateFileInput, ImageTransform } from '@via-profit-services/file-storage';
-import type { IFieldResolver } from '@graphql-tools/utils';
 
-interface TArgs {
+interface UpdateArgs {
   info: UpdateFileInput[];
   transform?: ImageTransform[];
 }
 
-const UpdateResolver: IFieldResolver<any, Context, TArgs> = async (
+const updateResolver: IFieldResolver<any, Context, UpdateArgs> = async (
   parent, args, context,
 ) => {
   const { info, transform } = args;
@@ -46,4 +46,4 @@ const UpdateResolver: IFieldResolver<any, Context, TArgs> = async (
   }));
 };
 
-export default UpdateResolver;
+export default updateResolver;

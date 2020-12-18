@@ -1,12 +1,9 @@
-import { FilePayload } from './types';
+import type { FilePayload } from '@via-profit-services/file-storage';
 
 class FileUploadInstance {
   public promise: Promise<any>;
-
   public resolve: (file: FilePayload) => void;
-
   public file: FilePayload;
-
   public reject: any;
 
   constructor() {

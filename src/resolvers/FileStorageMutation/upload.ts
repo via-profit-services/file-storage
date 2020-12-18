@@ -9,13 +9,13 @@ interface UploadFilesArgs {
   noCompress?: boolean;
 }
 
-const UploadFilesResolver: IFieldResolver<any, Context, UploadFilesArgs> = async (
+const uploadResolver: IFieldResolver<any, Context, UploadFilesArgs> = async (
   parent, args, context,
 ) => {
   const {
     files, info, noCompress, transform,
   } = args;
-  const { logger, token, services, dataloader } = context;
+  const { logger, token, services } = context;
   const { uuid } = token;
 
   const filesData = await Promise.all(files);
@@ -61,4 +61,4 @@ const UploadFilesResolver: IFieldResolver<any, Context, UploadFilesArgs> = async
   return Promise.all(savePromises);
 };
 
-export default UploadFilesResolver;
+export default uploadResolver;

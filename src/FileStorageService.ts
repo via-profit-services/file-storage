@@ -2,7 +2,7 @@
 import { ListResponse, OutputFilter, ServerError } from '@via-profit-services/core';
 import type {
   FileBag, FileBagTable, FileBagTableInput, FileType, ImageTransform, TransformUrlPayload,
-  ImgeData, IRedisFileValue, RedisTemporaryValue, FileStorageServiceProps, FileStorageParams,
+  ImgeData, RedisFileValue, RedisTemporaryValue, FileStorageServiceProps, FileStorageParams,
   UploadFileInput, FileBagCreate, TemporaryFileBag,
 } from '@via-profit-services/file-storage';
 import { convertOrderByToKnex, convertWhereToKnex, extractTotalCountPropOfNode } from '@via-profit-services/knex';
@@ -17,7 +17,6 @@ import Jimp from 'jimp';
 import mime from 'mime-types';
 import moment from 'moment-timezone';
 import path from 'path';
-import rimraf from 'rimraf';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
@@ -39,6 +38,9 @@ import {
   DEFAULT_STATIC_DELIMITER,
   DEFAULT_TEMPORARY_DELIMITER,
   TIMEOUT_MAX_VALUE,
+  DEFAULT_MAX_FIELD_SIZE,
+  DEFAULT_MAX_FILES,
+  DEFAULT_MAX_FILE_SIZE,
 } from './constants';
 
 
@@ -76,6 +78,9 @@ class FileStorageService {
       cachePath: DEFAULT_CACHE_PATH,
       temporaryPath: DEFAULT_TEMPORARY_PATH,
       staticPrefix: DEFAULT_STATIC_PREFIX,
+      maxFieldSize: DEFAULT_MAX_FIELD_SIZE,
+      maxFileSize: DEFAULT_MAX_FILE_SIZE,
+      maxFiles: DEFAULT_MAX_FILES,
       ...configuration,
       compressionOptions: {
         mozJpeg: {
@@ -100,7 +105,7 @@ class FileStorageService {
   }
 
   public getProps () {
-    return this.props; 
+    return this.props;
   }
 
   public async clearExpiredCacheFiles() {
@@ -114,11 +119,11 @@ class FileStorageService {
     const allFiles = await redis.hgetall(REDIS_CACHE_NAME);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Object.entries(allFiles).forEach(async ([hash, payloadStr]) => {
-      let payload: IRedisFileValue;
+      let payload: RedisFileValue;
       counter.allFiles += 1;
 
       try {
-        payload = JSON.parse(payloadStr) as IRedisFileValue;
+        payload = JSON.parse(payloadStr) as RedisFileValue;
       } catch (err) {
         logger.files.error('Cache clean. Failed to decode transform JSON', { err });
       }
@@ -142,12 +147,12 @@ class FileStorageService {
 
             // remove directory if is empty
             if (!fs.readdirSync(dirname).length) {
-              fs.rmdirSync(dirname);
+              fs.rmSync(dirname, { recursive: true, force: true });
             }
 
             // remove subdirectory if is empty
             if (!fs.readdirSync(dirnamePrev).length) {
-              fs.rmdirSync(dirnamePrev);
+              fs.rmSync(dirnamePrev, { recursive: true, force: true });
             }
           }
         }
@@ -200,12 +205,12 @@ class FileStorageService {
 
             // remove directory if is empty
             if (!fs.readdirSync(dirname).length) {
-              fs.rmdirSync(dirname);
+              fs.rmSync(dirname, { recursive: true, force: true });
             }
 
             // remove subdirectory if is empty
             if (!fs.readdirSync(dirnamePrev).length) {
-              fs.rmdirSync(dirnamePrev);
+              fs.rmSync(dirnamePrev, { recursive: true, force: true });
             }
           }
         }
@@ -232,11 +237,12 @@ class FileStorageService {
       await redis.del(REDIS_CACHE_NAME);
 
       // remove cache dir
-      rimraf(`${cacheAbsolutePath}/*`, (err) => {
-        if (err) {
-          logger.files.error('Failed to remove cache directory', { err });
-        }
-      });
+      try {
+        fs.rmSync(cacheAbsolutePath, { force: true, recursive: true })
+
+      } catch (err) {
+        logger.files.error('Failed to remove cache directory', { err });
+      }
 
       logger.files.info(`Cache was cleared in «${cacheAbsolutePath}»`);
     }
@@ -247,26 +253,25 @@ class FileStorageService {
     const { logger } = context;
 
     if (temporaryAbsolutePath !== rootPath && fs.existsSync(temporaryAbsolutePath)) {
-      // remove cache dir
-      rimraf(`${temporaryAbsolutePath}/*`, (err) => {
-        if (err) {
-          logger.files.error('Failed to remove cache directory', { err });
-        }
-      });
+      try {
+        fs.rmSync('temporaryAbsolutePath', { recursive: true, force: true });
+      } catch (err) {
+        logger.files.error('Failed to remove cache directory', { err });
+      }
 
       logger.files.info(`Cache was cleared in «${temporaryAbsolutePath}»`);
     }
   }
 
 
-  public async checkFileInCache(imageDataHash: string): Promise<IRedisFileValue | null> {
+  public async checkFileInCache(imageDataHash: string): Promise<RedisFileValue | null> {
     const { context } = this.props;
     const { redis, logger } = context;
     const res = await redis.hget(REDIS_CACHE_NAME, imageDataHash);
 
     if (res) {
       try {
-        const payload = JSON.parse(res) as IRedisFileValue;
+        const payload = JSON.parse(res) as RedisFileValue;
 
         return payload;
       } catch (err) {
@@ -305,7 +310,7 @@ class FileStorageService {
   public compilePayloadCache(id: string, filename: string) {
     const { cacheTTL } = this.props;
     const exp = (new Date().getTime() + (cacheTTL * 1000));
-    const payload: IRedisFileValue = {
+    const payload: RedisFileValue = {
       id,
       filename,
       exp,
@@ -1060,9 +1065,9 @@ class FileStorageService {
       throw new ServerError('Flush. Failed to remove files from Database');
     }
     try {
-      fs.rmdirSync(temporaryAbsolutePath, { recursive: true });
-      fs.rmdirSync(cacheAbsolutePath, { recursive: true });
-      fs.rmdirSync(storageAbsolutePath, { recursive: true });
+      fs.rmSync(temporaryAbsolutePath, { force: true, recursive: true });
+      fs.rmSync(cacheAbsolutePath, { force: true, recursive: true });
+      fs.rmSync(storageAbsolutePath, { force: true, recursive: true });
     } catch (err) {
       throw new ServerError('Flush. Failed to remove files from disk');
     }
@@ -1094,12 +1099,12 @@ class FileStorageService {
 
               // remove directory if is empty
               if (!fs.readdirSync(dirname).length) {
-                fs.rmdirSync(dirname);
+                fs.rmSync(dirname, { recursive: true, force: true });
               }
 
               // remove subdirectory if is empty
               if (!fs.readdirSync(dirnamePrev).length) {
-                fs.rmdirSync(dirnamePrev);
+                fs.rmSync(dirnamePrev, { recursive: true, force: true });
               }
             } else {
               logger.files.info(`File ${fileData.id} not exists in path ${fullFilenamePath}`);

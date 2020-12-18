@@ -18,3 +18,6 @@ export const IMAGE_TRANSFORM_MAX_WITH = 3000;
 export const IMAGE_TRANSFORM_MAX_HEIGHT = 3000;
 export const IMAGE_TRANSFORM_MAX_BLUR = 20;
 export const IMAGE_TRANSFORM_MAX_GAUSSIAN = 20;
+export const DEFAULT_MAX_FIELD_SIZE = 1000000 * 64; // 64MB
+export const DEFAULT_MAX_FILE_SIZE = Infinity;
+export const DEFAULT_MAX_FILES = Infinity;

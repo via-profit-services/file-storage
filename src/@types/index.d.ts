@@ -1,7 +1,7 @@
 declare module '@via-profit-services/file-storage' {
   import { Middleware, MiddlewareProps, Context, ListResponse, OutputFilter } from '@via-profit-services/core';
   import fs from 'fs';
-  import { Router } from 'express';
+  import { RequestHandler } from 'express';
   import { WriteStream } from 'fs-capacitor';
   import { Options as ImagenimMozjpegOption } from 'imagemin-mozjpeg';
   import { Options as ImagenimOptiPngOption } from 'imagemin-optipng';
@@ -9,11 +9,11 @@ declare module '@via-profit-services/file-storage' {
 
   export type FileType = 'image' | 'document' | 'template';
 
-  export type ExpressMiddleware = (props: {
-    context: Context;
-  }) => Router;
+  export type ExpressMiddlewareFactory = (props: {
+    configuration: Configuration;
+  }) => RequestHandler;
 
-  export type ContextMiddleware = (props: {
+  export type ContextMiddlewareFactory = (props: {
     context: Context;
     config: MiddlewareProps['config'];
     configuration: Configuration;
@@ -125,6 +125,10 @@ declare module '@via-profit-services/file-storage' {
      * The time after which the file will be deleted from the temporary directory
      */
     temporaryTTL?: number;
+
+    maxFieldSize?: number;
+    maxFileSize?: number;
+    maxFiles?: number;
 
     /**
      * Image maximum width
@@ -239,18 +243,7 @@ declare module '@via-profit-services/file-storage' {
 
   export type File = Promise<FilePayload>;
 
-  export interface UploadLimits {
-    maxFieldSize: number;
-    maxFileSize: number;
-    maxFiles: number;
-  }
-
-  export interface UploadExpressMiddlewareProps {
-    context: Context;
-    limits?: Partial<UploadLimits>
-  }
-
-  export interface IRedisFileValue {
+  export interface RedisFileValue {
     id: string;
     filename: string;
     exp: number;
@@ -266,7 +259,7 @@ declare module '@via-profit-services/file-storage' {
 
   export type FileStorageMiddlewareFactory = (configuration: Configuration) => {
     fileStorageMiddleware: Middleware;
-    // fileStorageExpress: ReturnType<ExpressMiddleware>;
+    graphQLFilesExpress: RequestHandler;
   };
 
   /**
@@ -285,7 +278,7 @@ declare module '@via-profit-services/file-storage' {
     clearExpiredTemporaryFiles(): Promise<void>;
     clearCache(): Promise<void>;
     clearTemporary(): Promise<void>;
-    checkFileInCache(imageDataHash: string): Promise<IRedisFileValue | null>;
+    checkFileInCache(imageDataHash: string): Promise<RedisFileValue | null>;
     makeImageCache(imageData: ImgeData, imageBuffer: Buffer): Promise<void>;
     compilePayloadCache(id: string, filename: string): string;
     getUrlWithTransform(imageData: Pick<FileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>, transform: ImageTransform): Promise<string>;
