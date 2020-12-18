@@ -12,7 +12,8 @@
     "rootDir": "./src",
     "sourceMap": true,
     "target": "es6",
-    "types": ["node"]
+    "types": ["node"],
+    "allowJs": true
   },
   "exclude": ["src/**/*.spec.ts", "src/**/*.test.ts"],
   "include": ["src/**/*"]

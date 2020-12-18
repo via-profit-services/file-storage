@@ -518,7 +518,7 @@ class FileStorageService {
 
     return {
       storagePath,
-      storageAbsolutePath: path.resolve(__dirname, '../..', storagePath),
+      storageAbsolutePath: path.resolve(__dirname, '..', storagePath),
     };
   }
 
@@ -527,7 +527,7 @@ class FileStorageService {
 
     return {
       cachePath,
-      cacheAbsolutePath: path.resolve(__dirname, '../..', cachePath),
+      cacheAbsolutePath: path.resolve(__dirname, '..', cachePath),
     };
   }
 
@@ -536,7 +536,7 @@ class FileStorageService {
 
     return {
       temporaryPath,
-      temporaryAbsolutePath: path.resolve(__dirname, '../..', temporaryPath),
+      temporaryAbsolutePath: path.resolve(__dirname, '..', temporaryPath),
     };
   }
 
