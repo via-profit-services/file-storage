@@ -97,7 +97,7 @@
         "@typescript-eslint/eslint-plugin": "^4.10.0",
         "@typescript-eslint/parser": "^4.10.0",
         "@via-profit-services/accounts": "file://home/dhs/Projects/@via-profit-services/accounts/package-0.1.16-rc.4.tgz",
-        "@via-profit-services/core": "file://home/dhs/Projects/@via-profit-services/core/package-0.31.6-rc.36.tgz",
+        "@via-profit-services/core": "file://home/dhs/Projects/@via-profit-services/core/package-0.31.6-rc.40.tgz",
         "@via-profit-services/eslint-config": "^0.1.11",
         "@via-profit-services/knex": "file://home/dhs/Projects/@via-profit-services/knex/package-0.1.0-rc.7.tgz",
         "@via-profit-services/subscriptions": "file://home/dhs/Projects/@via-profit-services/subscriptions/package-0.1.0-rc.6.tgz",

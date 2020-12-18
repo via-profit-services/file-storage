@@ -22,11 +22,15 @@ const middlewareFactory: FileStorageMiddlewareFactory = (configuration) => {
     return pool;
   }
 
-  const graphQLFilesExpress = expressMiddlewareFactory({ configuration });
+  const {
+    graphQLFilesStaticExpress,
+    graphQLFilesUploadExpress,
+  } = expressMiddlewareFactory({ configuration });
 
   return {
     fileStorageMiddleware,
-    graphQLFilesExpress,
+    graphQLFilesStaticExpress,
+    graphQLFilesUploadExpress,
   }
 }
 

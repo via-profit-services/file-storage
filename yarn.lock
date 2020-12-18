@@ -1609,9 +1609,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@via-profit-services/core@file://home/dhs/Projects/@via-profit-services/core/package-0.31.6-rc.36.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.":
-  version: 0.31.6-rc.36
-  resolution: "@via-profit-services/core@file://home/dhs/Projects/@via-profit-services/core/package-0.31.6-rc.36.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."
+"@via-profit-services/core@file://home/dhs/Projects/@via-profit-services/core/package-0.31.6-rc.40.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.":
+  version: 0.31.6-rc.40
+  resolution: "@via-profit-services/core@file://home/dhs/Projects/@via-profit-services/core/package-0.31.6-rc.40.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."
   dependencies:
     bufferutil: ^4.0.2
     content-type: ^1.0.4
@@ -1631,7 +1631,7 @@ __metadata:
       optional: true
     utf-8-validate:
       optional: true
-  checksum: 56f810c16bd623982887e6c1585ce0d7ea81762fbbd584a3e5ff4798f620d2ba189c951d23aefd79afe85de70ab8ab0e454e87d1ec2dc23f333183d5a1c66177
+  checksum: cd4fa69d0b0b92f10ebb2f1c1a97f4faa3ed78fe5008be1a2a5d1645a3346d45e9acac4343cfba959e62f5a3d9570909cec9156b2defddd404f559d8af3bf8ed
   languageName: node
   linkType: hard
 
@@ -1672,7 +1672,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": ^4.10.0
     "@typescript-eslint/parser": ^4.10.0
     "@via-profit-services/accounts": "file://home/dhs/Projects/@via-profit-services/accounts/package-0.1.16-rc.4.tgz"
-    "@via-profit-services/core": "file://home/dhs/Projects/@via-profit-services/core/package-0.31.6-rc.36.tgz"
+    "@via-profit-services/core": "file://home/dhs/Projects/@via-profit-services/core/package-0.31.6-rc.40.tgz"
     "@via-profit-services/eslint-config": ^0.1.11
     "@via-profit-services/knex": "file://home/dhs/Projects/@via-profit-services/knex/package-0.1.0-rc.7.tgz"
     "@via-profit-services/subscriptions": "file://home/dhs/Projects/@via-profit-services/subscriptions/package-0.1.0-rc.6.tgz"

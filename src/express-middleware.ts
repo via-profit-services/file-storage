@@ -1,22 +1,37 @@
 import type { FilePayload, ExpressMiddlewareFactory } from '@via-profit-services/file-storage';
 import Busboy from 'busboy';
-import { RequestHandler } from 'express';
+import express, { RequestHandler, Router } from 'express';
 import { WriteStream } from 'fs-capacitor';
+import path from 'path';
 
-import { DEFAULT_MAX_FIELD_SIZE, DEFAULT_MAX_FILES, DEFAULT_MAX_FILE_SIZE } from './constants';
+import {
+  DEFAULT_MAX_FIELD_SIZE,
+  DEFAULT_MAX_FILES,
+  DEFAULT_MAX_FILE_SIZE,
+  DEFAULT_STATIC_PREFIX,
+  STATIC_DELIMITER,
+  DEFAULT_STORAGE_PATH,
+  DEFAULT_CACHE_PATH,
+  CACHE_DELIMITER,
+  TEMPORARY_DELIMITER,
+  DEFAULT_TEMPORARY_PATH,
+} from './constants';
 import FileUploadInstance from './utils/FileUploadInstance';
 
 
 const expressMiddlewareFactory: ExpressMiddlewareFactory = (props) => {
   const { configuration } = props;
-  const { maxFieldSize, maxFileSize, maxFiles } = configuration;
+  const {
+    maxFieldSize, maxFileSize, maxFiles, staticPrefix,
+    storagePath, cachePath, temporaryPath,
+  } = configuration;
   const limits = {
     maxFieldSize: maxFieldSize || DEFAULT_MAX_FIELD_SIZE,
     maxFileSize: maxFileSize || DEFAULT_MAX_FILE_SIZE,
     maxFiles: maxFiles || DEFAULT_MAX_FILES,
   };
 
-  const expressMiddleware: RequestHandler = async (request, response, next) => {
+  const graphQLFilesUploadExpress: RequestHandler = async (request, response, next) => {
     if (!request.is('multipart/form-data')) {
 
       next();
@@ -179,7 +194,21 @@ const expressMiddlewareFactory: ExpressMiddlewareFactory = (props) => {
     request.pipe(parser);
   }
 
-  return expressMiddleware;
+
+  const graphQLFilesStaticExpress = Router();
+  const prefix = staticPrefix || DEFAULT_STATIC_PREFIX;
+  const storageAbsolutePath = path.resolve(__dirname, '..', storagePath || DEFAULT_STORAGE_PATH);
+  const cacheAbsolutePath = path.resolve(__dirname, '..', cachePath || DEFAULT_CACHE_PATH);
+  const temporaryAbsolutePath = path.resolve(__dirname, '..', temporaryPath || DEFAULT_TEMPORARY_PATH);
+
+  graphQLFilesStaticExpress.use(`${prefix}/${STATIC_DELIMITER}/`, express.static(storageAbsolutePath));
+  graphQLFilesStaticExpress.use(`${prefix}/${CACHE_DELIMITER}/`, express.static(cacheAbsolutePath));
+  graphQLFilesStaticExpress.use(`${prefix}/${TEMPORARY_DELIMITER}/`, express.static(temporaryAbsolutePath));
+
+  return {
+    graphQLFilesStaticExpress,
+    graphQLFilesUploadExpress,
+  };
 }
 
 export default expressMiddlewareFactory;

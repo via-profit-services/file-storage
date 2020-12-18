@@ -11,7 +11,10 @@ declare module '@via-profit-services/file-storage' {
 
   export type ExpressMiddlewareFactory = (props: {
     configuration: Configuration;
-  }) => RequestHandler;
+  }) => {
+    graphQLFilesUploadExpress: RequestHandler;
+    graphQLFilesStaticExpress: RequestHandler;
+  }
 
   export type ContextMiddlewareFactory = (props: {
     context: Context;
@@ -168,21 +171,6 @@ declare module '@via-profit-services/file-storage' {
 
   export type FileStorageParams = Required<Configuration> & {
     context: Context;
-    staticPrefixAbsolutePath: string;
-    storageAbsolutePath: string;
-    cacheAbsolutePath: string;
-    temporaryAbsolutePath: string;
-    rootPath: string;
-
-
-    /** URL delimeter of static content */
-    staticDelimiter: string;
-
-    /** URL delimiter for cached content */
-    cacheDelimiter: string;
-
-    /** URL delimiter for temporary content */
-    temporaryDelimiter: string;
   }
 
 
@@ -259,7 +247,8 @@ declare module '@via-profit-services/file-storage' {
 
   export type FileStorageMiddlewareFactory = (configuration: Configuration) => {
     fileStorageMiddleware: Middleware;
-    graphQLFilesExpress: RequestHandler;
+    graphQLFilesUploadExpress: RequestHandler;
+    graphQLFilesStaticExpress: RequestHandler;
   };
 
   /**

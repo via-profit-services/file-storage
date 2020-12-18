@@ -34,9 +34,9 @@ import {
   DEFAULT_CACHE_PATH,
   DEFAULT_TEMPORARY_PATH,
   DEFAULT_STATIC_PREFIX,
-  DEFAULT_CACHE_DELIMITER,
-  DEFAULT_STATIC_DELIMITER,
-  DEFAULT_TEMPORARY_DELIMITER,
+  CACHE_DELIMITER,
+  STATIC_DELIMITER,
+  TEMPORARY_DELIMITER,
   TIMEOUT_MAX_VALUE,
   DEFAULT_MAX_FIELD_SIZE,
   DEFAULT_MAX_FILES,
@@ -50,10 +50,6 @@ class FileStorageService {
   public constructor(props: FileStorageServiceProps) {
     const { configuration, context } = props;
     const { cacheTTL, temporaryTTL, compressionOptions } = configuration;
-    const isDev = process.env.NODE_ENV === 'development';
-    const rootPath = isDev
-      ? path.resolve(path.dirname(process.argv[1]), '..')
-      : path.resolve(path.dirname(process.argv[1]));
 
     this.props = {
       context,
@@ -65,15 +61,7 @@ class FileStorageService {
       ),
       imageOptimMaxWidth: DEFAULT_IMAGE_OPTIM_MAX_WIDTH,
       imageOptimMaxHeight: DEFAULT_IMAGE_OPTIM_MAX_HEIGHT,
-      staticDelimiter: DEFAULT_STATIC_DELIMITER,
-      cacheDelimiter: DEFAULT_CACHE_DELIMITER,
-      temporaryDelimiter: DEFAULT_TEMPORARY_DELIMITER,
-      rootPath,
       hostname: '',
-      staticPrefixAbsolutePath: '',
-      storageAbsolutePath: '',
-      cacheAbsolutePath: '',
-      temporaryAbsolutePath: '',
       storagePath: DEFAULT_STORAGE_PATH,
       cachePath: DEFAULT_CACHE_PATH,
       temporaryPath: DEFAULT_TEMPORARY_PATH,
@@ -97,11 +85,6 @@ class FileStorageService {
         },
       },
     };
-
-    this.props.staticPrefixAbsolutePath = path.resolve(rootPath, this.props.staticPrefix);
-    this.props.storageAbsolutePath = path.resolve(rootPath, this.props.storagePath);
-    this.props.cacheAbsolutePath = path.resolve(rootPath, this.props.cachePath);
-    this.props.temporaryAbsolutePath = path.resolve(rootPath, this.props.temporaryPath);
   }
 
   public getProps () {
@@ -109,8 +92,9 @@ class FileStorageService {
   }
 
   public async clearExpiredCacheFiles() {
-    const { cacheAbsolutePath, context } = this.props;
+    const { context } = this.props;
     const { redis, logger } = context;
+    const { cacheAbsolutePath } = this.getCachePath();
 
     const counter = {
       allFiles: 0,
@@ -169,8 +153,9 @@ class FileStorageService {
   }
 
   public async clearExpiredTemporaryFiles() {
-    const { temporaryAbsolutePath, context } = this.props;
+    const { context } = this.props;
     const { redis, logger } = context;
+    const { temporaryAbsolutePath } = this.getTemporaryPath();
 
     const counter = {
       allFiles: 0,
@@ -229,10 +214,11 @@ class FileStorageService {
   }
 
   public async clearCache() {
-    const { cacheAbsolutePath, rootPath, context } = this.props;
+    const { context } = this.props;
     const { redis, logger } = context;
+    const { cacheAbsolutePath } = this.getCachePath();
 
-    if (cacheAbsolutePath !== rootPath && fs.existsSync(cacheAbsolutePath)) {
+    if (fs.existsSync(cacheAbsolutePath)) {
       // clear Redis data
       await redis.del(REDIS_CACHE_NAME);
 
@@ -249,10 +235,12 @@ class FileStorageService {
   }
 
   public async clearTemporary() {
-    const { context, temporaryAbsolutePath, rootPath } = this.props;
+    const { context } = this.props;
     const { logger } = context;
 
-    if (temporaryAbsolutePath !== rootPath && fs.existsSync(temporaryAbsolutePath)) {
+    const { temporaryAbsolutePath } = this.getTemporaryPath();
+
+    if (fs.existsSync(temporaryAbsolutePath)) {
       try {
         fs.rmSync('temporaryAbsolutePath', { recursive: true, force: true });
       } catch (err) {
@@ -285,11 +273,12 @@ class FileStorageService {
   }
 
   public async makeImageCache(imageData: ImgeData, imageBuffer: Buffer) {
-    const { context, cacheAbsolutePath } = this.props;
-    const { redis, services } = context;
+    const { context } = this.props;
+    const { redis } = context;
     const { payload, token } = imageData;
+    const { cacheAbsolutePath } = this.getCachePath();
 
-    const filename = services.files.getPathFromUuid(uuidv4());
+    const filename = this.getPathFromUuid(uuidv4());
     const pathToSave = path.join(cacheAbsolutePath, filename);
     const absoluteFilename = `${pathToSave}.${payload.ext}`;
     const dirname = path.dirname(pathToSave);
@@ -323,26 +312,14 @@ class FileStorageService {
     imageData: Pick<FileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>,
     transform: ImageTransform,
   ) {
-    const {
-      context,
-      hostname,
-      cacheDelimiter,
-      staticPrefix,
-      cacheAbsolutePath,
-      storageAbsolutePath,
-    } = this.props;
+    const { context, hostname, staticPrefix } = this.props;
+    const { redis, logger } = context;
+    const { url, id, mimeType, isLocalFile } = imageData;
+    const { storageAbsolutePath } = this.getStoragePath();
+    const { cacheAbsolutePath } = this.getCachePath();
 
-    const { redis, logger, services } = context;
-
-    const {
-      url,
-      id,
-      mimeType,
-      isLocalFile,
-    } = imageData;
-
-    const type = services.files.getFileTypeByMimeType(mimeType);
-    const ext = services.files.getExtensionByMimeType(mimeType);
+    const type = this.getFileTypeByMimeType(mimeType);
+    const ext = this.getExtensionByMimeType(mimeType);
 
     const hashPayload: TransformUrlPayload = {
       id,
@@ -363,13 +340,13 @@ class FileStorageService {
     if (inCache) {
       return [
         `${hostname}${staticPrefix}`,
-        cacheDelimiter,
+        CACHE_DELIMITER,
         `${inCache.filename}`,
       ].join('/');
     }
 
-    const originalFilename = `${services.files.getPathFromUuid(id)}.${ext}`;
-    const newFilename = `${services.files.getPathFromUuid(uuidv4())}.${ext}`;
+    const originalFilename = `${this.getPathFromUuid(id)}.${ext}`;
+    const newFilename = `${this.getPathFromUuid(uuidv4())}.${ext}`;
     const absoluteOriginalFilename = path.join(storageAbsolutePath, originalFilename);
     const absoluteFilename = path.join(cacheAbsolutePath, newFilename);
     const dirname = path.dirname(absoluteFilename);
@@ -394,7 +371,7 @@ class FileStorageService {
 
     return [
       `${hostname}${staticPrefix}`,
-      cacheDelimiter,
+      CACHE_DELIMITER,
       `${newFilename}`,
     ].join('/');
   }
@@ -411,9 +388,7 @@ class FileStorageService {
   }
 
   public resolveFile(filedata: Pick<FileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>) {
-    const {
-      mimeType, isLocalFile, url, id,
-    } = filedata;
+    const { mimeType, isLocalFile, url, id } = filedata;
     if (!isLocalFile) {
       return {
         resolveAbsolutePath: url,
@@ -421,10 +396,9 @@ class FileStorageService {
       };
     }
 
-    const { storagePath, storageAbsolutePath, context } = this.props;
-    const { services } = context;
-    const ext = services.files.getExtensionByMimeType(mimeType);
-    const fileLocation = services.files.getPathFromUuid(id);
+    const { storageAbsolutePath, storagePath } = this.getStoragePath();
+    const ext = this.getExtensionByMimeType(mimeType);
+    const fileLocation = this.getPathFromUuid(id);
 
     return {
       resolvePath: path.join(storagePath, `${fileLocation}.${ext}`),
@@ -523,55 +497,46 @@ class FileStorageService {
    * Returns filename at static prefix root (e.g. /static/path/to/file.ext)
    */
   public getFilenameFromUuid(guid: string, delimiter = 's') {
-    const {
-      storagePath,
-      cachePath,
-      temporaryPath,
-      staticDelimiter,
-      cacheDelimiter,
-      temporaryDelimiter,
-      context,
-    } = this.props;
-    const { services } = context;
-    const localPath = services.files.getPathFromUuid(guid);
+    const { storagePath, cachePath, temporaryPath } = this.props;
+    const localPath = this.getPathFromUuid(guid);
 
     switch (delimiter) {
-      case cacheDelimiter:
+      case CACHE_DELIMITER:
         return path.join('/', cachePath, localPath);
 
-      case temporaryDelimiter:
+      case TEMPORARY_DELIMITER:
         return path.join('/', temporaryPath, localPath);
 
-      case staticDelimiter:
+      case STATIC_DELIMITER:
       default:
         return path.join('/', storagePath, localPath);
     }
   }
 
   public getStoragePath() {
-    const { storagePath, storageAbsolutePath } = this.props;
+    const { storagePath } = this.props;
 
     return {
       storagePath,
-      storageAbsolutePath,
+      storageAbsolutePath: path.resolve(__dirname, '../..', storagePath),
     };
   }
 
   public getCachePath() {
-    const { cachePath, cacheAbsolutePath } = this.props;
+    const { cachePath } = this.props;
 
     return {
       cachePath,
-      cacheAbsolutePath,
+      cacheAbsolutePath: path.resolve(__dirname, '../..', cachePath),
     };
   }
 
   public getTemporaryPath() {
-    const { temporaryPath, temporaryAbsolutePath } = this.props;
+    const { temporaryPath } = this.props;
 
     return {
       temporaryPath,
-      temporaryAbsolutePath,
+      temporaryAbsolutePath: path.resolve(__dirname, '../..', temporaryPath),
     };
   }
 
@@ -616,12 +581,9 @@ class FileStorageService {
    * Extract file extension and try to resolve mimeType by mime database
    */
   public getMimeTypeByFilename(filename: string) {
-    const { context } = this.props;
-    const { services } = context;
+    const ext = this.extractExtensionFromFilename(filename);
 
-    const ext = services.files.extractExtensionFromFilename(filename);
-
-    return services.files.getMimeTypeByExtension(ext);
+    return this.getMimeTypeByExtension(ext);
   }
 
   /**
@@ -633,17 +595,14 @@ class FileStorageService {
    * when uploading files to the server
    */
   public resolveMimeType(filename: string, mimeType: string) {
-    const { context } = this.props;
-    const { services } = context;
-
-    const ext = services.files.extractExtensionFromFilename(filename);
+    const ext = this.extractExtensionFromFilename(filename);
     const extFromMimeType = mime.extension(mimeType);
 
     if (ext === extFromMimeType) {
       return mimeType;
     }
 
-    return services.files.getMimeTypeByExtension(filename);
+    return this.getMimeTypeByExtension(filename);
   }
 
   /**
@@ -682,13 +641,14 @@ class FileStorageService {
       file: FileBag;
       expireAt: Date;
     }> {
-    const { context, temporaryAbsolutePath, temporaryTTL } = this.props;
-    const { services, timezone } = context;
+    const { context, temporaryTTL } = this.props;
+    const { timezone } = context;
     const id = fileInfo.id || uuidv4();
+    const { temporaryAbsolutePath } = this.getTemporaryPath();
 
     const expireAt = fileInfo.expireAt || temporaryTTL;
-    const filename = services.files.getPathFromUuid(id);
-    const ext = services.files.getExtensionByMimeType(fileInfo.mimeType);
+    const filename = this.getPathFromUuid(id);
+    const ext = this.getExtensionByMimeType(fileInfo.mimeType);
     const absoluteFilename = path.join(temporaryAbsolutePath, `${filename}.${ext}`);
     await this.createTemporaryFile(null, {
       id,
@@ -715,13 +675,12 @@ class FileStorageService {
 
   public async getTemporaryFile(id: string): Promise<TemporaryFileBag | false> {
     const {
-      temporaryAbsolutePath,
       hostname,
-      temporaryDelimiter,
       staticPrefix,
       context,
     } = this.props;
     const { redis, logger, timezone } = context;
+    const { temporaryAbsolutePath } = this.getTemporaryPath();
 
     const payloadStr = await redis.hget(REDIS_TEMPORARY_NAME, id);
     let payload: RedisTemporaryValue;
@@ -748,13 +707,13 @@ class FileStorageService {
       expiredAt: moment.tz(exp, timezone).toDate(),
       createdAt: moment.tz(timezone).toDate(),
       updatedAt: moment.tz(timezone).toDate(),
-      url: `${hostname}${staticPrefix}/${temporaryDelimiter}/${payload.filename}`,
+      url: `${hostname}${staticPrefix}/${TEMPORARY_DELIMITER}/${payload.filename}`,
       ...fileInfo,
     };
   }
 
   public async getFiles(filter: Partial<OutputFilter>): Promise<ListResponse<FileBag>> {
-    const { context, staticPrefix, hostname, staticDelimiter } = this.props;
+    const { context, staticPrefix, hostname } = this.props;
     const { knex } = context;
 
     const { limit, offset, orderBy, where } = filter;
@@ -773,7 +732,7 @@ class FileStorageService {
       .then((nodes) => nodes.map((node) => ({
         ...node,
         url: node.isLocalFile
-          ? `${hostname}${staticPrefix}/${staticDelimiter}/${node.url}`
+          ? `${hostname}${staticPrefix}/${STATIC_DELIMITER}/${node.url}`
           : node.url,
       })))
       .then((nodes) => ({
@@ -864,13 +823,14 @@ class FileStorageService {
     expireAt?: number,
   ): Promise<{id: string; absoluteFilename: string; }> {
 
-    const { temporaryAbsolutePath, temporaryTTL, context } = this.props;
-    const { redis, services } = context;
+    const { temporaryTTL, context } = this.props;
+    const { redis } = context;
+    const { temporaryAbsolutePath } = this.getTemporaryPath();
 
     const id = fileInfo.id || uuidv4();
-    const ext = services.files.getExtensionByMimeType(fileInfo.mimeType);
-    const type = services.files.getFileTypeByMimeType(fileInfo.mimeType);
-    const filename = `${services.files.getPathFromUuid(id)}.${ext}`;
+    const ext = this.getExtensionByMimeType(fileInfo.mimeType);
+    const type = this.getFileTypeByMimeType(fileInfo.mimeType);
+    const filename = `${this.getPathFromUuid(id)}.${ext}`;
 
     const absoluteFilename = path.join(temporaryAbsolutePath, filename);
     const dirname = path.dirname(absoluteFilename);
@@ -933,12 +893,13 @@ class FileStorageService {
     fileStream: ReadStream | null,
     fileInfo: FileBagCreate,
   ): Promise<{id: string; absoluteFilename: string; }> {
-    const { context, storageAbsolutePath } = this.props;
-    const { knex, timezone, services } = context;
+    const { context } = this.props;
+    const { knex, timezone } = context;
+    const { storageAbsolutePath } = this.getStoragePath();
 
     const id = fileInfo.id || uuidv4();
-    const ext = services.files.getExtensionByMimeType(fileInfo.mimeType);
-    const localFilename = `${services.files.getPathFromUuid(id)}.${ext}`;
+    const ext = this.getExtensionByMimeType(fileInfo.mimeType);
+    const localFilename = `${this.getPathFromUuid(id)}.${ext}`;
     const url = (fileInfo.isLocalFile || !fileInfo.url) ? localFilename : fileInfo.url;
 
     try {
@@ -947,7 +908,7 @@ class FileStorageService {
           ...this.preparePayloadToSQL(fileInfo),
           id,
           url,
-          type: services.files.getFileTypeByMimeType(fileInfo.mimeType),
+          type: this.getFileTypeByMimeType(fileInfo.mimeType),
           createdAt: moment.tz(timezone).format(),
           updatedAt: moment.tz(timezone).format(),
         })
@@ -986,17 +947,16 @@ class FileStorageService {
   }
 
   public async moveFileFromTemporary(id: string) {
-    const { temporaryAbsolutePath, context } = this.props;
-    const { services } = context;
+    const { temporaryAbsolutePath } = this.getTemporaryPath();
     const payload = await this.getTemporaryFile(id);
-    const filename = services.files.getPathFromUuid(id);
+    const filename = this.getPathFromUuid(id);
 
 
     if (!payload) {
       throw new ServerError(`File ${id} does not have in temporary cache`);
     }
 
-    const ext = services.files.getExtensionByMimeType(payload.mimeType);
+    const ext = this.getExtensionByMimeType(payload.mimeType);
     const absoluteFilename = path.join(temporaryAbsolutePath, `${filename}.${ext}`);
     if (!fs.existsSync(absoluteFilename)) {
       throw new ServerError(`File ${id} not exists in path ${absoluteFilename}`);
@@ -1039,7 +999,9 @@ class FileStorageService {
   public async flush() {
     const { context } = this.props;
     const { dataloader } = context;
-    const { storageAbsolutePath, cacheAbsolutePath, temporaryAbsolutePath } = this.props;
+    const { storageAbsolutePath } = this.getStoragePath();
+    const { cacheAbsolutePath } = this.getCachePath();
+    const { temporaryAbsolutePath } = this.getTemporaryPath();
     const {
       redis, knex, logger, token,
     } = context;
@@ -1079,18 +1041,18 @@ class FileStorageService {
   }
 
   public async deleteStaticFiles(ids: string[]): Promise<string[]> {
-    const { context, staticDelimiter, rootPath } = this.props;
-    const { knex, logger, services } = context;
+    const { context } = this.props;
+    const { knex, logger } = context;
     const filesList = await this.getFilesByIds(ids);
 
     if (filesList.length) {
       filesList.forEach((fileData) => {
         // if is local file
         if (fileData.isLocalFile || fileData.url.match(/^\/[a-z0-9]+/i)) {
-          const filename = services.files.getFilenameFromUuid(fileData.id, staticDelimiter);
-          const ext = services.files.getExtensionByMimeType(fileData.mimeType);
-          const fullFilenamePath = path.join(rootPath, `${filename}.${ext}`);
-          const dirname = path.join(rootPath, path.dirname(filename));
+          const filename = this.getFilenameFromUuid(fileData.id, STATIC_DELIMITER);
+          const ext = this.getExtensionByMimeType(fileData.mimeType);
+          const fullFilenamePath = path.resolve(__dirname, '..', `${filename}.${ext}`);
+          const dirname = path.resolve(__dirname, '..', path.dirname(filename));
           const dirnamePrev = path.resolve(`${dirname}/..`);
           try {
             // remove file

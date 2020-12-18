@@ -19,7 +19,11 @@ const app = express();
 const server = http.createServer(app);
 (async () => {
 
-  const { fileStorageMiddleware, graphQLFilesExpress } = files.factory({
+  const {
+    fileStorageMiddleware,
+    graphQLFilesStaticExpress,
+    graphQLFilesUploadExpress,
+  } = files.factory({
     hostname: 'http://localhost:9005',
   });
 
@@ -71,8 +75,9 @@ const server = http.createServer(app);
     ],
   });
 
-  app.use(endpoint, graphQLExpress);
-  app.use(endpoint, graphQLFilesExpress)
+  app.use(endpoint, graphQLFilesUploadExpress); // <-- First
+  app.use(graphQLFilesStaticExpress); // < -- Second
+  app.use(endpoint, graphQLExpress); // < -- Third
 
   server.listen(PORT, () => {
     console.log(`GraphQL Server started at http://localhost:${PORT}/graphql`);
