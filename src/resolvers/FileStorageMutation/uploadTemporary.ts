@@ -1,16 +1,7 @@
-import type { IFieldResolver } from '@graphql-tools/utils';
-import type { Context } from '@via-profit-services/core';
-import type { UploadFileInput, File, ImageTransform } from '@via-profit-services/file-storage';
+import type { Resolvers } from '@via-profit-services/file-storage';
 
-interface UploadTemporaryFilesArgs {
-  files: File[];
-  info: UploadFileInput[];
-  transform?: ImageTransform[];
-  noCompress?: boolean;
-}
-
-const uploadTemporaryResolver: IFieldResolver<any, Context, UploadTemporaryFilesArgs> = async (
-  parent, args, context,
+const uploadTemporaryResolver: Resolvers['FileStorageMutation']['uploadTemporary'] = async (
+  _parent, args, context,
 ) => {
   const {
     files, info, noCompress, transform,

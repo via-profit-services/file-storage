@@ -1,5 +1,4 @@
-/* eslint-disable import/max-dependencies */
-import { IResolvers } from '@graphql-tools/utils';
+import type { Resolvers } from '@via-profit-services/file-storage';
 
 import File from './File';
 import FileStorageMutation from './FileStorageMutation';
@@ -10,7 +9,7 @@ import scalars from './scalars';
 import TemporaryFile from './TemporaryFile';
 
 
-const resolvers: IResolvers = {
+const resolvers: Resolvers = {
   File,
   FileStorageQuery,
   FileStorageMutation,

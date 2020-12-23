@@ -1,14 +1,8 @@
-import type { IFieldResolver } from '@graphql-tools/utils';
 import { ServerError } from '@via-profit-services/core';
-import type { Context } from '@via-profit-services/core';
-import type { UpdateFileInput, ImageTransform } from '@via-profit-services/file-storage';
+import type { Resolvers } from '@via-profit-services/file-storage';
 
-interface UpdateArgs {
-  info: UpdateFileInput[];
-  transform?: ImageTransform[];
-}
 
-const updateResolver: IFieldResolver<any, Context, UpdateArgs> = async (
+const updateResolver: Resolvers['FileStorageMutation']['update'] = async (
   parent, args, context,
 ) => {
   const { info, transform } = args;

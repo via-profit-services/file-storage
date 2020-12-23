@@ -14,6 +14,7 @@ import fs, { ReadStream } from 'fs';
 // import imageminOptipng from 'imagemin-optipng';
 // import imageminPngquant from 'imagemin-pngquant';
 import Jimp from 'jimp';
+
 import mime from 'mime-types';
 import moment from 'moment-timezone';
 import path from 'path';
@@ -117,8 +118,6 @@ class FileStorageService {
         if (new Date().getTime() > exp) {
           const fullFilenamePath = path.join(cacheAbsolutePath, filename);
           const dirname = path.dirname(fullFilenamePath);
-          const dirnamePrev = path.join(dirname, '..');
-
 
           if (fs.existsSync(fullFilenamePath)) {
             // remove file from fs
@@ -130,14 +129,7 @@ class FileStorageService {
             counter.deletedFiles += 1;
 
             // remove directory if is empty
-            if (!fs.readdirSync(dirname).length) {
-              fs.rmSync(dirname, { recursive: true, force: true });
-            }
-
-            // remove subdirectory if is empty
-            if (!fs.readdirSync(dirnamePrev).length) {
-              fs.rmSync(dirnamePrev, { recursive: true, force: true });
-            }
+            this.removeEmptyDirectories(dirname);
           }
         }
       } catch (err) {
@@ -178,7 +170,6 @@ class FileStorageService {
         if (new Date().getTime() > exp) {
           const fullFilenamePath = path.join(temporaryAbsolutePath, filename);
           const dirname = path.dirname(fullFilenamePath);
-          const dirnamePrev = path.join(dirname, '..');
           if (fs.existsSync(fullFilenamePath)) {
             // remove file from fs
             fs.unlinkSync(fullFilenamePath);
@@ -189,14 +180,7 @@ class FileStorageService {
             counter.deletedFiles += 1;
 
             // remove directory if is empty
-            if (!fs.readdirSync(dirname).length) {
-              fs.rmSync(dirname, { recursive: true, force: true });
-            }
-
-            // remove subdirectory if is empty
-            if (!fs.readdirSync(dirnamePrev).length) {
-              fs.rmSync(dirnamePrev, { recursive: true, force: true });
-            }
+            this.removeEmptyDirectories(dirname);
           }
         }
       } catch (err) {
@@ -224,7 +208,13 @@ class FileStorageService {
 
       // remove cache dir
       try {
-        fs.rmSync(cacheAbsolutePath, { force: true, recursive: true })
+        fs.rmSync(cacheAbsolutePath, {
+          force: true,
+          recursive: true,
+        });
+
+        // remove empty directories
+        this.removeEmptyDirectories(cacheAbsolutePath);
 
       } catch (err) {
         logger.files.error('Failed to remove cache directory', { err });
@@ -242,10 +232,15 @@ class FileStorageService {
 
     if (fs.existsSync(temporaryAbsolutePath)) {
       try {
-        fs.rmSync('temporaryAbsolutePath', { recursive: true, force: true });
+        fs.rmSync('temporaryAbsolutePath', {
+          recursive: true,
+          force: true,
+        });
       } catch (err) {
         logger.files.error('Failed to remove cache directory', { err });
       }
+
+      this.removeEmptyDirectories(temporaryAbsolutePath);
 
       logger.files.info(`Cache was cleared in «${temporaryAbsolutePath}»`);
     }
@@ -715,7 +710,6 @@ class FileStorageService {
   public async getFiles(filter: Partial<OutputFilter>): Promise<ListResponse<FileBag>> {
     const { context, staticPrefix, hostname } = this.props;
     const { knex } = context;
-
     const { limit, offset, orderBy, where } = filter;
 
     const response = await knex
@@ -724,7 +718,7 @@ class FileStorageService {
         knex.raw('count(*) over() as "totalCount"'),
       ])
       .orderBy(convertOrderByToKnex(orderBy))
-      .from<any, FileBagTable[]>('fileStorage')
+      .from<FileBagTable, FileBagTable[]>('fileStorage')
       .limit(limit || 1)
       .offset(offset || 0)
       .where((builder) => convertWhereToKnex(builder, where))
@@ -877,16 +871,27 @@ class FileStorageService {
 
 
   public async compressImage(absoluteFilename: string): Promise<void> {
-    const { imageOptimMaxWidth, imageOptimMaxHeight } = this.props;
+    const { imageOptimMaxWidth, imageOptimMaxHeight, compressionOptions } = this.props;
 
     const jimpHandle = await Jimp.read(absoluteFilename);
     if (
       jimpHandle.getWidth() > imageOptimMaxWidth
       || jimpHandle.getHeight() > imageOptimMaxHeight
     ) {
+
       jimpHandle.scaleToFit(imageOptimMaxWidth, imageOptimMaxHeight);
       jimpHandle.writeAsync(absoluteFilename);
     }
+
+    // const optimizad = await imagemin([absoluteFilename], {
+    //   plugins: [
+    //     imageminMozjpeg(compressionOptions.mozJpeg),
+    //     imageminOptipng(compressionOptions.optiPng),
+    //     imageminPngquant(compressionOptions.pngQuant),
+    //   ],
+    // });
+
+    // optimizad.map(({ data }) => fs.writeFileSync(absoluteFilename, data));
   }
 
   public async createFile(
@@ -1052,30 +1057,29 @@ class FileStorageService {
           const filename = this.getFilenameFromUuid(fileData.id, STATIC_DELIMITER);
           const ext = this.getExtensionByMimeType(fileData.mimeType);
           const fullFilenamePath = path.resolve(__dirname, '..', `${filename}.${ext}`);
-          const dirname = path.resolve(__dirname, '..', path.dirname(filename));
-          const dirnamePrev = path.resolve(`${dirname}/..`);
-          try {
-            // remove file
-            if (fs.existsSync(fullFilenamePath)) {
+          const dirname = path.dirname(fullFilenamePath);
+
+          // remove file
+          if (fs.existsSync(fullFilenamePath)) {
+            try {
               fs.unlinkSync(fullFilenamePath);
-
-              // remove directory if is empty
-              if (!fs.readdirSync(dirname).length) {
-                fs.rmSync(dirname, { recursive: true, force: true });
-              }
-
-              // remove subdirectory if is empty
-              if (!fs.readdirSync(dirnamePrev).length) {
-                fs.rmSync(dirnamePrev, { recursive: true, force: true });
-              }
-            } else {
-              logger.files.info(`File ${fileData.id} not exists in path ${fullFilenamePath}`);
+            } catch (err) {
+              throw new ServerError(`
+                Failed to delete file ${fileData.id} in path ${fullFilenamePath}`,
+              { err });
             }
-          } catch (err) {
-            throw new ServerError(`
-              Failed to delete file ${fileData.id} in path ${fullFilenamePath}`,
-            { err });
+
+            try {
+              this.removeEmptyDirectories(dirname);
+            } catch (err) {
+              throw new ServerError(`
+                Failed to remove empty directories in path ${fullFilenamePath}`,
+              { err });
+            }
+          } else {
+            logger.files.info(`File ${fileData.id} not exists in path ${fullFilenamePath}`);
           }
+
         }
       });
     }
@@ -1087,6 +1091,34 @@ class FileStorageService {
       .returning('id');
 
     return results;
+  }
+
+  public removeEmptyDirectories(directory: string) {
+
+    const { context } = this.props;
+    const { logger } = context;
+
+    // lstat does not follow symlinks (in contrast to stat)
+    const fileStats = fs.lstatSync(directory);
+    if (!fileStats.isDirectory()) {
+      return;
+    }
+
+    let fileNames = fs.readdirSync(directory);
+    if (fileNames.length > 0) {
+      fileNames.forEach((fileName) => {
+        this.removeEmptyDirectories(path.join(directory, fileName));
+      });
+
+      // re-evaluate fileNames; after deleting subdirectory
+      // we may have parent directory empty now
+      fileNames = fs.readdirSync(directory);
+    }
+
+    if (fileNames.length === 0) {
+      logger.files.debug(`Removing: «${directory}»`);
+      fs.rmSync(directory, { recursive: true, force: true });
+    }
   }
 }
 

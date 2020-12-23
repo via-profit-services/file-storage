@@ -1,13 +1,7 @@
-import type { IObjectTypeResolver, IFieldResolver } from '@graphql-tools/utils';
-import type { Context } from '@via-profit-services/core';
-import type { FileBag, ImageTransform } from '@via-profit-services/file-storage';
+import type { TemporaryFileResolver } from '@via-profit-services/file-storage';
+// import fs from 'fs';
 
-interface IParent {
-  id: string;
-  transform?: ImageTransform;
-}
-
-const TemporaryFileResolver: IObjectTypeResolver<IParent, Context, any> = new Proxy({
+const temporaryFileResolver = new Proxy<TemporaryFileResolver>({
   id: () => ({}),
   createdAt: () => ({}),
   updatedAt: () => ({}),
@@ -20,8 +14,12 @@ const TemporaryFileResolver: IObjectTypeResolver<IParent, Context, any> = new Pr
   description: () => ({}),
   metaData: () => ({}),
 }, {
-  get: (target: FileBag | any, prop: keyof FileBag) => {
-    const resolver: IFieldResolver<IParent, Context, any> = async (parent, args, context) => {
+  get: (target, prop: keyof TemporaryFileResolver) => {
+    const resolver: TemporaryFileResolver[keyof TemporaryFileResolver] = async (
+      parent,
+      args,
+      context,
+    ) => {
       const { id, transform } = parent;
       const { dataloader, services } = context;
 
@@ -38,6 +36,12 @@ const TemporaryFileResolver: IObjectTypeResolver<IParent, Context, any> = new Pr
         }
       }
 
+      // if (prop === 'size') {
+      //   const { resolveAbsolutePath } = services.files.resolveFile(file);
+
+      //   return fs.lstatSync(resolveAbsolutePath).size;
+      // }
+
       return file[prop];
     };
 
@@ -45,4 +49,4 @@ const TemporaryFileResolver: IObjectTypeResolver<IParent, Context, any> = new Pr
   },
 });
 
-export default TemporaryFileResolver;
+export default temporaryFileResolver;

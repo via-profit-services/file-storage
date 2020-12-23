@@ -1,14 +1,9 @@
-import type { IFieldResolver } from '@graphql-tools/utils';
-import { ServerError, Context } from '@via-profit-services/core';
-import type { UpdateFileInput } from '@via-profit-services/file-storage';
+import { ServerError } from '@via-profit-services/core';
+import type { Resolvers } from '@via-profit-services/file-storage';
 
-interface ApplyTemporaryArgs {
-  ids: string[];
-  info: UpdateFileInput[];
-}
 
-const applyTemporary: IFieldResolver<any, Context, ApplyTemporaryArgs> = async (
-  parent, args, context,
+const applyTemporary: Resolvers['FileStorageMutation']['applyTemporary'] = async (
+  _parent, args, context,
 ) => {
   const { ids, info } = args;
   const { services } = context;

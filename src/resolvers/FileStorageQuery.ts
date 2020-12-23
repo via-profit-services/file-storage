@@ -1,16 +1,10 @@
-import type { IObjectTypeResolver } from '@graphql-tools/utils';
-import type { InputFilter, Context } from '@via-profit-services/core';
 import { buildQueryFilter, buildCursorConnection, ServerError } from '@via-profit-services/core';
-import type { ImageTransform } from '@via-profit-services/file-storage';
+import type { Resolvers } from '@via-profit-services/file-storage';
 
 
-type ListArgs = InputFilter & {
-  transform?: ImageTransform;
-}
-
-const FileStorageQuery: IObjectTypeResolver<any, Context, any> = {
+const FileStorageQuery: Resolvers['FileStorageQuery'] = {
   file: (parent, args) => args,
-  list: async (parent, args: ListArgs, context) => {
+  list: async (parent, args, context) => {
     const { transform } = args;
     const { logger, services, dataloader } = context;
     const filter = buildQueryFilter(args);

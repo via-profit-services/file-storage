@@ -1,14 +1,8 @@
-import type { IFieldResolver } from '@graphql-tools/utils';
-import { ServerError, Context } from '@via-profit-services/core';
+import { ServerError } from '@via-profit-services/core';
+import { Resolvers } from '@via-profit-services/file-storage';
 
-
-interface DeleteFilesArgs {
-  ids?: string[];
-  owners?: string[];
-}
-
-const deleteResolver: IFieldResolver<any, Context, DeleteFilesArgs> = async (
-  parent, args, context,
+const deleteResolver: Resolvers['FileStorageMutation']['delete'] = async (
+  _parent, args, context,
 ) => {
   const { ids, owners } = args;
   const { logger, token, services, dataloader } = context;

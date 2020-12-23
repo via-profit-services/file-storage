@@ -1,11 +1,79 @@
 declare module '@via-profit-services/file-storage' {
-  import { Middleware, MiddlewareProps, Context, ListResponse, OutputFilter } from '@via-profit-services/core';
+  import { Middleware, MiddlewareProps, Context, ListResponse, InputFilter, OutputFilter } from '@via-profit-services/core';
   import fs from 'fs';
   import { RequestHandler } from 'express';
+  import { GraphQLFieldResolver } from 'graphql';
   import { WriteStream } from 'fs-capacitor';
   import { Options as ImagenimMozjpegOption } from 'imagemin-mozjpeg';
   import { Options as ImagenimOptiPngOption } from 'imagemin-optipng';
   import { Options as ImagenimPngQuantOption } from 'imagemin-pngquant';
+
+
+  export type Resolvers = {
+    Query: {
+      fileStorage: GraphQLFieldResolver<unknown, Context>;
+    };
+    Mutation: {
+      fileStorage: GraphQLFieldResolver<unknown, Context>;
+    };
+    FileStorageQuery: {
+      file: GraphQLFieldResolver<unknown, Context, FileResolverParent>;
+      list: GraphQLFieldResolver<unknown, Context, InputFilter & {
+        transform?: ImageTransform;
+      }>;
+    };
+    FileStorageMutation: {
+      applyTemporary: GraphQLFieldResolver<unknown, Context, {
+        ids: string[];
+        info: UpdateFileInput[];
+      }>;
+      delete: GraphQLFieldResolver<unknown, Context, {
+        ids?: string[];
+        owners?: string[];
+      }>;
+      update: GraphQLFieldResolver<unknown, Context, {
+        info: UpdateFileInput[];
+        transform?: ImageTransform[];
+      }>;
+      upload: GraphQLFieldResolver<unknown, Context, {
+        files: File[];
+        info: UploadFileInput[];
+        transform?: ImageTransform[];
+        noCompress?: boolean;
+      }>;
+      uploadTemporary: GraphQLFieldResolver<unknown, Context, {
+        files: File[];
+        info: UploadFileInput[];
+        transform?: ImageTransform[];
+        noCompress?: boolean;
+      }>;
+    };
+    File: FileResolver;
+    TemporaryFile: TemporaryFileResolver;
+  }
+
+  type FileResolverParent = {
+    id: string;
+    transform?: ImageTransform;
+  }
+
+
+  export type FileResolver = {
+    id: GraphQLFieldResolver<FileResolverParent, Context>;
+    createdAt: GraphQLFieldResolver<FileResolverParent, Context>;
+    updatedAt: GraphQLFieldResolver<FileResolverParent, Context>;
+    owner: GraphQLFieldResolver<FileResolverParent, Context>;
+    category: GraphQLFieldResolver<FileResolverParent, Context>;
+    mimeType: GraphQLFieldResolver<FileResolverParent, Context>;
+    url: GraphQLFieldResolver<FileResolverParent, Context>;
+    type: GraphQLFieldResolver<FileResolverParent, Context>;
+    description: GraphQLFieldResolver<FileResolverParent, Context>;
+    metaData: GraphQLFieldResolver<FileResolverParent, Context>;
+  };
+
+  export type TemporaryFileResolver = FileResolver & {
+    expiredAt: GraphQLFieldResolver<FileResolverParent, Context>;
+  };
 
   export type FileType = 'image' | 'document' | 'template';
 
@@ -343,6 +411,7 @@ declare module '@via-profit-services/file-storage' {
         file: FileBag;
         expireAt: Date;
     }>;
+    removeEmptyDirectories(directory: string): void;
     getTemporaryFile(id: string): Promise<TemporaryFileBag | false>;
     getFiles(filter: Partial<OutputFilter>): Promise<ListResponse<FileBag>>;
     getFilesByIds(ids: string[]): Promise<FileBag[]>;
@@ -368,7 +437,7 @@ declare module '@via-profit-services/file-storage' {
     deleteStaticFiles(ids: string[]): Promise<string[]>;
   }
 
-  export const resolvers: any;
+  export const resolvers: Resolvers;
   export const typeDefs: string;
   export const factory: FileStorageMiddlewareFactory;
 }

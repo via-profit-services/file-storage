@@ -72,6 +72,12 @@ const server = http.createServer(app);
       knexMiddleware,
       pubSubMiddleware,
       fileStorageMiddleware,
+      // ({ context }) => {
+      //   const { services } = context;
+      //   console.log(services.files.clearCache());
+
+      //   return {}
+      // },
     ],
   });
 

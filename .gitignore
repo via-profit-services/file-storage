@@ -18,7 +18,7 @@
 
 # Redis sump
 /dump.rdb
-
+/public
 /sessions
 /package.tgz
 /package-*.tgz
