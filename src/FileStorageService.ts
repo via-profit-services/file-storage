@@ -9,10 +9,10 @@ import { convertOrderByToKnex, convertWhereToKnex, extractTotalCountPropOfNode }
 import '@via-profit-services/accounts';
 
 import fs, { ReadStream } from 'fs';
-// import imagemin from 'imagemin';
-// import imageminMozjpeg from 'imagemin-mozjpeg';
-// import imageminOptipng from 'imagemin-optipng';
-// import imageminPngquant from 'imagemin-pngquant';
+import imagemin from 'imagemin';
+import imageminMozjpeg from 'imagemin-mozjpeg';
+import imageminOptipng from 'imagemin-optipng';
+import imageminPngquant from 'imagemin-pngquant';
 import Jimp from 'jimp';
 
 import mime from 'mime-types';
@@ -102,7 +102,7 @@ class FileStorageService {
       deletedFiles: 0,
     };
     const allFiles = await redis.hgetall(REDIS_CACHE_NAME);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     Object.entries(allFiles).forEach(async ([hash, payloadStr]) => {
       let payload: RedisFileValue;
       counter.allFiles += 1;
@@ -883,15 +883,16 @@ class FileStorageService {
       jimpHandle.writeAsync(absoluteFilename);
     }
 
-    // const optimizad = await imagemin([absoluteFilename], {
-    //   plugins: [
-    //     imageminMozjpeg(compressionOptions.mozJpeg),
-    //     imageminOptipng(compressionOptions.optiPng),
-    //     imageminPngquant(compressionOptions.pngQuant),
-    //   ],
-    // });
-
-    // optimizad.map(({ data }) => fs.writeFileSync(absoluteFilename, data));
+    // Do not wait this promise!
+    imagemin([absoluteFilename], {
+      plugins: [
+        imageminMozjpeg(compressionOptions.mozJpeg),
+        imageminOptipng(compressionOptions.optiPng),
+        imageminPngquant(compressionOptions.pngQuant),
+      ],
+    }).then((optimizad) => {
+      optimizad.map(({ data }) => fs.writeFileSync(absoluteFilename, data));
+    });
   }
 
   public async createFile(
