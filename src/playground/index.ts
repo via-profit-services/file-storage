@@ -3,6 +3,7 @@ import { makeExecutableSchema } from '@graphql-tools/schema';
 import * as accounts from '@via-profit-services/accounts';
 import * as core from '@via-profit-services/core';
 import * as knex from '@via-profit-services/knex';
+import * as redis from '@via-profit-services/redis';
 import * as subscriptions from '@via-profit-services/subscriptions';
 import dotenv from 'dotenv';
 import express from 'express';
@@ -17,6 +18,10 @@ const endpoint = '/graphql';
 const PORT = 9005;
 const app = express();
 const server = http.createServer(app);
+const redisConfig = {
+  host: 'localhost',
+  password: '',
+};
 (async () => {
 
   const {
@@ -36,7 +41,10 @@ const server = http.createServer(app);
     },
   });
 
+  const redisMiddleware = redis.factory(redisConfig)
+
   const pubSubMiddleware = subscriptions.factory({
+    redis: redisConfig,
     endpoint,
     server,
   })
@@ -69,9 +77,10 @@ const server = http.createServer(app);
     debug: true,
     introspection: true,
     middleware: [
-      accountsMiddleware,
       knexMiddleware,
+      redisMiddleware,
       pubSubMiddleware,
+      accountsMiddleware,
       fileStorageMiddleware,
     ],
   });
