@@ -94,6 +94,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["imagemin-mozjpeg", "npm:9.0.0"],
             ["imagemin-optipng", "npm:8.0.0"],
             ["imagemin-pngquant", "npm:9.0.1"],
+            ["ioredis", "npm:4.19.4"],
             ["jest", "npm:24.9.0"],
             ["jest-transform-graphql", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:2.1.0"],
             ["jimp", "npm:0.16.1"],
@@ -2508,6 +2509,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["imagemin-mozjpeg", "npm:9.0.0"],
             ["imagemin-optipng", "npm:8.0.0"],
             ["imagemin-pngquant", "npm:9.0.1"],
+            ["ioredis", "npm:4.19.4"],
             ["jest", "npm:24.9.0"],
             ["jest-transform-graphql", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:2.1.0"],
             ["jimp", "npm:0.16.1"],
@@ -2608,7 +2610,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/ioredis", "npm:4.16.1"],
             ["@types/via-profit-services__core", null],
             ["@via-profit-services/core", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/core/package-0.31.6-rc.44.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."],
-            ["ioredis", null]
+            ["ioredis", "npm:4.19.4"]
           ],
           "packagePeers": [
             "@types/ioredis",

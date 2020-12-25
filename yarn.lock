@@ -1701,6 +1701,7 @@ __metadata:
     imagemin-mozjpeg: ^9.0.0
     imagemin-optipng: ^8.0.0
     imagemin-pngquant: ^9.0.1
+    ioredis: ^4.19.4
     jest: ^24.9.0
     jest-transform-graphql: ^2.1.0
     jimp: ^0.16.1
@@ -6698,7 +6699,7 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
-"ioredis@npm:^4.17.3":
+"ioredis@npm:^4.17.3, ioredis@npm:^4.19.4":
   version: 4.19.4
   resolution: "ioredis@npm:4.19.4"
   dependencies:

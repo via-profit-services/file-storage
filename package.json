@@ -127,6 +127,7 @@
         "imagemin-mozjpeg": "^9.0.0",
         "imagemin-optipng": "^8.0.0",
         "imagemin-pngquant": "^9.0.1",
+        "ioredis": "^4.19.4",
         "jest": "^24.9.0",
         "jest-transform-graphql": "^2.1.0",
         "jimp": "^0.16.1",
