@@ -3,21 +3,20 @@ import { ListResponse, OutputFilter, ServerError } from '@via-profit-services/co
 import type {
   FileBag, FileBagTable, FileBagTableInput, FileType, ImageTransform, TransformUrlPayload,
   ImgeData, RedisFileValue, RedisTemporaryValue, FileStorageServiceProps, FileStorageParams,
-  UploadFileInput, FileBagCreate, TemporaryFileBag,
+  UploadFileInput, FileBagCreate, TemporaryFileBag, CompressImageStats,
 } from '@via-profit-services/file-storage';
 import { convertOrderByToKnex, convertWhereToKnex, extractTotalCountPropOfNode } from '@via-profit-services/knex';
 import '@via-profit-services/accounts';
-
 import fs, { ReadStream } from 'fs';
 import imagemin from 'imagemin';
 import imageminMozjpeg from 'imagemin-mozjpeg';
 import imageminOptipng from 'imagemin-optipng';
 import imageminPngquant from 'imagemin-pngquant';
 import Jimp from 'jimp';
-
 import mime from 'mime-types';
 import moment from 'moment-timezone';
 import path from 'path';
+import { performance } from 'perf_hooks';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
@@ -486,6 +485,9 @@ class FileStorageService {
       }
     });
     await jimpHandle.writeAsync(filepath);
+
+    // do not wait this operation
+    this.compressImage(filepath, true);
   }
 
   /**
@@ -870,29 +872,91 @@ class FileStorageService {
   }
 
 
-  public async compressImage(absoluteFilename: string): Promise<void> {
-    const { imageOptimMaxWidth, imageOptimMaxHeight, compressionOptions } = this.props;
+  public async compressImage(
+    absoluteFilename: string,
+    skipResize?: boolean,
+  ): Promise<CompressImageStats> {
+    const { imageOptimMaxWidth, imageOptimMaxHeight, compressionOptions, context } = this.props;
+    const { logger } = context;
 
-    const jimpHandle = await Jimp.read(absoluteFilename);
-    if (
-      jimpHandle.getWidth() > imageOptimMaxWidth
-      || jimpHandle.getHeight() > imageOptimMaxHeight
-    ) {
+    const originalFileSize = fs.lstatSync(absoluteFilename).size;
+    const stats: CompressImageStats = {
+      filename: absoluteFilename,
+      size: {
+        original: originalFileSize,
+        scaled: originalFileSize,
+        compressed: originalFileSize,
+      },
+      time: {
+        scaled: 0,
+        compressed: 0,
+        total: 0,
+      },
+      profit: {
+        scaled: 0,
+        compressed: 0,
+        total: 0,
+      },
+    };
 
-      jimpHandle.scaleToFit(imageOptimMaxWidth, imageOptimMaxHeight);
-      jimpHandle.writeAsync(absoluteFilename);
+    if (!skipResize) {
+      stats.time.scaled = performance.now();
+      const jimpHandle = await Jimp.read(absoluteFilename);
+      if (
+        jimpHandle.getWidth() > imageOptimMaxWidth
+        || jimpHandle.getHeight() > imageOptimMaxHeight
+      ) {
+
+        jimpHandle.scaleToFit(imageOptimMaxWidth, imageOptimMaxHeight);
+        jimpHandle.writeAsync(absoluteFilename);
+      }
+
+      stats.time.scaled = performance.now() - stats.time.scaled;
+      stats.size.scaled = fs.lstatSync(absoluteFilename).size;
+      stats.profit.scaled = Math.floor(
+        (stats.size.scaled * 100) / stats.size.original,
+      );
+
+      if (stats.size.scaled >= stats.size.original) {
+        stats.profit.scaled = 100 - stats.profit.scaled;
+      }
     }
 
-    // Do not wait this promise!
-    imagemin([absoluteFilename], {
+
+    stats.time.compressed = performance.now();
+    const optimizad = await imagemin([absoluteFilename], {
       plugins: [
         imageminMozjpeg(compressionOptions.mozJpeg),
         imageminOptipng(compressionOptions.optiPng),
         imageminPngquant(compressionOptions.pngQuant),
       ],
-    }).then((optimizad) => {
-      optimizad.map(({ data }) => fs.writeFileSync(absoluteFilename, data));
     });
+    fs.writeFileSync(absoluteFilename, optimizad[0].data);
+
+    stats.time.compressed = performance.now() - stats.time.compressed;
+    stats.size.compressed = fs.lstatSync(absoluteFilename).size;
+    stats.profit.compressed = Math.floor(
+      (stats.size.compressed * 100) / stats.size.scaled,
+    );
+
+    if (stats.size.compressed >= stats.size.scaled) {
+      stats.size.compressed = 100 - stats.size.compressed;
+    }
+
+    stats
+      .profit
+      .total = stats.profit.compressed + stats.profit.scaled;
+
+    stats
+      .time
+      .total = stats.time.compressed + stats.time.scaled;
+
+    logger.files.info(
+      `File optimization profit: ${stats.profit.total}% in ${(stats.time.total / 1000).toFixed(2)}sec.`,
+      stats,
+    );
+
+    return stats;
   }
 
   public async createFile(

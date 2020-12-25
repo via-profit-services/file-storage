@@ -319,6 +319,25 @@ declare module '@via-profit-services/file-storage' {
     graphQLFilesStaticExpress: RequestHandler;
   };
 
+  export interface CompressImageStats {
+    filename: string;
+    size: {
+      original: number;
+      scaled: number;
+      compressed: number;
+    };
+    time: {
+      scaled: number;
+      compressed: number;
+      total: number;
+    };
+    profit: {
+      scaled: number;
+      compressed: number;
+      total: number;
+    };
+  }
+
   /**
    * FileStorage service constructor props
    */
@@ -423,7 +442,7 @@ declare module '@via-profit-services/file-storage' {
         id: string;
         absoluteFilename: string;
     }>;
-    compressImage(absoluteFilename: string): Promise<void>;
+    compressImage(absoluteFilename: string, skipResize?: boolean): Promise<CompressImageStats>;
     createFile(fileStream: fs.ReadStream | null, fileInfo: FileBagCreate): Promise<{
         id: string;
         absoluteFilename: string;

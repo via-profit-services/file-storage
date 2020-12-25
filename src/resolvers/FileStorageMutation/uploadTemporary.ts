@@ -30,7 +30,8 @@ const uploadTemporaryResolver: Resolvers['FileStorageMutation']['uploadTemporary
     }
 
     if (Boolean(noCompress) === false && type === 'image') {
-      await services.files.compressImage(absoluteFilename);
+      // do not wait this operation
+      services.files.compressImage(absoluteFilename);
     }
 
     logger.files.info(
