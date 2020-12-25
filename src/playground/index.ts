@@ -44,6 +44,7 @@ const server = http.createServer(app);
   const accountsMiddleware = await accounts.factory({
     privateKey: path.resolve(__dirname, './jwtRS256.key'),
     publicKey: path.resolve(__dirname, './jwtRS256.key.pub'),
+    permissionsMap: {},
   });
 
   const schema = makeExecutableSchema({

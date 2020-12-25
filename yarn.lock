@@ -1588,16 +1588,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@via-profit-services/accounts@file://home/dhs/Projects/@via-profit-services/accounts/package-0.1.16-rc.7.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.":
-  version: 0.1.16-rc.7
-  resolution: "@via-profit-services/accounts@file://home/dhs/Projects/@via-profit-services/accounts/package-0.1.16-rc.7.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."
+"@via-profit-services/accounts@file://home/dhs/Projects/@via-profit-services/accounts/package-0.1.16-rc.8.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.":
+  version: 0.1.16-rc.8
+  resolution: "@via-profit-services/accounts@file://home/dhs/Projects/@via-profit-services/accounts/package-0.1.16-rc.8.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."
   dependencies:
     bcryptjs: ^2.4.3
     jsonwebtoken: ^8.5.1
   peerDependencies:
     "@via-profit-services/core": "*"
     "@via-profit-services/knex": "*"
-    "@via-profit-services/subscriptions": "*"
     graphql: "*"
     moment: "*"
     moment-timezone: "*"
@@ -1605,7 +1604,7 @@ __metadata:
     uuid: "*"
     winston: "*"
     winston-daily-rotate-file: "*"
-  checksum: 51db5072d2c3e33acec68fbc1f46ed73b95fce9a64ef707482ba48cf9760eb1c14a4ccc19bc8a62cbb69983e33f4cfafe340cbd7d651aace8f6ae34606933c21
+  checksum: 1aa00836164d0946f6d5f791f8fb746c563f183f9577eb5912dfa00471e7626ab35513619742639d25414afc8ae08c463d45019a5324875f490d693dc1694ff4
   languageName: node
   linkType: hard
 
@@ -1671,7 +1670,7 @@ __metadata:
     "@types/webpack-node-externals": ^1.7.0
     "@typescript-eslint/eslint-plugin": ^4.10.0
     "@typescript-eslint/parser": ^4.10.0
-    "@via-profit-services/accounts": "file://home/dhs/Projects/@via-profit-services/accounts/package-0.1.16-rc.7.tgz"
+    "@via-profit-services/accounts": "file://home/dhs/Projects/@via-profit-services/accounts/package-0.1.16-rc.8.tgz"
     "@via-profit-services/core": "file://home/dhs/Projects/@via-profit-services/core/package-0.31.6-rc.43.tgz"
     "@via-profit-services/eslint-config": ^0.1.11
     "@via-profit-services/knex": "file://home/dhs/Projects/@via-profit-services/knex/package-0.1.0-rc.13.tgz"
