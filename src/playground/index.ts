@@ -66,18 +66,12 @@ const server = http.createServer(app);
     server,
     schema,
     debug: true,
-    enableIntrospection: true,
+    introspection: true,
     middleware: [
       accountsMiddleware,
       knexMiddleware,
       pubSubMiddleware,
       fileStorageMiddleware,
-      // ({ context }) => {
-      //   const { services } = context;
-      //   console.log(services.files.clearCache());
-
-      //   return {}
-      // },
     ],
   });
 

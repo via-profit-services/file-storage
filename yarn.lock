@@ -1588,9 +1588,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@via-profit-services/accounts@file://home/dhs/Projects/@via-profit-services/accounts/package-0.1.16-rc.4.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.":
-  version: 0.1.16-rc.4
-  resolution: "@via-profit-services/accounts@file://home/dhs/Projects/@via-profit-services/accounts/package-0.1.16-rc.4.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."
+"@via-profit-services/accounts@file://home/dhs/Projects/@via-profit-services/accounts/package-0.1.16-rc.7.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.":
+  version: 0.1.16-rc.7
+  resolution: "@via-profit-services/accounts@file://home/dhs/Projects/@via-profit-services/accounts/package-0.1.16-rc.7.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."
   dependencies:
     bcryptjs: ^2.4.3
     jsonwebtoken: ^8.5.1
@@ -1605,33 +1605,32 @@ __metadata:
     uuid: "*"
     winston: "*"
     winston-daily-rotate-file: "*"
-  checksum: 843c92a51990f5bdc7715e4a8d51a02d6822bfaae349fdf0d6469d41f0fe4afacc7892547c025bb098499ef4acfeca3726748f881ef86408677ee6dd21aab8f7
+  checksum: 51db5072d2c3e33acec68fbc1f46ed73b95fce9a64ef707482ba48cf9760eb1c14a4ccc19bc8a62cbb69983e33f4cfafe340cbd7d651aace8f6ae34606933c21
   languageName: node
   linkType: hard
 
-"@via-profit-services/core@file://home/dhs/Projects/@via-profit-services/core/package-0.31.6-rc.40.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.":
-  version: 0.31.6-rc.40
-  resolution: "@via-profit-services/core@file://home/dhs/Projects/@via-profit-services/core/package-0.31.6-rc.40.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."
+"@via-profit-services/core@file://home/dhs/Projects/@via-profit-services/core/package-0.31.6-rc.43.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.":
+  version: 0.31.6-rc.43
+  resolution: "@via-profit-services/core@file://home/dhs/Projects/@via-profit-services/core/package-0.31.6-rc.43.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."
   dependencies:
     bufferutil: ^4.0.2
     content-type: ^1.0.4
     raw-body: ^2.4.1
     utf-8-validate: ^5.0.3
   peerDependencies:
-    dataloader: "*"
-    express: "*"
-    graphql: "*"
-    moment: "*"
-    moment-timezone: "*"
-    supports-color: "*"
-    winston: "*"
-    winston-daily-rotate-file: "*"
+    dataloader: ^2.0.0
+    express: ^4.17.1
+    graphql: ^15.4.0
+    moment: ^2.29.1
+    moment-timezone: ^0.5.32
+    winston: ^3.3.3
+    winston-daily-rotate-file: ^4.5.0
   dependenciesMeta:
     bufferutil:
       optional: true
     utf-8-validate:
       optional: true
-  checksum: cd4fa69d0b0b92f10ebb2f1c1a97f4faa3ed78fe5008be1a2a5d1645a3346d45e9acac4343cfba959e62f5a3d9570909cec9156b2defddd404f559d8af3bf8ed
+  checksum: dd5d52dd33fd3710b9ac4951247180540ab6837ecbc163e1b78852bcb515557a7e786097b96cb8179b7d53f960282bca25f323db333c91ec33c492a1e5120ef1
   languageName: node
   linkType: hard
 
@@ -1672,11 +1671,11 @@ __metadata:
     "@types/webpack-node-externals": ^1.7.0
     "@typescript-eslint/eslint-plugin": ^4.10.0
     "@typescript-eslint/parser": ^4.10.0
-    "@via-profit-services/accounts": "file://home/dhs/Projects/@via-profit-services/accounts/package-0.1.16-rc.4.tgz"
-    "@via-profit-services/core": "file://home/dhs/Projects/@via-profit-services/core/package-0.31.6-rc.40.tgz"
+    "@via-profit-services/accounts": "file://home/dhs/Projects/@via-profit-services/accounts/package-0.1.16-rc.7.tgz"
+    "@via-profit-services/core": "file://home/dhs/Projects/@via-profit-services/core/package-0.31.6-rc.43.tgz"
     "@via-profit-services/eslint-config": ^0.1.11
-    "@via-profit-services/knex": "file://home/dhs/Projects/@via-profit-services/knex/package-0.1.0-rc.7.tgz"
-    "@via-profit-services/subscriptions": "file://home/dhs/Projects/@via-profit-services/subscriptions/package-0.1.0-rc.6.tgz"
+    "@via-profit-services/knex": "file://home/dhs/Projects/@via-profit-services/knex/package-0.1.0-rc.13.tgz"
+    "@via-profit-services/subscriptions": "file://home/dhs/Projects/@via-profit-services/subscriptions/package-0.1.0-rc.7.tgz"
     "@zerollup/ts-transform-paths": ^1.7.11
     binary-loader: ^0.0.1
     busboy: ^0.3.1
@@ -1749,28 +1748,26 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@via-profit-services/knex@file://home/dhs/Projects/@via-profit-services/knex/package-0.1.0-rc.7.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.":
-  version: 0.1.0-rc.7
-  resolution: "@via-profit-services/knex@file://home/dhs/Projects/@via-profit-services/knex/package-0.1.0-rc.7.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."
-  dependencies:
-    pg: ^8.5.1
-    pg-hstore: ^2.3.3
-    pg-listen: ^1.6.0
-    supports-color: ^8.0.0
+"@via-profit-services/knex@file://home/dhs/Projects/@via-profit-services/knex/package-0.1.0-rc.13.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.":
+  version: 0.1.0-rc.13
+  resolution: "@via-profit-services/knex@file://home/dhs/Projects/@via-profit-services/knex/package-0.1.0-rc.13.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."
   peerDependencies:
     "@via-profit-services/core": "*"
     knex: "*"
     moment: "*"
     moment-timezone: "*"
+    pg: ^8.5.1
+    pg-hstore: ^2.3.3
+    pg-listen: ^1.6.0
     winston: "*"
     winston-daily-rotate-file: "*"
-  checksum: ad1bfacc65f088808a5f2f23c8be422e7fd6ec9b63ae15a86fc3866fdfb062a4a1c74e91eee91b5ff86d87741d0ddc53a43c8d58ccde5f8a304e6ea4c5d61eeb
+  checksum: 05eab5016bc6beab46f8a055d68cd5d50ee63fa4dd207a4995275ba7439cf8774192ce5980e4ac20c9a2c6e313c83cc74b9ecccebe9418c610e67e06c086f19d
   languageName: node
   linkType: hard
 
-"@via-profit-services/subscriptions@file://home/dhs/Projects/@via-profit-services/subscriptions/package-0.1.0-rc.6.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.":
-  version: 0.1.0-rc.6
-  resolution: "@via-profit-services/subscriptions@file://home/dhs/Projects/@via-profit-services/subscriptions/package-0.1.0-rc.6.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."
+"@via-profit-services/subscriptions@file://home/dhs/Projects/@via-profit-services/subscriptions/package-0.1.0-rc.7.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.":
+  version: 0.1.0-rc.7
+  resolution: "@via-profit-services/subscriptions@file://home/dhs/Projects/@via-profit-services/subscriptions/package-0.1.0-rc.7.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."
   dependencies:
     graphql-redis-subscriptions: ^2.3.1
     graphql-subscriptions: ^1.1.0
@@ -1779,7 +1776,8 @@ __metadata:
     ws: ^7.3.1
   peerDependencies:
     "@via-profit-services/core": "*"
-  checksum: 330ec839b564a98508a902b7c1687cad5811e1a980820ffdfc85dc7b660d1bb5d6b4130f83c7761dd5f11be14cc153b9d4eb3b109f6d91d606d776a0c56b1f51
+    graphql: "*"
+  checksum: e468b53bc934c58903ad906ab9e57ec3ccd091b08f7d9371c3c5740ca6aa4bc3618d305c41779b7a250810415208bfab4d8e053758499adaf132c81c7ec59439
   languageName: node
   linkType: hard
 
@@ -9987,39 +9985,10 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
-"pg-format@npm:^1.0.4":
-  version: 1.0.4
-  resolution: "pg-format@npm:1.0.4"
-  checksum: db56d6191fc2c332496c431d31a20e22303a75ced10e99d645e553a481a2220ce3b80bf3428f5e92fadd2b20b1bc695fe1c2e7e8a3d0eb74d34d5362971f47a9
-  languageName: node
-  linkType: hard
-
-"pg-hstore@npm:^2.3.3":
-  version: 2.3.3
-  resolution: "pg-hstore@npm:2.3.3"
-  dependencies:
-    underscore: ^1.7.0
-  checksum: 8e496d4800f08cb8510b11afe92e25af85cecfa0434b44b267d05c9ac27b22539252351eed39b0817ae37e434604bb67c84d8e30fdcc64f8b2bd1c44297d2a6b
-  languageName: node
-  linkType: hard
-
 "pg-int8@npm:1.0.1":
   version: 1.0.1
   resolution: "pg-int8@npm:1.0.1"
   checksum: b18c3a18e56a4f6de7c3c9df384a7ae47e7a3333ce1f36d324649116dfef4767ba01413993b12aa573ac44da1912d58cc6959eeb1c0f53a4ddb58861d1342a89
-  languageName: node
-  linkType: hard
-
-"pg-listen@npm:^1.6.0":
-  version: 1.6.0
-  resolution: "pg-listen@npm:1.6.0"
-  dependencies:
-    debug: ^4.1.1
-    pg-format: ^1.0.4
-    typed-emitter: ^0.1.0
-  peerDependencies:
-    pg: 7.x || 8.x
-  checksum: ff97baa1cbb476c89e9ac76dab3af559e8caea0e41cd97707ebc381fa08fa19faeb9cdc362749641fabd30e1c040109849e2deb629c145f39d8fdaf3f589554d
   languageName: node
   linkType: hard
 
@@ -12102,7 +12071,7 @@ resolve@1.1.7:
   languageName: node
   linkType: hard
 
-"supports-color@npm:^8.0.0, supports-color@npm:^8.1.0":
+"supports-color@npm:^8.1.0":
   version: 8.1.0
   resolution: "supports-color@npm:8.1.0"
   dependencies:
@@ -12646,13 +12615,6 @@ resolve@1.1.7:
   languageName: node
   linkType: hard
 
-"typed-emitter@npm:^0.1.0":
-  version: 0.1.0
-  resolution: "typed-emitter@npm:0.1.0"
-  checksum: 3eda94d1fa1d037be8d3617ff85d98b25ba6bf87f0d27402df2388ee2b2ac7795e9ccac1070da7ffb2fb29be37af7fd1a8de63858e277b19a035692a0a21eb46
-  languageName: node
-  linkType: hard
-
 "typedarray-to-buffer@npm:^3.1.5":
   version: 3.1.5
   resolution: "typedarray-to-buffer@npm:3.1.5"
@@ -12712,13 +12674,6 @@ typescript@^4.1.0:
   dependencies:
     debug: ^2.2.0
   checksum: 0974f82a8750c3c247d5a9cf7fe91279d1fad0069dda7b717937e7960addddedf2ddabe3ffb1f504929acd0c924ef654c5c85185aee4c514a0fbf2e2a4efcf39
-  languageName: node
-  linkType: hard
-
-"underscore@npm:^1.7.0":
-  version: 1.10.2
-  resolution: "underscore@npm:1.10.2"
-  checksum: d49b87c03d50a431f8ca146b99be29ce47e0e08057aff58da063d7bdc30c41f9b2ade695a0ec5eab903ba1423dd16319391e953c5464aefcb482d3955766bd94
   languageName: node
   linkType: hard
 
