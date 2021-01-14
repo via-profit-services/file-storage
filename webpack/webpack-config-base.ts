@@ -26,8 +26,11 @@ const webpackBaseConfig: Configuration = {
     ...knexExternals,
     /^@via-profit-services\/core/,
     /^@via-profit-services\/knex/,
+    /^@via-profit-services\/redis/,
     /^@via-profit-services\/accounts/,
+    /^@via-profit-services\/sms/,
     /^@via-profit-services\/subscriptions/,
+    /^express$/,
     /^moment$/,
     /^moment-timezone$/,
     /^uuid$/,
@@ -36,6 +39,11 @@ const webpackBaseConfig: Configuration = {
     /^graphql$/,
     /^winston-daily-rotate-file$/,
     /^rimraf$/,
+    /^imagemin$/,
+    /^imagemin-mozjpeg$/,
+    /^imagemin-optipng$/,
+    /^imagemin-pngquant$/,
+    /^jimp$/,
   ],
 }
 
