@@ -1,3 +1,4 @@
+/* eslint-disable import/max-dependencies */
 /* eslint-disable no-console */
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import * as accounts from '@via-profit-services/accounts';
@@ -52,7 +53,6 @@ const redisConfig = {
   const accountsMiddleware = await accounts.factory({
     privateKey: path.resolve(__dirname, './jwtRS256.key'),
     publicKey: path.resolve(__dirname, './jwtRS256.key.pub'),
-    permissionsMap: {},
   });
 
   const schema = makeExecutableSchema({
@@ -75,7 +75,6 @@ const redisConfig = {
     server,
     schema,
     debug: true,
-    introspection: true,
     middleware: [
       knexMiddleware,
       redisMiddleware,
