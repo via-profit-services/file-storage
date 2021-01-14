@@ -1588,9 +1588,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@via-profit-services/accounts@file://home/dhs/Projects/@via-profit-services/accounts/package-1.0.0-rc.1.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.":
-  version: 1.0.0-rc.1
-  resolution: "@via-profit-services/accounts@file://home/dhs/Projects/@via-profit-services/accounts/package-1.0.0-rc.1.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."
+"@via-profit-services/accounts@file://home/dhs/Projects/@via-profit-services/accounts/package-1.0.0-rc.6.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.":
+  version: 1.0.0-rc.6
+  resolution: "@via-profit-services/accounts@file://home/dhs/Projects/@via-profit-services/accounts/package-1.0.0-rc.6.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."
   dependencies:
     bcryptjs: ^2.4.3
     jsonwebtoken: ^8.5.1
@@ -1606,7 +1606,7 @@ __metadata:
     uuid: "*"
     winston: "*"
     winston-daily-rotate-file: "*"
-  checksum: 02b53c010a53d734c43a41c9cebdd30e3252ca27819d8018c076f43274f90a9054249e81f2c86b0221e48297b391da84427f8676c0238e54043d70d6d4604a90
+  checksum: f98de43f23b006693b9e73475c55b405135689bd9082e64a599e8dad29bfc2c5431e6b589b77d00a83c4318bee16a75c14ddbb8a52eca1112dc7ca8926e94273
   languageName: node
   linkType: hard
 
@@ -1672,7 +1672,7 @@ __metadata:
     "@types/webpack-node-externals": ^1.7.0
     "@typescript-eslint/eslint-plugin": ^4.10.0
     "@typescript-eslint/parser": ^4.10.0
-    "@via-profit-services/accounts": "file://home/dhs/Projects/@via-profit-services/accounts/package-1.0.0-rc.1.tgz"
+    "@via-profit-services/accounts": "file://home/dhs/Projects/@via-profit-services/accounts/package-1.0.0-rc.6.tgz"
     "@via-profit-services/core": "file://home/dhs/Projects/@via-profit-services/core/package-1.0.0-rc.1.tgz"
     "@via-profit-services/eslint-config": ^0.1.11
     "@via-profit-services/knex": "file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.1.tgz"

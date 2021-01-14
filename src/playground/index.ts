@@ -5,6 +5,7 @@ import * as accounts from '@via-profit-services/accounts';
 import * as core from '@via-profit-services/core';
 import * as knex from '@via-profit-services/knex';
 import * as redis from '@via-profit-services/redis';
+import * as sms from '@via-profit-services/sms';
 import * as subscriptions from '@via-profit-services/subscriptions';
 import dotenv from 'dotenv';
 import express from 'express';
@@ -53,6 +54,14 @@ const redisConfig = {
   const accountsMiddleware = await accounts.factory({
     privateKey: path.resolve(__dirname, './jwtRS256.key'),
     publicKey: path.resolve(__dirname, './jwtRS256.key.pub'),
+    enableIntrospection: true,
+    defaultAccess: 'grant',
+  });
+
+  const smsMiddleware = sms.factory({
+    provider: 'smsc.ru',
+    login: '',
+    password: '',
   });
 
   const schema = makeExecutableSchema({
@@ -79,6 +88,7 @@ const redisConfig = {
       knexMiddleware,
       redisMiddleware,
       pubSubMiddleware,
+      smsMiddleware,
       accountsMiddleware,
       fileStorageMiddleware,
     ],
