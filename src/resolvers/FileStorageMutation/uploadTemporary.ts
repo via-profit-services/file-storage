@@ -6,8 +6,7 @@ const uploadTemporaryResolver: Resolvers['FileStorageMutation']['uploadTemporary
   const {
     files, info, noCompress, transform,
   } = args;
-  const { logger, token, services } = context;
-  const { uuid } = token;
+  const { logger, services } = context;
 
   const filesData = await Promise.all(files);
   const savePromises = filesData.map(async (file, index) => {
@@ -36,7 +35,7 @@ const uploadTemporaryResolver: Resolvers['FileStorageMutation']['uploadTemporary
 
     logger.files.info(
       `Temporary file «${filename}» uploaded successfully as «${absoluteFilename}»`,
-      { uuid, mimeType, id },
+      { mimeType, id },
     );
 
     return {

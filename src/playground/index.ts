@@ -56,6 +56,11 @@ const redisConfig = {
     publicKey: path.resolve(__dirname, './jwtRS256.key.pub'),
     enableIntrospection: true,
     defaultAccess: 'grant',
+    defaultPermissions: {
+      'FileStorageQuery.list': {
+        grant: ['account.read.login'],
+      },
+    },
   });
 
   const smsMiddleware = sms.factory({

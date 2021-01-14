@@ -6,8 +6,7 @@ const uploadResolver: Resolvers['FileStorageMutation']['upload'] = async (
   const {
     files, info, noCompress, transform,
   } = args;
-  const { logger, token, services } = context;
-  const { uuid } = token;
+  const { logger, services } = context;
 
   const filesData = await Promise.all(files);
 
@@ -32,7 +31,7 @@ const uploadResolver: Resolvers['FileStorageMutation']['upload'] = async (
 
     logger.files.info(
       `File «${filename}» uploaded successfully as «${absoluteFilename}»`,
-      { uuid, mimeType },
+      { mimeType },
     );
 
 

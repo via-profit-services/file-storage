@@ -5,18 +5,18 @@ const deleteResolver: Resolvers['FileStorageMutation']['delete'] = async (
   _parent, args, context,
 ) => {
   const { ids, owners } = args;
-  const { logger, token, services, dataloader } = context;
-  const { uuid } = token;
+  const { logger, services, dataloader } = context;
+
   let deletedIDs: string[] = [];
 
   // get by IDs
   if (ids && Array.isArray(ids)) {
     try {
-      logger.files.debug(`Will be deleted ${ids.length} file(s)`, { uuid });
+      logger.files.debug(`Will be deleted ${ids.length} file(s)`);
       deletedIDs = await services.files.deleteStaticFiles(ids);
     } catch (err) {
-      logger.files.error('Failed to Delete files', { err, uuid });
-      throw new ServerError('Failed to Delete files', { err, uuid });
+      logger.files.error('Failed to Delete files', { err });
+      throw new ServerError('Failed to Delete files', { err });
     }
   }
 
@@ -30,17 +30,17 @@ const deleteResolver: Resolvers['FileStorageMutation']['delete'] = async (
     const idsByOwner = files.nodes.map((node) => node.id);
     if (idsByOwner.length) {
       try {
-        logger.files.debug(`Will be deleted ${idsByOwner} file(s)`, { uuid });
+        logger.files.debug(`Will be deleted ${idsByOwner} file(s)`);
         deletedIDs = await services.files.deleteStaticFiles(idsByOwner);
       } catch (err) {
-        throw new ServerError('Failed to Delete files', { err, uuid });
+        throw new ServerError('Failed to Delete files', { err });
       }
     }
   }
 
   deletedIDs.forEach((id) => {
     dataloader.files.clear(id);
-    logger.files.debug(`File ${id} was deleted. Initiator: Account ${uuid}`);
+    logger.files.debug('File ${id} was deleted.');
   });
 
   return {

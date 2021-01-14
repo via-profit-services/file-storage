@@ -6,7 +6,6 @@ import type {
   UploadFileInput, FileBagCreate, TemporaryFileBag, CompressImageStats,
 } from '@via-profit-services/file-storage';
 import { convertOrderByToKnex, convertWhereToKnex, extractTotalCountPropOfNode } from '@via-profit-services/knex';
-import '@via-profit-services/accounts';
 import fs, { ReadStream } from 'fs';
 import imagemin from 'imagemin';
 import imageminMozjpeg from 'imagemin-mozjpeg';
@@ -1072,13 +1071,10 @@ class FileStorageService {
     const { storageAbsolutePath } = this.getStoragePath();
     const { cacheAbsolutePath } = this.getCachePath();
     const { temporaryAbsolutePath } = this.getTemporaryPath();
-    const {
-      redis, knex, logger, token,
-    } = context;
+    const { redis, knex, logger } = context;
 
     logger.files.info(
       '!!! WARNING. All files will be deleted permanently !!!',
-      { initiator: token.uuid },
     );
 
     dataloader.files.clearAll();
@@ -1106,7 +1102,6 @@ class FileStorageService {
 
     logger.files.info(
       '!!! WARNING. All files has beed deleted permanently !!!',
-      { initiator: token.uuid },
     );
   }
 
