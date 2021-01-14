@@ -19,7 +19,7 @@ const contextMiddlewareFactory: ContextMiddlewareFactory = (props) => {
   // Files logger Logger
   context.logger.files = filesLogger({ logDir });
 
-  // Accounts Dataloader
+  // Files Dataloader
   context.dataloader.files = new DataLoader(async (ids: string[]) => {
     const nodes = await context.services.files.getFilesByIds(ids);
 
