@@ -27,8 +27,6 @@ const webpackBaseConfig: Configuration = {
     /^@via-profit-services\/core/,
     /^@via-profit-services\/knex/,
     /^@via-profit-services\/redis/,
-    /^@via-profit-services\/accounts/,
-    /^@via-profit-services\/sms/,
     /^@via-profit-services\/subscriptions/,
     /^express$/,
     /^moment$/,
