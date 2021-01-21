@@ -1,12 +1,9 @@
 /* eslint-disable import/max-dependencies */
 /* eslint-disable no-console */
 import { makeExecutableSchema } from '@graphql-tools/schema';
-import * as accounts from '@via-profit-services/accounts';
 import * as core from '@via-profit-services/core';
 import * as knex from '@via-profit-services/knex';
 import * as redis from '@via-profit-services/redis';
-import * as sms from '@via-profit-services/sms';
-import * as subscriptions from '@via-profit-services/subscriptions';
 import dotenv from 'dotenv';
 import express from 'express';
 import http from 'http';
@@ -45,41 +42,13 @@ const redisConfig = {
 
   const redisMiddleware = redis.factory(redisConfig)
 
-  const pubSubMiddleware = subscriptions.factory({
-    redis: redisConfig,
-    endpoint,
-    server,
-  })
-
-  const accountsMiddleware = await accounts.factory({
-    privateKey: path.resolve(__dirname, './jwtRS256.key'),
-    publicKey: path.resolve(__dirname, './jwtRS256.key.pub'),
-    enableIntrospection: true,
-    defaultAccess: 'grant',
-    defaultPermissions: {
-      'FileStorageQuery.list': {
-        grant: ['account.read.login'],
-      },
-    },
-  });
-
-  const smsMiddleware = sms.factory({
-    provider: 'smsc.ru',
-    login: '',
-    password: '',
-  });
-
   const schema = makeExecutableSchema({
     typeDefs: [
       core.typeDefs,
-      accounts.typeDefs,
-      subscriptions.typeDefs,
       files.typeDefs,
     ],
     resolvers: [
       core.resolvers,
-      accounts.resolvers,
-      subscriptions.resolvers,
       files.resolvers,
     ],
   });
@@ -92,9 +61,6 @@ const redisConfig = {
     middleware: [
       knexMiddleware,
       redisMiddleware,
-      pubSubMiddleware,
-      smsMiddleware,
-      accountsMiddleware,
       fileStorageMiddleware,
     ],
   });
@@ -105,7 +71,6 @@ const redisConfig = {
 
   server.listen(PORT, () => {
     console.log(`GraphQL Server started at http://localhost:${PORT}/graphql`);
-    console.log(`Subscriptions server started at ws://localhost:${PORT}/graphql`);
   })
 
 })();
