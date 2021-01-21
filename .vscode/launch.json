@@ -19,7 +19,7 @@
       "localRoot": "${workspaceRoot}/src/playground/index.ts",
       "remoteRoot": "${workspaceRoot}/build/index.js",
       "sourceMapPathOverrides": {
-        "webpack://@via-profit-services/core/./*": "${workspaceRoot}/*"
+        "webpack://@via-profit-services/file-storage/./*": "${workspaceRoot}/*"
       },
       "trace": "verbose"
     },
