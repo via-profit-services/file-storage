@@ -66,7 +66,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@typescript-eslint/parser", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:4.10.0"],
             ["@via-profit-services/core", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/core/package-1.0.0-rc.3.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."],
             ["@via-profit-services/eslint-config", "npm:0.1.11"],
-            ["@via-profit-services/knex", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.1.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."],
+            ["@via-profit-services/knex", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.2.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."],
             ["@via-profit-services/redis", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/redis/package-1.0.0-rc.1.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."],
             ["@zerollup/ts-transform-paths", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.7.17"],
             ["binary-loader", "npm:0.0.1"],
@@ -89,6 +89,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["express", "npm:4.17.1"],
             ["fs-capacitor", "npm:6.2.0"],
             ["graphql", "npm:15.4.0"],
+            ["graphql-tag", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:2.11.0"],
             ["imagemin", "npm:7.0.1"],
             ["imagemin-mozjpeg", "npm:9.0.0"],
             ["imagemin-optipng", "npm:8.0.0"],
@@ -518,7 +519,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["@jagi/jest-transform-graphql", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.2"],
             ["@types/graphql-tag", null],
-            ["graphql-tag", null]
+            ["graphql-tag", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:2.11.0"]
           ],
           "packagePeers": [
             "@types/graphql-tag",
@@ -2436,7 +2437,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@typescript-eslint/parser", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:4.10.0"],
             ["@via-profit-services/core", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/core/package-1.0.0-rc.3.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."],
             ["@via-profit-services/eslint-config", "npm:0.1.11"],
-            ["@via-profit-services/knex", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.1.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."],
+            ["@via-profit-services/knex", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.2.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."],
             ["@via-profit-services/redis", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/redis/package-1.0.0-rc.1.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."],
             ["@zerollup/ts-transform-paths", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.7.17"],
             ["binary-loader", "npm:0.0.1"],
@@ -2459,6 +2460,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["express", "npm:4.17.1"],
             ["fs-capacitor", "npm:6.2.0"],
             ["graphql", "npm:15.4.0"],
+            ["graphql-tag", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:2.11.0"],
             ["imagemin", "npm:7.0.1"],
             ["imagemin-mozjpeg", "npm:9.0.0"],
             ["imagemin-optipng", "npm:8.0.0"],
@@ -2498,17 +2500,17 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["@via-profit-services/knex", [
-        ["file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.1.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.", {
-          "packageLocation": "./.yarn/cache/@via-profit-services-knex-file-471c18665b-0892df69ea.zip/node_modules/@via-profit-services/knex/",
+        ["file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.2.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.", {
+          "packageLocation": "./.yarn/cache/@via-profit-services-knex-file-157ba3a09e-c16a949f88.zip/node_modules/@via-profit-services/knex/",
           "packageDependencies": [
-            ["@via-profit-services/knex", "file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.1.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."]
+            ["@via-profit-services/knex", "file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.2.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."]
           ],
           "linkType": "SOFT",
         }],
-        ["virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.1.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.", {
-          "packageLocation": "./.yarn/$$virtual/@via-profit-services-knex-virtual-a8432af457/0/cache/@via-profit-services-knex-file-471c18665b-0892df69ea.zip/node_modules/@via-profit-services/knex/",
+        ["virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.2.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.", {
+          "packageLocation": "./.yarn/$$virtual/@via-profit-services-knex-virtual-cfb1727cc3/0/cache/@via-profit-services-knex-file-157ba3a09e-c16a949f88.zip/node_modules/@via-profit-services/knex/",
           "packageDependencies": [
-            ["@via-profit-services/knex", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.1.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."],
+            ["@via-profit-services/knex", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.2.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."],
             ["@types/knex", null],
             ["@types/pg", null],
             ["@types/via-profit-services__core", null],
@@ -7554,6 +7556,28 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
+      ["graphql-tag", [
+        ["npm:2.11.0", {
+          "packageLocation": "./.yarn/cache/graphql-tag-npm-2.11.0-d505ecf590-4003555901.zip/node_modules/graphql-tag/",
+          "packageDependencies": [
+            ["graphql-tag", "npm:2.11.0"]
+          ],
+          "linkType": "SOFT",
+        }],
+        ["virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:2.11.0", {
+          "packageLocation": "./.yarn/$$virtual/graphql-tag-virtual-bc608b465d/0/cache/graphql-tag-npm-2.11.0-d505ecf590-4003555901.zip/node_modules/graphql-tag/",
+          "packageDependencies": [
+            ["graphql-tag", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:2.11.0"],
+            ["@types/graphql", "npm:14.5.0"],
+            ["graphql", "npm:15.4.0"]
+          ],
+          "packagePeers": [
+            "@types/graphql",
+            "graphql"
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
       ["growly", [
         ["npm:1.3.0", {
           "packageLocation": "./.yarn/cache/growly-npm-1.3.0-b3a02d4d2a-c87f7e8c78.zip/node_modules/growly/",
@@ -9234,7 +9258,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["jest-transform-graphql", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:2.1.0"],
             ["@types/graphql-tag", null],
-            ["graphql-tag", null]
+            ["graphql-tag", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:2.11.0"]
           ],
           "packagePeers": [
             "@types/graphql-tag",

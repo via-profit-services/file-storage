@@ -1662,7 +1662,7 @@ __metadata:
     "@typescript-eslint/parser": ^4.10.0
     "@via-profit-services/core": "file://home/dhs/Projects/@via-profit-services/core/package-1.0.0-rc.3.tgz"
     "@via-profit-services/eslint-config": ^0.1.11
-    "@via-profit-services/knex": "file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.1.tgz"
+    "@via-profit-services/knex": "file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.2.tgz"
     "@via-profit-services/redis": "file://home/dhs/Projects/@via-profit-services/redis/package-1.0.0-rc.1.tgz"
     "@zerollup/ts-transform-paths": ^1.7.11
     binary-loader: ^0.0.1
@@ -1685,6 +1685,7 @@ __metadata:
     express: ^4.17.1
     fs-capacitor: ^6.2.0
     graphql: ^15.4.0
+    graphql-tag: ^2.11.0
     imagemin: ^7.0.1
     imagemin-mozjpeg: ^9.0.0
     imagemin-optipng: ^8.0.0
@@ -1737,14 +1738,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@via-profit-services/knex@file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.1.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.":
-  version: 1.0.0-rc.1
-  resolution: "@via-profit-services/knex@file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.1.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."
+"@via-profit-services/knex@file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.2.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.":
+  version: 1.0.0-rc.2
+  resolution: "@via-profit-services/knex@file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.2.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."
   peerDependencies:
     "@via-profit-services/core": 1.x.x
-    knex: 1.x.x
+    knex: ^0.21.12
     pg: ^8.5.1
-  checksum: 0892df69eac7fff4bbb1bbf4a56c9dcea9b6ae87feb9a92903a50f2bb193e53403903f92f2d76d6bb30449ee5a737f66ef98c771d2d68beff2a169ad37826c22
+  checksum: c16a949f8803a04d34dd3e185322f3677ce4bdadd5be3537e1183caa7f15b774f4c6a7473346a98707248ec55026fcd031ea5c3f582499e638fe2ea281c64e61
   languageName: node
   linkType: hard
 
@@ -6058,6 +6059,15 @@ fsevents@~2.1.2:
   version: 1.0.1
   resolution: "graceful-readlink@npm:1.0.1"
   checksum: a0675771561e8f8401ce4f8feddcc5bc3fc7370d7cc95c9dab3fff8e4bb6f69316072267075e2e54ecaeb2ba72019cf9bd334732cdb1582b5a0642dd33b5b0e0
+  languageName: node
+  linkType: hard
+
+"graphql-tag@npm:^2.11.0":
+  version: 2.11.0
+  resolution: "graphql-tag@npm:2.11.0"
+  peerDependencies:
+    graphql: ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
+  checksum: 400355590180cce2f39df5c599cad20ee982bb7e4a63ad70857aa0fe2e82e3ef6233a4db2b80a03e6dfa84bf3ecb13dc2947936eaf31753c94876e22be45ea78
   languageName: node
   linkType: hard
 
