@@ -7,7 +7,6 @@ import * as redis from '@via-profit-services/redis';
 import dotenv from 'dotenv';
 import express from 'express';
 import http from 'http';
-import path from 'path';
 
 import * as files from '../index';
 
