@@ -1,74 +1,75 @@
+/* eslint-disable import/max-dependencies */
 /* eslint-disable no-console */
-/* eslint-disable import/no-extraneous-dependencies */
-import { App, schemas } from '@via-profit-services/core';
-import chalk from 'chalk';
-import { v4 as uuidv4 } from 'uuid';
+import { makeExecutableSchema } from '@graphql-tools/schema';
+import * as core from '@via-profit-services/core';
+import * as knex from '@via-profit-services/knex';
+import * as redis from '@via-profit-services/redis';
+import dotenv from 'dotenv';
+import express from 'express';
+import http from 'http';
 
-import { makeSchema } from '../schemas/file-storage';
-// import FileStorageService from '../schemas/file-storage/service';
+import * as files from '../index';
 
-import { configureApp } from '../utils/configureApp';
+dotenv.config();
 
-const fileStorage = makeSchema({
-  hostname: `http://localhost:${process.env.PORT}`,
-  cacheTTL: 30,
-  temporaryTTL: 30,
-});
+const endpoint = '/graphql';
+const PORT = 9005;
+const app = express();
+const server = http.createServer(app);
+const redisConfig = {
+  host: 'localhost',
+  password: '',
+};
+(async () => {
 
-
-const config = configureApp({
-  typeDefs: [
-    fileStorage.typeDefs,
-  ],
-  resolvers: [
-    fileStorage.resolvers,
-  ],
-  expressMiddlewares: [
-    fileStorage.expressMiddleware,
-  ],
-});
-
-const app = new App(config);
-const AuthService = schemas.auth.service;
-
-app.bootstrap(async (props) => {
-  const { resolveUrl, context } = props;
-
-  if (process.env.NODE_ENV !== 'development') {
-    console.log(`GraphQL server was started at ${resolveUrl.graphql}`);
-
-    return;
-  }
-
-  console.log('');
-  const authService = new AuthService({ context });
-  const { accessToken } = authService.generateTokens({
-    uuid: uuidv4(),
-    roles: ['developer'],
-  }, {
-    access: 2.592e6,
-    refresh: 2.592e6,
+  const {
+    fileStorageMiddleware,
+    graphQLFilesStaticExpress,
+    graphQLFilesUploadExpress,
+  } = files.factory({
+    hostname: 'http://localhost:9005',
   });
 
-  // const fsService = new FileStorageService({ context });
-  // const { stream, file } = await fsService.getFileStream({
-  //   mimeType: 'application/json',
-  //   category: 'test',
-  //   owner: '34849cc0-0121-48e7-8091-108f04278b68',
-  //   type: FileType.document,
-  // });
+  const knexMiddleware = knex.factory({
+    connection: {
+      user: process.env.DB_USER,
+      database: process.env.DB_NAME,
+      password: process.env.DB_PASSWORD,
+      host: process.env.DB_HOST,
+    },
+  });
 
-  // console.log('file', file);
-  // stream.write('{"foo": "bar"}');
+  const redisMiddleware = redis.factory(redisConfig)
 
-  console.log(chalk.green('Your development token is:'));
-  console.log(chalk.yellow(accessToken.token));
-  console.log('');
+  const schema = makeExecutableSchema({
+    typeDefs: [
+      core.typeDefs,
+      files.typeDefs,
+    ],
+    resolvers: [
+      core.resolvers,
+      files.resolvers,
+    ],
+  });
 
-  console.log('');
-  console.log(chalk.green('============== Server =============='));
-  console.log('');
-  console.log(`${chalk.green('GraphQL server')}:     ${chalk.yellow(resolveUrl.graphql)}`);
 
-  console.log('');
-});
+  const { graphQLExpress } = await core.factory({
+    server,
+    schema,
+    debug: true,
+    middleware: [
+      knexMiddleware,
+      redisMiddleware,
+      fileStorageMiddleware,
+    ],
+  });
+
+  app.use(endpoint, graphQLFilesUploadExpress); // <-- First
+  app.use(graphQLFilesStaticExpress); // < -- Second
+  app.use(endpoint, graphQLExpress); // < -- Third
+
+  server.listen(PORT, () => {
+    console.log(`GraphQL Server started at http://localhost:${PORT}/graphql`);
+  })
+
+})();

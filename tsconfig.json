@@ -8,14 +8,12 @@
     "moduleResolution": "node",
     "noImplicitAny": true,
     "outDir": "./build",
-    "paths": {
-      "~/*": ["./*"]
-    },
     "resolveJsonModule": true,
     "rootDir": "./src",
     "sourceMap": true,
     "target": "es6",
-    "typeRoots": ["node_modules/@types", "src/@types"]
+    "types": ["node"],
+    "allowJs": true
   },
   "exclude": ["src/**/*.spec.ts", "src/**/*.test.ts"],
   "include": ["src/**/*"]

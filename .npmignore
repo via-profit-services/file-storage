@@ -1,4 +1,11 @@
-.*
+.yarn/*
+.env
+.knex/knexfile.js
+.vscode/*
+.eslintignore
+.eslintrc
+.prettierrc
+/public
 /assets
 /build
 /keys
@@ -12,3 +19,6 @@
 /jest.config.js
 /yarn.lock
 /yarn-error.lock
+/dump.rdb
+/package.tgz
+/package-*.tgz
