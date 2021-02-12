@@ -64,10 +64,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/webpack-node-externals", "npm:1.7.1"],
             ["@typescript-eslint/eslint-plugin", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:4.10.0"],
             ["@typescript-eslint/parser", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:4.10.0"],
-            ["@via-profit-services/core", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/core/package-1.0.0-rc.3.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."],
+            ["@via-profit-services/core", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.2"],
             ["@via-profit-services/eslint-config", "npm:0.1.11"],
-            ["@via-profit-services/knex", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.2.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."],
-            ["@via-profit-services/redis", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/redis/package-1.0.0-rc.1.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."],
+            ["@via-profit-services/knex", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.2"],
+            ["@via-profit-services/redis", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.0"],
             ["@zerollup/ts-transform-paths", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.7.17"],
             ["binary-loader", "npm:0.0.1"],
             ["busboy", "npm:0.3.1"],
@@ -2345,17 +2345,17 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["@via-profit-services/core", [
-        ["file://home/dhs/Projects/@via-profit-services/core/package-1.0.0-rc.3.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.", {
-          "packageLocation": "./.yarn/cache/@via-profit-services-core-file-a249296c3a-d3a8c11d96.zip/node_modules/@via-profit-services/core/",
+        ["npm:1.0.2", {
+          "packageLocation": "./.yarn/cache/@via-profit-services-core-npm-1.0.2-8d54b96671-18dc82c931.zip/node_modules/@via-profit-services/core/",
           "packageDependencies": [
-            ["@via-profit-services/core", "file://home/dhs/Projects/@via-profit-services/core/package-1.0.0-rc.3.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."]
+            ["@via-profit-services/core", "npm:1.0.2"]
           ],
           "linkType": "SOFT",
         }],
-        ["virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/core/package-1.0.0-rc.3.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.", {
-          "packageLocation": "./.yarn/$$virtual/@via-profit-services-core-virtual-2becea68e4/0/cache/@via-profit-services-core-file-a249296c3a-d3a8c11d96.zip/node_modules/@via-profit-services/core/",
+        ["virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.2", {
+          "packageLocation": "./.yarn/$$virtual/@via-profit-services-core-virtual-190e07dfdc/0/cache/@via-profit-services-core-npm-1.0.2-8d54b96671-18dc82c931.zip/node_modules/@via-profit-services/core/",
           "packageDependencies": [
-            ["@via-profit-services/core", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/core/package-1.0.0-rc.3.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."],
+            ["@via-profit-services/core", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.2"],
             ["@types/dataloader", null],
             ["@types/express", "npm:4.17.6"],
             ["@types/graphql", "npm:14.5.0"],
@@ -2435,10 +2435,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/webpack-node-externals", "npm:1.7.1"],
             ["@typescript-eslint/eslint-plugin", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:4.10.0"],
             ["@typescript-eslint/parser", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:4.10.0"],
-            ["@via-profit-services/core", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/core/package-1.0.0-rc.3.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."],
+            ["@via-profit-services/core", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.2"],
             ["@via-profit-services/eslint-config", "npm:0.1.11"],
-            ["@via-profit-services/knex", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.2.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."],
-            ["@via-profit-services/redis", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/redis/package-1.0.0-rc.1.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."],
+            ["@via-profit-services/knex", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.2"],
+            ["@via-profit-services/redis", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.0"],
             ["@zerollup/ts-transform-paths", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.7.17"],
             ["binary-loader", "npm:0.0.1"],
             ["busboy", "npm:0.3.1"],
@@ -2500,21 +2500,21 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["@via-profit-services/knex", [
-        ["file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.2.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.", {
-          "packageLocation": "./.yarn/cache/@via-profit-services-knex-file-157ba3a09e-c16a949f88.zip/node_modules/@via-profit-services/knex/",
+        ["npm:1.0.2", {
+          "packageLocation": "./.yarn/cache/@via-profit-services-knex-npm-1.0.2-ecd0d9e79a-8ae338062b.zip/node_modules/@via-profit-services/knex/",
           "packageDependencies": [
-            ["@via-profit-services/knex", "file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.2.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."]
+            ["@via-profit-services/knex", "npm:1.0.2"]
           ],
           "linkType": "SOFT",
         }],
-        ["virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.2.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.", {
-          "packageLocation": "./.yarn/$$virtual/@via-profit-services-knex-virtual-cfb1727cc3/0/cache/@via-profit-services-knex-file-157ba3a09e-c16a949f88.zip/node_modules/@via-profit-services/knex/",
+        ["virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.2", {
+          "packageLocation": "./.yarn/$$virtual/@via-profit-services-knex-virtual-de13218cf9/0/cache/@via-profit-services-knex-npm-1.0.2-ecd0d9e79a-8ae338062b.zip/node_modules/@via-profit-services/knex/",
           "packageDependencies": [
-            ["@via-profit-services/knex", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.2.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."],
+            ["@via-profit-services/knex", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.2"],
             ["@types/knex", null],
             ["@types/pg", null],
             ["@types/via-profit-services__core", null],
-            ["@via-profit-services/core", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/core/package-1.0.0-rc.3.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."],
+            ["@via-profit-services/core", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.2"],
             ["knex", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:0.21.13"],
             ["pg", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:8.5.1"]
           ],
@@ -2530,20 +2530,20 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["@via-profit-services/redis", [
-        ["file://home/dhs/Projects/@via-profit-services/redis/package-1.0.0-rc.1.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.", {
-          "packageLocation": "./.yarn/cache/@via-profit-services-redis-file-951d57ca94-dc2bd79bea.zip/node_modules/@via-profit-services/redis/",
+        ["npm:1.0.0", {
+          "packageLocation": "./.yarn/cache/@via-profit-services-redis-npm-1.0.0-bac3192b31-ed1ebec9b6.zip/node_modules/@via-profit-services/redis/",
           "packageDependencies": [
-            ["@via-profit-services/redis", "file://home/dhs/Projects/@via-profit-services/redis/package-1.0.0-rc.1.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."]
+            ["@via-profit-services/redis", "npm:1.0.0"]
           ],
           "linkType": "SOFT",
         }],
-        ["virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/redis/package-1.0.0-rc.1.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.", {
-          "packageLocation": "./.yarn/$$virtual/@via-profit-services-redis-virtual-ff8e996a10/0/cache/@via-profit-services-redis-file-951d57ca94-dc2bd79bea.zip/node_modules/@via-profit-services/redis/",
+        ["virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.0", {
+          "packageLocation": "./.yarn/$$virtual/@via-profit-services-redis-virtual-082e897194/0/cache/@via-profit-services-redis-npm-1.0.0-bac3192b31-ed1ebec9b6.zip/node_modules/@via-profit-services/redis/",
           "packageDependencies": [
-            ["@via-profit-services/redis", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/redis/package-1.0.0-rc.1.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."],
+            ["@via-profit-services/redis", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.0"],
             ["@types/ioredis", "npm:4.16.1"],
             ["@types/via-profit-services__core", null],
-            ["@via-profit-services/core", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#file://home/dhs/Projects/@via-profit-services/core/package-1.0.0-rc.3.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."],
+            ["@via-profit-services/core", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.2"],
             ["ioredis", "npm:4.19.4"]
           ],
           "packagePeers": [

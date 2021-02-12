@@ -48,9 +48,11 @@ class FileStorageService {
 
   public constructor(props: FileStorageServiceProps) {
     const { configuration, context } = props;
-    const { cacheTTL, temporaryTTL, compressionOptions } = configuration;
+    const { cacheTTL, temporaryTTL, compressionOptions, categories } = configuration;
+
 
     this.props = {
+      categories: [...categories || []],
       context,
       cacheTTL: Math.min(
         TIMEOUT_MAX_VALUE / 1000, cacheTTL || CACHE_FILES_DEFAULT_TTL,
@@ -1179,6 +1181,20 @@ class FileStorageService {
       logger.files.debug(`Removing: «${directory}»`);
       fs.rmSync(directory, { recursive: true, force: true });
     }
+  }
+
+  public async rebaseCategories(categories: string[]): Promise<void> {
+    const { context } = this.props;
+    const { knex } = context;
+
+    const payload = categories.map((category) => ({ category }));
+    await knex
+      .raw(`${knex('fileStorageCategories')
+      .insert(payload).toString()} on conflict ("category") do nothing;`);
+
+    await knex('fileStorageCategories')
+      .del()
+      .whereNotIn('category', categories);
   }
 }
 
