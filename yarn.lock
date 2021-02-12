@@ -1597,9 +1597,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@via-profit-services/core@file://home/dhs/Projects/@via-profit-services/core/package-1.0.0-rc.3.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.":
-  version: 1.0.0-rc.3
-  resolution: "@via-profit-services/core@file://home/dhs/Projects/@via-profit-services/core/package-1.0.0-rc.3.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."
+"@via-profit-services/core@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "@via-profit-services/core@npm:1.0.2"
   dependencies:
     bufferutil: ^4.0.2
     content-type: ^1.0.4
@@ -1618,7 +1618,7 @@ __metadata:
       optional: true
     utf-8-validate:
       optional: true
-  checksum: d3a8c11d96d4a992e1bfedff501934abd4f21dfba4e48d6dce5143afca77b7c9c0d369a0d7458ed1b2bc4ecd47c1856cbdf74f2d5458c3618a98d5be25e03b7c
+  checksum: 18dc82c9317d5b2403789c00d6217ffad9acda1990f995b2da1b2b480e87ec02d70ae3c31f0fd57f031eabb018f86d6e3f057b7245b4f6f5460c25c3e8f9493e
   languageName: node
   linkType: hard
 
@@ -1660,10 +1660,10 @@ __metadata:
     "@types/webpack-node-externals": ^1.7.0
     "@typescript-eslint/eslint-plugin": ^4.10.0
     "@typescript-eslint/parser": ^4.10.0
-    "@via-profit-services/core": "file://home/dhs/Projects/@via-profit-services/core/package-1.0.0-rc.3.tgz"
+    "@via-profit-services/core": ^1.0.2
     "@via-profit-services/eslint-config": ^0.1.11
-    "@via-profit-services/knex": "file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.2.tgz"
-    "@via-profit-services/redis": "file://home/dhs/Projects/@via-profit-services/redis/package-1.0.0-rc.1.tgz"
+    "@via-profit-services/knex": ^1.0.2
+    "@via-profit-services/redis": ^1.0.0
     "@zerollup/ts-transform-paths": ^1.7.11
     binary-loader: ^0.0.1
     busboy: ^0.3.1
@@ -1738,24 +1738,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@via-profit-services/knex@file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.2.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.":
-  version: 1.0.0-rc.2
-  resolution: "@via-profit-services/knex@file://home/dhs/Projects/@via-profit-services/knex/package-1.0.0-rc.2.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."
+"@via-profit-services/knex@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "@via-profit-services/knex@npm:1.0.2"
   peerDependencies:
     "@via-profit-services/core": 1.x.x
     knex: ^0.21.12
     pg: ^8.5.1
-  checksum: c16a949f8803a04d34dd3e185322f3677ce4bdadd5be3537e1183caa7f15b774f4c6a7473346a98707248ec55026fcd031ea5c3f582499e638fe2ea281c64e61
+  checksum: 8ae338062b5f2d547bbaa6776349540b32bf61d8b0b2a5476ec2a068e60b90e50b121dadcdd6635d48860846190d380522303c71eb7fa6027f2019cf6dd2a08c
   languageName: node
   linkType: hard
 
-"@via-profit-services/redis@file://home/dhs/Projects/@via-profit-services/redis/package-1.0.0-rc.1.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A.":
-  version: 1.0.0-rc.1
-  resolution: "@via-profit-services/redis@file://home/dhs/Projects/@via-profit-services/redis/package-1.0.0-rc.1.tgz::locator=%40via-profit-services%2Ffile-storage%40workspace%3A."
+"@via-profit-services/redis@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@via-profit-services/redis@npm:1.0.0"
   peerDependencies:
     "@via-profit-services/core": ^1.0.0
     ioredis: "*"
-  checksum: dc2bd79bea847d4a5029865713b1547952f0ba509810075d9105afbfc426f89f56cd31201ed58d9fb9dc55f9aa4c9d85172afd8ff104f99d0994fd808020cf27
+  checksum: ed1ebec9b64a74c11b5141da37e90973acf8fe21f516ea7b21301888069f3f73f646fa5ec11c512dc6144d42e1b28290c05f205eba2ff06c6f327a9bb425a4e7
   languageName: node
   linkType: hard
 

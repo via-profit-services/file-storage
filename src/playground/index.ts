@@ -8,12 +8,10 @@ import dotenv from 'dotenv';
 import express from 'express';
 import http from 'http';
 
-import * as files from '../index';
+import { factory as filesFactory } from '../index';
 
 dotenv.config();
 
-const endpoint = '/graphql';
-const PORT = 9005;
 const app = express();
 const server = http.createServer(app);
 const redisConfig = {
@@ -22,12 +20,9 @@ const redisConfig = {
 };
 (async () => {
 
-  const {
-    fileStorageMiddleware,
-    graphQLFilesStaticExpress,
-    graphQLFilesUploadExpress,
-  } = files.factory({
-    hostname: 'http://localhost:9005',
+
+  const files = await filesFactory({
+    hostname: `http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}`,
   });
 
   const knexMiddleware = knex.factory({
@@ -60,16 +55,16 @@ const redisConfig = {
     middleware: [
       knexMiddleware,
       redisMiddleware,
-      fileStorageMiddleware,
+      files.fileStorageMiddleware,
     ],
   });
 
-  app.use(endpoint, graphQLFilesUploadExpress); // <-- First
-  app.use(graphQLFilesStaticExpress); // < -- Second
-  app.use(endpoint, graphQLExpress); // < -- Third
+  app.use(process.env.GRAPHQL_ENDPOINT, files.graphQLFilesUploadExpress); // <-- First
+  app.use(files.graphQLFilesStaticExpress); // < -- Second
+  app.use(process.env.GRAPHQL_ENDPOINT, graphQLExpress); // <-- Last
 
-  server.listen(PORT, () => {
-    console.log(`GraphQL Server started at http://localhost:${PORT}/graphql`);
-  })
+  server.listen(Number(process.env.SERVER_PORT), process.env.SERVER_HOST, () => {
+    console.log(`GraphQL Server started at http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/graphql`);
+  });
 
 })();

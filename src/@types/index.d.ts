@@ -160,6 +160,11 @@ declare module '@via-profit-services/file-storage' {
     hostname: string;
 
     /**
+     * Categories of files (e.g. «Avatar», Infoice»)
+     */
+    categories?: string[];
+
+    /**
      * Prefix path (e.g. `/static`)
      * @see https://expressjs.com/ru/starter/static-files.html
      */
@@ -313,11 +318,13 @@ declare module '@via-profit-services/file-storage' {
   }
 
 
-  export type FileStorageMiddlewareFactory = (configuration: Configuration) => {
+  export type FileStorageMiddlewareFactory = (configuration: Configuration) => Promise<{
     fileStorageMiddleware: Middleware;
     graphQLFilesUploadExpress: RequestHandler;
     graphQLFilesStaticExpress: RequestHandler;
-  };
+    resolvers: Resolvers;
+    typeDefs: string;
+  }>;
 
   export interface CompressImageStats {
     filename: string;
@@ -454,10 +461,9 @@ declare module '@via-profit-services/file-storage' {
     deleteFilesByOwner(owner: string | string[]): Promise<string[] | false>;
     flush(): Promise<void>;
     deleteStaticFiles(ids: string[]): Promise<string[]>;
+    rebaseCategories(categories: string[]): Promise<void>;
   }
 
-  export const resolvers: Resolvers;
-  export const typeDefs: string;
   export const factory: FileStorageMiddlewareFactory;
 }
 

@@ -3,8 +3,17 @@ import { FileStorageMiddlewareFactory } from '@via-profit-services/file-storage'
 
 import contextMiddlewareFactory from './context-middleware';
 import expressMiddlewareFactory from './express-middleware';
+import resolvers from './resolvers';
+import typeDefs from './schema.graphql';
 
-const middlewareFactory: FileStorageMiddlewareFactory = (configuration) => {
+const middlewareFactory: FileStorageMiddlewareFactory = async (configuration) => {
+  const { categories } = configuration;
+
+  const categoriesList = new Set(
+    [...categories || []].map((category) => category.replace(/[^a-zA-Z]/g, '')),
+  );
+  categoriesList.add('Avatar');
+  configuration.categories = [...categoriesList];
 
   const pool: ReturnType<Middleware> = {
     context: null,
@@ -19,7 +28,7 @@ const middlewareFactory: FileStorageMiddlewareFactory = (configuration) => {
     const { context } = props;
 
     // init context
-    pool.context = pool.context ?? contextMiddlewareFactory({
+    pool.context = pool.context ?? await contextMiddlewareFactory({
       configuration,
       context,
       config: props.config,
@@ -29,6 +38,7 @@ const middlewareFactory: FileStorageMiddlewareFactory = (configuration) => {
     // Setup timers to cache clearing
     const { services, logger } = pool.context;
     const { cacheTTL, temporaryTTL } = services.files.getProps();
+    await services.files.rebaseCategories([...categoriesList]);
 
     // setup it once
     if (!timers.cacheTimer) {
@@ -69,6 +79,11 @@ const middlewareFactory: FileStorageMiddlewareFactory = (configuration) => {
     fileStorageMiddleware,
     graphQLFilesStaticExpress,
     graphQLFilesUploadExpress,
+    resolvers,
+    typeDefs: `${typeDefs}
+      enum FileCategory {
+        ${[...categoriesList].join(',\n')}
+      }`,
   }
 }
 

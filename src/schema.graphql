@@ -21,7 +21,7 @@ type FileStorageMutation {
     GraphQL multipart request specification: https://github.com/jaydenseric/graphql-multipart-request-spec#graphql-multipart-request-specification
     For example `curl` request will be:
     curl localhost:9000/graphql \
-    -F operations='{ "query": "mutation($files: [FileUpload!]! $info: [FileUploadInfo!]!) { multipleUpload(files: $files info: $info) { id url } }", "variables": { "files": [null, null] }, "info": [{"owner": "xxxx-xxx-xxx", "category": "other"}, {"owner": "xxxx-xxx-xxx", "category": "other"}] }' \
+    -F operations='{ "query": "mutation($files: [FileUpload!]! $info: [FileUploadInfo!]!) { multipleUpload(files: $files info: $info) { id url } }", "variables": { "files": [null, null] }, "info": [{"owner": "xxxx-xxx-xxx", "category": "Avatar"{"owner": "xxxx-xxx-xxx", "category": "Avatar"}] }' \
     -F map='{ "0": ["variables.files.0"], "1": ["variables.files.1"] }' \
     -F 0=@b.txt \
     -F 1=@c.txt
@@ -100,7 +100,7 @@ input FileUploadInfo {
   """
   Voluntary name of category
   """
-  category: String!
+  category: FileCategory!
 
   """
   Description of this file
@@ -124,7 +124,7 @@ input FileUpdateInfo {
   """
   Voluntary name of category
   """
-  category: String
+  category: FileCategory
 
   """
   Description of this file
@@ -181,7 +181,7 @@ type FileStorageQuery {
 input FilesListFilter {
   id: [ID!]
   owner: [ID!]
-  category: [String!]
+  category: [FileCategory!]
   mimeType: [String!]
   type: [FileType!]
 }
@@ -234,7 +234,7 @@ interface FileNode {
   updatedAt: DateTime!
   owner: ID!
   type: FileType!
-  category: String!
+  category: FileCategory!
   mimeType: String!
   url: URL!
   description: String
@@ -248,7 +248,7 @@ type File implements FileNode & Node {
   updatedAt: DateTime!
   owner: ID!
   type: FileType!
-  category: String!
+  category: FileCategory!
   mimeType: String!
   url: URL!
   description: String
@@ -262,7 +262,7 @@ type TemporaryFile implements FileNode & Node {
   expiredAt: DateTime!
   owner: ID!
   type: FileType!
-  category: String!
+  category: FileCategory!
   mimeType: String!
   url: URL!
   description: String
