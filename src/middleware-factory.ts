@@ -19,16 +19,24 @@ const middlewareFactory: FileStorageMiddlewareFactory = async (configuration) =>
     context: null,
   };
 
-  const timers: {cacheTimer: NodeJS.Timeout; temporaryTimer: NodeJS.Timeout;} = {
+  type Cache = {
+    cacheTimer: NodeJS.Timeout;
+    temporaryTimer: NodeJS.Timeout;
+    initDatabase: boolean;
+  }
+
+  const cache: Cache = {
     cacheTimer: null,
     temporaryTimer: null,
+    initDatabase: false,
   };
+
 
   const fileStorageMiddleware: Middleware = async (props) => {
     const { context } = props;
 
     // init context
-    pool.context = pool.context ?? await contextMiddlewareFactory({
+    pool.context = pool.context ?? contextMiddlewareFactory({
       configuration,
       context,
       config: props.config,
@@ -38,12 +46,17 @@ const middlewareFactory: FileStorageMiddlewareFactory = async (configuration) =>
     // Setup timers to cache clearing
     const { services, logger } = pool.context;
     const { cacheTTL, temporaryTTL } = services.files.getProps();
-    await services.files.rebaseCategories([...categoriesList]);
 
     // setup it once
-    if (!timers.cacheTimer) {
+    if (!cache.initDatabase) {
+      await services.files.rebaseCategories([...categoriesList]);
+      cache.initDatabase = true;
+    }
+
+    // setup it once
+    if (!cache.cacheTimer) {
       services.files.clearExpiredCacheFiles();
-      timers.cacheTimer = setInterval(() => {
+      cache.cacheTimer = setInterval(() => {
         try {
           services.files.clearExpiredCacheFiles();
         } catch (err) {
@@ -54,8 +67,8 @@ const middlewareFactory: FileStorageMiddlewareFactory = async (configuration) =>
     }
 
     // setup it once
-    if (!timers.temporaryTimer) {
-      timers.temporaryTimer = setInterval(() => {
+    if (!cache.temporaryTimer) {
+      cache.temporaryTimer = setInterval(() => {
         services.files.clearExpiredTemporaryFiles();
         try {
           services.files.clearExpiredTemporaryFiles();
