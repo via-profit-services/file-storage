@@ -1,5 +1,5 @@
 import type { FileResolver } from '@via-profit-services/file-storage';
-// import fs from 'fs';
+import path from 'path';
 
 const fileResolver = new Proxy<FileResolver>({
   id: () => ({}),
@@ -26,16 +26,18 @@ const fileResolver = new Proxy<FileResolver>({
 
       // if is image
       if (file.type === 'image') {
+        if (prop === 'id' && transform) {
+          const url = await services.files.getUrlWithTransform(file, transform);
+          const cahcedID = path.basename(url).split('.')[0];
+
+          return `transform.${cahcedID}`;
+        }
+
         if (prop === 'url' && transform) {
-          return services.files.getUrlWithTransform(file, transform);
+          return await services.files.getUrlWithTransform(file, transform);
         }
       }
 
-      // if (prop === 'size') {
-      //   const { resolveAbsolutePath } = services.files.resolveFile(file);
-
-      //   return fs.lstatSync(resolveAbsolutePath).size;
-      // }
 
       return file[prop];
     };

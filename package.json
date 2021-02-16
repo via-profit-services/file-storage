@@ -1,7 +1,7 @@
 {
     "name": "@via-profit-services/file-storage",
     "support": "https://via-profit.ru",
-    "version": "1.0.3",
+    "version": "1.0.4-rc-1",
     "description": "Via Profit File Storage Schema",
     "main": "dist/index.js",
     "engines": {
