@@ -80,6 +80,8 @@ type FileStorageMutation {
     """
     transform: [ImageTransformInput!]
   ): [File!]
+
+  clearCache: Void
 }
 
 type FileStorageDeleteResponse {

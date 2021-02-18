@@ -308,7 +308,7 @@ class FileStorageService {
     transform: ImageTransform,
   ) {
     const { context, hostname, staticPrefix } = this.props;
-    const { redis, logger } = context;
+    const { redis } = context;
     const { url, id, mimeType, isLocalFile } = imageData;
     const { storageAbsolutePath } = this.getStoragePath();
     const { cacheAbsolutePath } = this.getCachePath();
@@ -358,11 +358,7 @@ class FileStorageService {
     fs.copyFileSync(absoluteOriginalFilename, absoluteFilename);
     redis.hset(REDIS_CACHE_NAME, imageUrlHash, this.compilePayloadCache(id, newFilename));
 
-    try {
-      this.applyTransform(absoluteFilename, transform);
-    } catch (err) {
-      logger.files.error(`Failed to apply transformation with file ${newFilename}`, { err, transform });
-    }
+    this.applyTransform(absoluteFilename, transform);
 
     return [
       `${hostname}${staticPrefix}`,
@@ -419,72 +415,103 @@ class FileStorageService {
 
     let jimpHandle = await Jimp.read(filepath);
 
-    Object.entries(transform).forEach(([method, options]) => {
-      if (method === 'resize') {
-        const { w, h } = options as ImageTransform['resize'];
+    if ('resize' in transform) {
+      const { w, h } = transform.resize;
+      try {
         jimpHandle = jimpHandle.resize(
           Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
           Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
         );
+      } catch (err) {
+        logger.files.error('Transform «resize» error', { err });
       }
 
-      if (method === 'cover') {
-        const { w, h } = options as ImageTransform['cover'];
-        jimpHandle = jimpHandle.cover(
-          Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
-          Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
-        );
-      }
+    }
 
-      if (method === 'contain') {
-        const { w, h } = options as ImageTransform['contain'];
-        jimpHandle = jimpHandle.contain(
-          Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
-          Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
-        );
-      }
-
-      if (method === 'scaleToFit') {
-        const { w, h } = options as ImageTransform['scaleToFit'];
-        jimpHandle = jimpHandle.scaleToFit(
-          Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
-          Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
-        );
-      }
-
-      if (method === 'gaussian') {
-        const gaussian = options as ImageTransform['gaussian'];
-        jimpHandle = jimpHandle.gaussian(
-          Math.min(gaussian, IMAGE_TRANSFORM_MAX_GAUSSIAN),
-        );
-      }
-
-      if (method === 'blur') {
-        const blur = options as ImageTransform['blur'];
-        jimpHandle = jimpHandle.blur(
-          Math.min(blur, IMAGE_TRANSFORM_MAX_BLUR),
-        );
-      }
-
-      if (method === 'greyscale') {
-        const greyscale = options as ImageTransform['greyscale'];
-        if (greyscale === true) {
-          jimpHandle = jimpHandle.grayscale();
-        }
-      }
-
-      if (method === 'crop') {
-        const {
-          x, y, w, h,
-        } = options as ImageTransform['crop'];
+    if ('crop' in transform) {
+      const { x, y, w, h } = transform.crop;
+      try {
         jimpHandle = jimpHandle.crop(
           Math.min(x, IMAGE_TRANSFORM_MAX_WITH),
           Math.min(y, IMAGE_TRANSFORM_MAX_HEIGHT),
           Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
           Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
         );
+      } catch (err) {
+        logger.files.error('Transform «crop» error', { err });
       }
-    });
+    }
+
+    if ('cover' in transform) {
+      const { w, h } = transform.cover;
+      try {
+        jimpHandle = jimpHandle.cover(
+          Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
+          Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
+        );
+      } catch (err) {
+        logger.files.error('Transform «cover» error', { err });
+      }
+    }
+
+    if ('contain' in transform) {
+      const { w, h } = transform.contain;
+      try {
+        jimpHandle = jimpHandle.contain(
+          Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
+          Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
+        );
+      } catch (err) {
+        logger.files.error('Transform «contain» error', { err });
+      }
+    }
+
+    if ('scaleToFit' in transform) {
+      const { w, h } = transform.scaleToFit;
+      try {
+        jimpHandle = jimpHandle.scaleToFit(
+          Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
+          Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
+        );
+      } catch (err) {
+        logger.files.error('Transform «scaleToFit» error', { err });
+      }
+    }
+
+
+    if ('gaussian' in transform) {
+      const gaussian = transform.gaussian;
+      try {
+        jimpHandle = jimpHandle.gaussian(
+          Math.min(gaussian, IMAGE_TRANSFORM_MAX_GAUSSIAN),
+        );
+      } catch (err) {
+        logger.files.error('Transform «gaussian» error', { err });
+      }
+    }
+
+    if ('blur' in transform) {
+      const blur = transform.blur;
+      try {
+        jimpHandle = jimpHandle.blur(
+          Math.min(blur, IMAGE_TRANSFORM_MAX_BLUR),
+        );
+      } catch (err) {
+        logger.files.error('Transform «blur» error', { err });
+      }
+    }
+
+    if ('greyscale' in transform) {
+      const greyscale = transform.greyscale;
+      try {
+        if (greyscale === true) {
+          jimpHandle = jimpHandle.grayscale();
+        }
+      } catch (err) {
+        logger.files.error('Transform «greyscale» error', { err });
+      }
+    }
+
     await jimpHandle.writeAsync(filepath);
 
     // do not wait this operation

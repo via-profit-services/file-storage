@@ -23,6 +23,7 @@ declare module '@via-profit-services/file-storage' {
       }>;
     };
     FileStorageMutation: {
+      clearCache: GraphQLFieldResolver<unknown, Context>;
       applyTemporary: GraphQLFieldResolver<unknown, Context, {
         ids: string[];
         info: UpdateFileInput[];
