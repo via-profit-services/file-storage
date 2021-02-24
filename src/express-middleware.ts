@@ -71,16 +71,26 @@ const expressMiddlewareFactory: ExpressMiddlewareFactory = (props) => {
     // FIELD PARSER
     parser.on('field', (fieldName, value, fieldNameTruncated, valueTruncated) => {
       if (valueTruncated) {
-        throw new Error(
-          `The ‘${fieldName}’ multipart field value exceeds the ${limits.maxFieldSize} byte size limit.`,
-        );
+        response.status(400).send({
+          errors: [{
+            message: `The ‘${fieldName}’ multipart field value exceeds the ${limits.maxFieldSize} byte size limit.`,
+          }],
+        });
+
+        next();
       }
 
       if (fieldName === 'operations') {
         try {
           operations = JSON.parse(value);
         } catch (error) {
-          throw new Error('Invalid JSON in the «operations» multipart field');
+          response.status(400).send({
+            errors: [{
+              message: 'Invalid JSON in the «operations» multipart field',
+            }],
+          });
+
+          next();
         }
       }
 
@@ -93,7 +103,13 @@ const expressMiddlewareFactory: ExpressMiddlewareFactory = (props) => {
           });
         } catch (error) {
           // logger.fileStorage.error('Invalid JSON in the «map» field');
-          throw new Error('Invalid JSON in the «map» field');
+          response.status(400).send({
+            errors: [{
+              message: 'Invalid JSON in the «map» field',
+            }],
+          });
+
+          next();
         }
 
         // put files into variables
@@ -102,15 +118,24 @@ const expressMiddlewareFactory: ExpressMiddlewareFactory = (props) => {
             const file = map.get(index);
 
             if (!file) {
-              // logger.fileStorage.error(`Can't assing file with index «${index}»`);
-              throw new Error(`Can't assing file with index «${index}»`);
+              response.status(400).send({
+                errors: [{
+                  message: `Can't assing file with index «${index}»`,
+                }],
+              });
+              next();
             }
 
             return file;
           });
         } catch (err) {
-          // logger.fileStorage.error('Can\'t assing file from variables', { err });
-          throw new Error('Can\'t assing file from variables');
+          response.status(400).send({
+            errors: [{
+              message: 'Can\'t assing file from variables',
+            }],
+          });
+
+          next();
         }
 
         // replace body to new requst data with files in the variables
@@ -126,7 +151,13 @@ const expressMiddlewareFactory: ExpressMiddlewareFactory = (props) => {
       if (!upload) {
         // logger.fileStorage.error(`File from field «${fieldName}»
         // are not registered in map field`);
-        throw new Error(`File from field «${fieldName}» are not registered in map field`);
+        response.status(400).send({
+          errors: [{
+            message: `File from field «${fieldName}» are not registered in map field`,
+          }],
+        });
+
+        next();
       }
 
       const capacitor = new WriteStream();
@@ -136,18 +167,20 @@ const expressMiddlewareFactory: ExpressMiddlewareFactory = (props) => {
       });
 
       stream.on('limit', () => {
-        // logger.fileStorage.error(
-        //   `File truncated as it exceeds the ${limits.maxFileSize} byte size limit.`,
-        // );
-        throw new Error(
-          `File truncated as it exceeds the ${limits.maxFileSize} byte size limit.`,
-        );
+        response.status(400).send({
+          errors: [{
+            message: `File truncated as it exceeds the ${limits.maxFileSize} byte size limit.`,
+          }],
+        });
+
+        next();
       });
 
       stream.on('error', (error: Error) => {
         stream.unpipe();
         console.error(error);
         capacitor.destroy(new Error('Upload error'));
+        capacitor.destroy()
       });
 
       const file: FilePayload = {
@@ -167,7 +200,14 @@ const expressMiddlewareFactory: ExpressMiddlewareFactory = (props) => {
 
     // FILES LIMIT PARSER
     parser.once('filesLimit', () => {
-      throw new Error(`${limits.maxFiles} max file uploads exceeded.`);
+
+      response.status(400).send({
+        errors: [{
+          message: `${limits.maxFiles} max file uploads exceeded.`,
+        }],
+      });
+
+      next();
     });
 
     // FINISH PARSER
@@ -177,18 +217,36 @@ const expressMiddlewareFactory: ExpressMiddlewareFactory = (props) => {
 
 
       if (operations === null) {
-        throw new Error('Missing multipart field «operations»');
+        response.status(400).send({
+          errors: [{
+            message: 'Missing multipart field «operations»',
+          }],
+        });
+
+        next();
       }
 
       if (!map.size) {
-        throw new Error('Missing multipart field «map»');
+        response.status(400).send({
+          errors: [{
+            message: 'Missing multipart field «map»',
+          }],
+        });
+
+        next();
       }
     });
 
 
     parser.once('error', (err: Error) => {
       console.error(err)
-      throw new Error('Unknown error');
+      response.status(400).send({
+        errors: [{
+          message: 'Unknown error',
+        }],
+      });
+
+      next();
     });
 
     request.pipe(parser);
