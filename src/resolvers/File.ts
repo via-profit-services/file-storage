@@ -25,11 +25,11 @@ const fileResolver = new Proxy<FileResolver>({
 
       // if is image
       if (file.type === 'image') {
-        // if (prop === 'id' && transform) {
-        //   const fakeID = Buffer.from(JSON.stringify({ id, transform })).toString('base64');
+        if (prop === 'id' && transform) {
+          const fakeID = Buffer.from(JSON.stringify({ id, transform })).toString('base64');
 
-        //   return `fakeID:${fakeID}`;
-        // }
+          return `fakeID:${fakeID}`;
+        }
 
         if (prop === 'url' && transform) {
           const url = await services.files.getUrlWithTransform(file, transform);

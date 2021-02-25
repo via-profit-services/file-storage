@@ -3,9 +3,7 @@ import type { Resolvers } from '@via-profit-services/file-storage';
 const uploadTemporaryResolver: Resolvers['FileStorageMutation']['uploadTemporary'] = async (
   _parent, args, context,
 ) => {
-  const {
-    files, info, noCompress, transform,
-  } = args;
+  const { files, info, transform } = args;
   const { logger, services } = context;
 
   const filesData = await Promise.all(files);
@@ -26,11 +24,6 @@ const uploadTemporaryResolver: Resolvers['FileStorageMutation']['uploadTemporary
     );
     if (transform && transform[index] && type === 'image') {
       await services.files.applyTransform(absoluteFilename, transform[index]);
-    }
-
-    if (Boolean(noCompress) === false && type === 'image') {
-      // do not wait this operation
-      services.files.compressImage(absoluteFilename);
     }
 
     logger.files.info(

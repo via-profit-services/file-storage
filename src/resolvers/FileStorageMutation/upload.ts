@@ -3,9 +3,7 @@ import type { Resolvers, FileBagCreate } from '@via-profit-services/file-storage
 const uploadResolver: Resolvers['FileStorageMutation']['upload'] = async (
   _parent, args, context,
 ) => {
-  const {
-    files, info, noCompress, transform,
-  } = args;
+  const { files, info, transform } = args;
   const { logger, services } = context;
 
   const filesData = await Promise.all(files);
@@ -39,10 +37,6 @@ const uploadResolver: Resolvers['FileStorageMutation']['upload'] = async (
       await services.files.applyTransform(absoluteFilename, transform[index]);
     }
 
-    if (Boolean(noCompress) === false && type === 'image') {
-      // do not wait this operation
-      services.files.compressImage(absoluteFilename);
-    }
 
     return {
       id,

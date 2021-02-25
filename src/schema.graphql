@@ -33,12 +33,6 @@ type FileStorageMutation {
     Image transform options
     """
     transform: [ImageTransformInput!]
-    """
-    Only for images and only for local images
-    If true, the image will not be compressed
-    If transform is used then props noCompress will be true permanently
-    """
-    noCompress: Boolean
 
   ): [File!]!
 
@@ -53,12 +47,6 @@ type FileStorageMutation {
     Image transform options
     """
     transform: [ImageTransformInput!]
-    """
-    Only for images and only for local images
-    If true, the image will not be compressed
-    If transform is used then props noCompress will be true permanently
-    """
-    noCompress: Boolean
   ): [TemporaryFile!]
 
   """

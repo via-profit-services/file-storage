@@ -3,19 +3,15 @@ import { ListResponse, OutputFilter, ServerError } from '@via-profit-services/co
 import type {
   FileBag, FileBagTable, FileBagTableInput, FileType, ImageTransform, TransformUrlPayload,
   ImgeData, RedisFileValue, RedisTemporaryValue, FileStorageServiceProps, FileStorageParams,
-  UploadFileInput, FileBagCreate, TemporaryFileBag, CompressImageStats,
+  UploadFileInput, FileBagCreate, TemporaryFileBag,
+  FileStorageService as FileStorageServiceInterface,
 } from '@via-profit-services/file-storage';
 import { convertOrderByToKnex, convertWhereToKnex, extractTotalCountPropOfNode } from '@via-profit-services/knex';
 import fs, { ReadStream } from 'fs';
-import imagemin from 'imagemin';
-import imageminMozjpeg from 'imagemin-mozjpeg';
-import imageminOptipng from 'imagemin-optipng';
-import imageminPngquant from 'imagemin-pngquant';
 import Jimp from 'jimp';
 import mime from 'mime-types';
 import moment from 'moment-timezone';
 import path from 'path';
-import { performance } from 'perf_hooks';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
@@ -27,8 +23,6 @@ import {
   IMAGE_TRANSFORM_MAX_WITH,
   CACHE_FILES_DEFAULT_TTL,
   TEMPORARY_FILES_DEFAULT_TTL,
-  DEFAULT_IMAGE_OPTIM_MAX_WIDTH,
-  DEFAULT_IMAGE_OPTIM_MAX_HEIGHT,
   DEFAULT_STORAGE_PATH,
   DEFAULT_CACHE_PATH,
   DEFAULT_TEMPORARY_PATH,
@@ -43,12 +37,12 @@ import {
 } from './constants';
 
 
-class FileStorageService {
+class FileStorageService implements FileStorageServiceInterface {
   public props: FileStorageParams;
 
   public constructor(props: FileStorageServiceProps) {
     const { configuration, context } = props;
-    const { cacheTTL, temporaryTTL, compressionOptions, categories } = configuration;
+    const { cacheTTL, temporaryTTL, categories } = configuration;
 
 
     this.props = {
@@ -60,8 +54,6 @@ class FileStorageService {
       temporaryTTL: Math.min(
         TIMEOUT_MAX_VALUE / 1000, temporaryTTL || TEMPORARY_FILES_DEFAULT_TTL,
       ),
-      imageOptimMaxWidth: DEFAULT_IMAGE_OPTIM_MAX_WIDTH,
-      imageOptimMaxHeight: DEFAULT_IMAGE_OPTIM_MAX_HEIGHT,
       hostname: '',
       storagePath: DEFAULT_STORAGE_PATH,
       cachePath: DEFAULT_CACHE_PATH,
@@ -71,20 +63,6 @@ class FileStorageService {
       maxFileSize: DEFAULT_MAX_FILE_SIZE,
       maxFiles: DEFAULT_MAX_FILES,
       ...configuration,
-      compressionOptions: {
-        mozJpeg: {
-          quality: 70,
-          ...compressionOptions?.mozJpeg || {},
-        },
-        pngQuant: {
-          quality: [0.8, 0.8],
-          ...compressionOptions?.pngQuant || {},
-        },
-        optiPng: {
-          optimizationLevel: 3,
-          ...compressionOptions?.optiPng || {},
-        },
-      },
     };
   }
 
@@ -358,7 +336,7 @@ class FileStorageService {
     fs.copyFileSync(absoluteOriginalFilename, absoluteFilename);
     redis.hset(REDIS_CACHE_NAME, imageUrlHash, this.compilePayloadCache(id, newFilename));
 
-    this.applyTransform(absoluteFilename, transform);
+    await this.applyTransform(absoluteFilename, transform);
 
     return [
       `${hostname}${staticPrefix}`,
@@ -397,28 +375,31 @@ class FileStorageService {
     };
   }
 
-  public async applyTransform(filepath: string, transform: ImageTransform) {
+  public async applyTransform(
+    filepath: string,
+    transform: ImageTransform,
+  ): Promise<string> {
     const { context } = this.props;
     const { logger } = context;
 
     if (!fs.existsSync(filepath)) {
       logger.files.error(`Transform error. File «${filepath}» not found`);
 
-      return;
+      return filepath;
     }
 
     if (!fs.readFileSync(filepath)) {
       logger.files.error(`Transform error. File «${filepath}» not readable`);
 
-      return;
+      return filepath;
     }
 
-    let jimpHandle = await Jimp.read(filepath);
+    const jimpHandle = await Jimp.read(filepath);
 
     if ('resize' in transform) {
       const { w, h } = transform.resize;
       try {
-        jimpHandle = jimpHandle.resize(
+        jimpHandle.resize(
           Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
           Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
         );
@@ -431,7 +412,7 @@ class FileStorageService {
     if ('crop' in transform) {
       const { x, y, w, h } = transform.crop;
       try {
-        jimpHandle = jimpHandle.crop(
+        jimpHandle.crop(
           Math.min(x, IMAGE_TRANSFORM_MAX_WITH),
           Math.min(y, IMAGE_TRANSFORM_MAX_HEIGHT),
           Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
@@ -445,7 +426,7 @@ class FileStorageService {
     if ('cover' in transform) {
       const { w, h } = transform.cover;
       try {
-        jimpHandle = jimpHandle.cover(
+        jimpHandle.cover(
           Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
           Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
         );
@@ -457,7 +438,7 @@ class FileStorageService {
     if ('contain' in transform) {
       const { w, h } = transform.contain;
       try {
-        jimpHandle = jimpHandle.contain(
+        jimpHandle.contain(
           Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
           Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
         );
@@ -469,7 +450,7 @@ class FileStorageService {
     if ('scaleToFit' in transform) {
       const { w, h } = transform.scaleToFit;
       try {
-        jimpHandle = jimpHandle.scaleToFit(
+        jimpHandle.scaleToFit(
           Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
           Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
         );
@@ -482,7 +463,7 @@ class FileStorageService {
     if ('gaussian' in transform) {
       const gaussian = transform.gaussian;
       try {
-        jimpHandle = jimpHandle.gaussian(
+        jimpHandle.gaussian(
           Math.min(gaussian, IMAGE_TRANSFORM_MAX_GAUSSIAN),
         );
       } catch (err) {
@@ -493,7 +474,7 @@ class FileStorageService {
     if ('blur' in transform) {
       const blur = transform.blur;
       try {
-        jimpHandle = jimpHandle.blur(
+        jimpHandle.blur(
           Math.min(blur, IMAGE_TRANSFORM_MAX_BLUR),
         );
       } catch (err) {
@@ -505,17 +486,19 @@ class FileStorageService {
       const greyscale = transform.greyscale;
       try {
         if (greyscale === true) {
-          jimpHandle = jimpHandle.grayscale();
+          jimpHandle.grayscale();
         }
       } catch (err) {
         logger.files.error('Transform «greyscale» error', { err });
       }
     }
 
-    await jimpHandle.writeAsync(filepath);
+    const bufferPath = `${filepath}.transform`;
+    await jimpHandle.writeAsync(bufferPath);
+    await this.copyFile(bufferPath, filepath);
+    fs.rmSync(bufferPath);
 
-    // do not wait this operation
-    this.compressImage(filepath, true);
+    return filepath;
   }
 
   /**
@@ -899,93 +882,30 @@ class FileStorageService {
     });
   }
 
-
-  public async compressImage(
-    absoluteFilename: string,
-    skipResize?: boolean,
-  ): Promise<CompressImageStats> {
-    const { imageOptimMaxWidth, imageOptimMaxHeight, compressionOptions, context } = this.props;
+  public async copyFile(from: string, to: string): Promise<void> {
+    const { context } = this.props;
     const { logger } = context;
 
-    const originalFileSize = fs.lstatSync(absoluteFilename).size;
-    const stats: CompressImageStats = {
-      filename: absoluteFilename,
-      size: {
-        original: originalFileSize,
-        scaled: originalFileSize,
-        compressed: originalFileSize,
-      },
-      time: {
-        scaled: 0,
-        compressed: 0,
-        total: 0,
-      },
-      profit: {
-        scaled: 0,
-        compressed: 0,
-        total: 0,
-      },
-    };
+    return new Promise((resolve) => {
+      const read = fs.createReadStream(from);
+      const write = fs.createWriteStream(to);
 
-    if (!skipResize) {
-      stats.time.scaled = performance.now();
-      const jimpHandle = await Jimp.read(absoluteFilename);
-      if (
-        jimpHandle.getWidth() > imageOptimMaxWidth
-        || jimpHandle.getHeight() > imageOptimMaxHeight
-      ) {
+      write.on('close', () => {
+        resolve();
+      });
 
-        jimpHandle.scaleToFit(imageOptimMaxWidth, imageOptimMaxHeight);
-        jimpHandle.writeAsync(absoluteFilename);
-      }
+      read.on('error', (err) => {
+        logger.files.error('Read file error', { err });
+      });
 
-      stats.time.scaled = performance.now() - stats.time.scaled;
-      stats.size.scaled = fs.lstatSync(absoluteFilename).size;
-      stats.profit.scaled = Math.floor(
-        (stats.size.scaled * 100) / stats.size.original,
-      );
+      write.on('error', (err) => {
+        logger.files.error('Write file error', { err });
+      });
 
-      if (stats.size.scaled >= stats.size.original) {
-        stats.profit.scaled = 100 - stats.profit.scaled;
-      }
-    }
-
-
-    stats.time.compressed = performance.now();
-    const optimizad = await imagemin([absoluteFilename], {
-      plugins: [
-        imageminMozjpeg(compressionOptions.mozJpeg),
-        imageminOptipng(compressionOptions.optiPng),
-        imageminPngquant(compressionOptions.pngQuant),
-      ],
+      read.pipe(write);
     });
-    fs.writeFileSync(absoluteFilename, optimizad[0].data);
-
-    stats.time.compressed = performance.now() - stats.time.compressed;
-    stats.size.compressed = fs.lstatSync(absoluteFilename).size;
-    stats.profit.compressed = Math.floor(
-      (stats.size.compressed * 100) / stats.size.scaled,
-    );
-
-    if (stats.size.compressed >= stats.size.scaled) {
-      stats.size.compressed = 100 - stats.size.compressed;
-    }
-
-    stats
-      .profit
-      .total = stats.profit.compressed + stats.profit.scaled;
-
-    stats
-      .time
-      .total = stats.time.compressed + stats.time.scaled;
-
-    logger.files.info(
-      `File optimization profit: ${stats.profit.total}% in ${(stats.time.total / 1000).toFixed(2)}sec.`,
-      stats,
-    );
-
-    return stats;
   }
+
 
   public async createFile(
     fileStream: ReadStream | null,

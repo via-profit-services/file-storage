@@ -4,10 +4,6 @@ declare module '@via-profit-services/file-storage' {
   import { RequestHandler } from 'express';
   import { GraphQLFieldResolver } from 'graphql';
   import { WriteStream } from 'fs-capacitor';
-  import { Options as ImagenimMozjpegOption } from 'imagemin-mozjpeg';
-  import { Options as ImagenimOptiPngOption } from 'imagemin-optipng';
-  import { Options as ImagenimPngQuantOption } from 'imagemin-pngquant';
-
 
   export type Resolvers = {
     Query: {
@@ -40,13 +36,11 @@ declare module '@via-profit-services/file-storage' {
         files: File[];
         info: UploadFileInput[];
         transform?: ImageTransform[];
-        noCompress?: boolean;
       }>;
       uploadTemporary: GraphQLFieldResolver<unknown, Context, {
         files: File[];
         info: UploadFileInput[];
         transform?: ImageTransform[];
-        noCompress?: boolean;
       }>;
     };
     File: FileResolver;
@@ -206,40 +200,6 @@ declare module '@via-profit-services/file-storage' {
     maxFieldSize?: number;
     maxFileSize?: number;
     maxFiles?: number;
-
-    /**
-     * Image maximum width
-     */
-    imageOptimMaxWidth?: number;
-
-    /**
-     * Image maximum height
-     */
-    imageOptimMaxHeight?: number;
-
-    /**
-     * Imagemin plugins options
-     */
-    compressionOptions?: {
-
-      /**
-       * Imagemin MozJpeg plugin settings
-       * @see https://github.com/imagemin/imagemin-mozjpeg#readme
-       */
-      mozJpeg?: ImagenimMozjpegOption;
-
-      /**
-       * Imagemin OptiPng settings
-       * @see https://github.com/imagemin/imagemin-optipng#readme
-       */
-      pngQuant?: ImagenimPngQuantOption;
-
-      /**
-       * Imagemin PngQuant settings
-       * @see https://github.com/imagemin/imagemin-pngquant#readme
-       */
-      optiPng?: ImagenimOptiPngOption;
-    }
   }
 
 
@@ -327,24 +287,6 @@ declare module '@via-profit-services/file-storage' {
     typeDefs: string;
   }>;
 
-  export interface CompressImageStats {
-    filename: string;
-    size: {
-      original: number;
-      scaled: number;
-      compressed: number;
-    };
-    time: {
-      scaled: number;
-      compressed: number;
-      total: number;
-    };
-    profit: {
-      scaled: number;
-      compressed: number;
-      total: number;
-    };
-  }
 
   /**
    * FileStorage service constructor props
@@ -366,6 +308,7 @@ declare module '@via-profit-services/file-storage' {
     makeImageCache(imageData: ImgeData, imageBuffer: Buffer): Promise<void>;
     compilePayloadCache(id: string, filename: string): string;
     getUrlWithTransform(imageData: Pick<FileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>, transform: ImageTransform): Promise<string>;
+    copyFile(from: string, to: string): Promise<void>;
     /**
      * Returns Full filename without extension (e.g. /path/to/file)
      */
@@ -374,7 +317,7 @@ declare module '@via-profit-services/file-storage' {
         resolveAbsolutePath: string;
         resolvePath: string;
     };
-    applyTransform(filepath: string, transform: ImageTransform): Promise<void>;
+    applyTransform(filepath: string, transform: ImageTransform): Promise<string>;
     /**
      * Returns filename at static prefix root (e.g. /static/path/to/file.ext)
      */
@@ -450,7 +393,6 @@ declare module '@via-profit-services/file-storage' {
         id: string;
         absoluteFilename: string;
     }>;
-    compressImage(absoluteFilename: string, skipResize?: boolean): Promise<CompressImageStats>;
     createFile(fileStream: fs.ReadStream | null, fileInfo: FileBagCreate): Promise<{
         id: string;
         absoluteFilename: string;
