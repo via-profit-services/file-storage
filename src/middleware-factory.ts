@@ -1,8 +1,11 @@
-import { Middleware } from '@via-profit-services/core';
+import { Middleware, collateForDataloader } from '@via-profit-services/core';
 import { FileStorageMiddlewareFactory } from '@via-profit-services/file-storage';
+import DataLoader from 'dataloader';
+import express from 'express';
 
-import contextMiddlewareFactory from './context-middleware';
+import FileStorageService from './FileStorageService';
 import expressMiddlewareFactory from './express-middleware';
+import filesLogger from './files-logger';
 import resolvers from './resolvers';
 import typeDefs from './schema.graphql';
 
@@ -14,10 +17,6 @@ const middlewareFactory: FileStorageMiddlewareFactory = async (configuration) =>
   );
   categoriesList.add('Avatar');
   configuration.categories = [...categoriesList];
-
-  const pool: ReturnType<Middleware> = {
-    context: null,
-  };
 
   type Cache = {
     cacheTimer: NodeJS.Timeout;
@@ -32,55 +31,71 @@ const middlewareFactory: FileStorageMiddlewareFactory = async (configuration) =>
   };
 
 
-  const fileStorageMiddleware: Middleware = async (props) => {
-    const { context } = props;
+  const fileStorageMiddleware: Middleware = async ({ context, config }) => {
+    const { logDir } = config;
 
-    // init context
-    pool.context = pool.context ?? contextMiddlewareFactory({
-      configuration,
+    context.services.files = new FileStorageService({
       context,
-      config: props.config,
+      configuration,
+    });
+
+    
+    // Files logger Logger
+    context.logger.files = filesLogger({ logDir });
+
+    // Files Dataloader
+    context.dataloader.files = new DataLoader(async (ids: string[]) => {
+      const nodes = await context.services.files.getFilesByIds(ids);
+
+      return collateForDataloader(ids, nodes);
+    });
+
+    // Users Dataloader
+    context.dataloader.tremporaryFiles = new DataLoader(async (ids: string[]) => {
+      const nodes = await context.services.files.getTemporaryFilesByIds(ids);
+
+      return collateForDataloader(ids, nodes);
     });
 
 
     // Setup timers to cache clearing
-    const { services, logger } = pool.context;
-    const { cacheTTL, temporaryTTL } = services.files.getProps();
+    const { cacheTTL, temporaryTTL } = context.services.files.getProps();
 
     // setup it once
     if (!cache.initDatabase) {
-      await services.files.rebaseCategories([...categoriesList]);
+      await context.services.files.rebaseCategories([...categoriesList]);
       cache.initDatabase = true;
     }
 
     // setup it once
     if (!cache.cacheTimer) {
-      services.files.clearExpiredCacheFiles();
+      context.services.files.clearExpiredCacheFiles();
       cache.cacheTimer = setInterval(() => {
         try {
-          services.files.clearExpiredCacheFiles();
+          context.services.files.clearExpiredCacheFiles();
         } catch (err) {
-          logger.files.error('Failed to clear expired cache files by interval', { err });
+          context.logger.files.error('Failed to clear expired cache files by interval', { err });
         }
       }, cacheTTL * 1000);
-      logger.files.info(`A timer is set for clearing the cache for ${cacheTTL} sec.`);
+      context.logger.files.info(`A timer is set for clearing the cache for ${cacheTTL} sec.`);
     }
 
     // setup it once
     if (!cache.temporaryTimer) {
       cache.temporaryTimer = setInterval(() => {
-        services.files.clearExpiredTemporaryFiles();
+        context.services.files.clearExpiredTemporaryFiles();
         try {
-          services.files.clearExpiredTemporaryFiles();
+          context.services.files.clearExpiredTemporaryFiles();
         } catch (err) {
-          logger.files.error('Failed to clear expired temporary files by interval', { err });
+          context.logger.files.error('Failed to clear expired temporary files by interval', { err });
         }
       }, temporaryTTL * 1000);
-      logger.files.info(`A timer is set for clearing the temporary for ${temporaryTTL} sec.`);
+      context.logger.files.info(`A timer is set for clearing the temporary for ${temporaryTTL} sec.`);
     }
 
-
-    return pool;
+    return {
+      context,
+    };
   }
 
   const {

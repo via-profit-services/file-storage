@@ -1,7 +1,7 @@
 {
     "name": "@via-profit-services/file-storage",
     "support": "https://via-profit.ru",
-    "version": "1.0.9",
+    "version": "1.0.10",
     "description": "Via Profit File Storage Schema",
     "main": "dist/index.js",
     "engines": {
@@ -92,10 +92,10 @@
         "@types/webpack-node-externals": "^1.7.0",
         "@typescript-eslint/eslint-plugin": "^4.10.0",
         "@typescript-eslint/parser": "^4.10.0",
-        "@via-profit-services/core": "^1.0.2",
+        "@via-profit-services/core": "^1.0.5",
         "@via-profit-services/eslint-config": "^0.1.11",
-        "@via-profit-services/knex": "^1.0.2",
-        "@via-profit-services/redis": "^1.0.0",
+        "@via-profit-services/knex": "^1.0.6",
+        "@via-profit-services/redis": "^1.0.3",
         "@zerollup/ts-transform-paths": "^1.7.11",
         "binary-loader": "^0.0.1",
         "chalk": "^3.0.0",

@@ -1538,9 +1538,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@via-profit-services/core@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "@via-profit-services/core@npm:1.0.2"
+"@via-profit-services/core@npm:^1.0.5":
+  version: 1.0.5
+  resolution: "@via-profit-services/core@npm:1.0.5"
   dependencies:
     bufferutil: ^4.0.2
     content-type: ^1.0.4
@@ -1559,7 +1559,7 @@ __metadata:
       optional: true
     utf-8-validate:
       optional: true
-  checksum: 18dc82c9317d5b2403789c00d6217ffad9acda1990f995b2da1b2b480e87ec02d70ae3c31f0fd57f031eabb018f86d6e3f057b7245b4f6f5460c25c3e8f9493e
+  checksum: 70166fa0c9d99336224af96b3d451a2da715988a02208858bf176ab7cfcba9762e9b585bf010c9e0894066662a45333c8f9445c6ffc5e8099837a0a2e2b0c403
   languageName: node
   linkType: hard
 
@@ -1598,10 +1598,10 @@ __metadata:
     "@types/webpack-node-externals": ^1.7.0
     "@typescript-eslint/eslint-plugin": ^4.10.0
     "@typescript-eslint/parser": ^4.10.0
-    "@via-profit-services/core": ^1.0.2
+    "@via-profit-services/core": ^1.0.5
     "@via-profit-services/eslint-config": ^0.1.11
-    "@via-profit-services/knex": ^1.0.2
-    "@via-profit-services/redis": ^1.0.0
+    "@via-profit-services/knex": ^1.0.6
+    "@via-profit-services/redis": ^1.0.3
     "@zerollup/ts-transform-paths": ^1.7.11
     binary-loader: ^0.0.1
     busboy: ^0.3.1
@@ -1668,24 +1668,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@via-profit-services/knex@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "@via-profit-services/knex@npm:1.0.2"
+"@via-profit-services/knex@npm:^1.0.6":
+  version: 1.0.6
+  resolution: "@via-profit-services/knex@npm:1.0.6"
   peerDependencies:
     "@via-profit-services/core": 1.x.x
     knex: ^0.21.12
     pg: ^8.5.1
-  checksum: 8ae338062b5f2d547bbaa6776349540b32bf61d8b0b2a5476ec2a068e60b90e50b121dadcdd6635d48860846190d380522303c71eb7fa6027f2019cf6dd2a08c
+  checksum: 6a42e47b6d922ed473fa1d6f3ebf494ec4377023c8726237a952434983181f022a946891e2a4cb240b79816b1384ad44831b26b8593b0829a22721148929e6cb
   languageName: node
   linkType: hard
 
-"@via-profit-services/redis@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "@via-profit-services/redis@npm:1.0.0"
+"@via-profit-services/redis@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "@via-profit-services/redis@npm:1.0.3"
   peerDependencies:
     "@via-profit-services/core": ^1.0.0
     ioredis: "*"
-  checksum: ed1ebec9b64a74c11b5141da37e90973acf8fe21f516ea7b21301888069f3f73f646fa5ec11c512dc6144d42e1b28290c05f205eba2ff06c6f327a9bb425a4e7
+  checksum: d8815faf22f839f47b1b37e135e2216e5c2b8ed6799ff9a1073d117de6b1d3c9f04fd4858e8cc34e63b74e9ab569d7a7311613c235a338723d14c6fcd8c78c48
   languageName: node
   linkType: hard
 
