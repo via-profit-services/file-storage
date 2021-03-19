@@ -1,6 +1,7 @@
 import type { Resolvers } from '@via-profit-services/file-storage';
 
 import File from './File';
+import TransformedFile from './TransformedFile';
 import FileStorageMutation from './FileStorageMutation';
 import FileStorageQuery from './FileStorageQuery';
 import Mutation from './Mutation';
@@ -11,6 +12,7 @@ import TemporaryFile from './TemporaryFile';
 
 const resolvers: Resolvers = {
   File,
+  TransformedFile,
   FileStorageQuery,
   FileStorageMutation,
   Mutation,

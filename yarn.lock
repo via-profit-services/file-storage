@@ -1538,9 +1538,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@via-profit-services/core@npm:^1.0.5":
-  version: 1.0.5
-  resolution: "@via-profit-services/core@npm:1.0.5"
+"@via-profit-services/core@npm:^1.0.8":
+  version: 1.0.8
+  resolution: "@via-profit-services/core@npm:1.0.8"
   dependencies:
     bufferutil: ^4.0.2
     content-type: ^1.0.4
@@ -1559,7 +1559,7 @@ __metadata:
       optional: true
     utf-8-validate:
       optional: true
-  checksum: 70166fa0c9d99336224af96b3d451a2da715988a02208858bf176ab7cfcba9762e9b585bf010c9e0894066662a45333c8f9445c6ffc5e8099837a0a2e2b0c403
+  checksum: 6daa194733445e4bc3ffb2eec78083116c6e63ba4c9266909e76233fba918c263057d4afff589609e59e9cb2699d7fc61fc1e0c25c0fd626ad9892603d18a2ec
   languageName: node
   linkType: hard
 
@@ -1598,7 +1598,7 @@ __metadata:
     "@types/webpack-node-externals": ^1.7.0
     "@typescript-eslint/eslint-plugin": ^4.10.0
     "@typescript-eslint/parser": ^4.10.0
-    "@via-profit-services/core": ^1.0.5
+    "@via-profit-services/core": ^1.0.8
     "@via-profit-services/eslint-config": ^0.1.11
     "@via-profit-services/knex": ^1.0.6
     "@via-profit-services/redis": ^1.0.3

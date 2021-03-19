@@ -15,9 +15,9 @@ const temporaryFileResolver = new Proxy<TemporaryFileResolver>({
 }, {
   get: (target, prop: keyof TemporaryFileResolver) => {
     const resolver: TemporaryFileResolver[keyof TemporaryFileResolver] = async (
-      parent,
-      args,
-      context,
+      parent: any,
+      args: any,
+      context: any,
     ) => {
       const { id, transform } = parent;
       const { dataloader, services } = context;
@@ -29,20 +29,6 @@ const temporaryFileResolver = new Proxy<TemporaryFileResolver>({
       }
 
       // if is image
-      if (file.type === 'image') {
-        if (prop === 'id' && transform) {
-          const fakeID = Buffer.from(JSON.stringify({ id, transform })).toString('base64');
-
-          return `fakeID:${fakeID}`;
-        }
-
-        if (prop === 'url' && transform) {
-          const url = await services.files.getUrlWithTransform(file, transform);
-
-          return url;
-        }
-      }
-
       return file[prop];
     };
 

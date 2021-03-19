@@ -28,11 +28,6 @@ type FileStorageMutation {
     """
     files: [FileUpload!]!
     info: [FileUploadInfo!]!
-    """
-    Only for images and only for local images
-    Image transform options
-    """
-    transform: [ImageTransformInput!]
 
   ): [File!]!
 
@@ -42,11 +37,6 @@ type FileStorageMutation {
   uploadTemporary (
     files: [FileUpload!]!
     info: [FileUploadInfo!]!
-    """
-    Only for images and only for local images
-    Image transform options
-    """
-    transform: [ImageTransformInput!]
   ): [TemporaryFile!]
 
   """
@@ -62,11 +52,6 @@ type FileStorageMutation {
   """
   update (
     info: [FileUpdateInfo!]!
-    """
-    Only for images and only for local images
-    Image transform options
-    """
-    transform: [ImageTransformInput!]
   ): [File!]
 
   clearCache: Void
@@ -142,29 +127,12 @@ type FileStorageQuery {
     after: String
     orderBy: [FilesOrderBy!]
     filter: FilesListFilter
-
-    """
-    Only for images and only for local images
-    Image transform options
-    """
-    transform: ImageTransformInput
   ): FilesListConnection!
 
   """
   Returns single file
   """
-  file(
-    """
-    File ID
-    """
-    id: ID!
-    
-    """
-    Only for images and only for local images
-    Image transform options
-    """
-    transform: ImageTransformInput
-  ): File
+  file(id: ID!): File
 }
 
 
@@ -241,9 +209,25 @@ type File implements FileNode & Node {
   category: FileCategory!
   mimeType: String!
   url: URL!
+  transform(options: ImageTransformInput!): TransformedFile
   description: String
   metaData: JSON
 }
+
+type TransformedFile implements FileNode & Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  owner: ID!
+  type: FileType!
+  category: FileCategory!
+  mimeType: String!
+  url: URL!
+  referense: File!
+  description: String
+  metaData: JSON
+}
+
 
 type TemporaryFile implements FileNode & Node {
   id: ID!

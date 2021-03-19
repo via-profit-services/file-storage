@@ -3,7 +3,7 @@ import type { Resolvers, FileBagCreate } from '@via-profit-services/file-storage
 const uploadResolver: Resolvers['FileStorageMutation']['upload'] = async (
   _parent, args, context,
 ) => {
-  const { files, info, transform } = args;
+  const { files, info } = args;
   const { logger, services } = context;
 
   const filesData = await Promise.all(files);
@@ -21,7 +21,7 @@ const uploadResolver: Resolvers['FileStorageMutation']['upload'] = async (
       metaData: null,
       ...info[index],
     };
-    const type = services.files.getFileTypeByMimeType(fileInfo.mimeType);
+
     const { id, absoluteFilename } = await services.files.createFile(
       stream,
       fileInfo,
@@ -31,12 +31,6 @@ const uploadResolver: Resolvers['FileStorageMutation']['upload'] = async (
       `File «${filename}» uploaded successfully as «${absoluteFilename}»`,
       { mimeType },
     );
-
-
-    if (transform && transform[index] && type === 'image') {
-      await services.files.applyTransform(absoluteFilename, transform[index]);
-    }
-
 
     return {
       id,

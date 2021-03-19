@@ -14,9 +14,7 @@ declare module '@via-profit-services/file-storage' {
     };
     FileStorageQuery: {
       file: GraphQLFieldResolver<unknown, Context, FileResolverParent>;
-      list: GraphQLFieldResolver<unknown, Context, InputFilter & {
-        transform?: ImageTransform;
-      }>;
+      list: GraphQLFieldResolver<unknown, Context, InputFilter>;
     };
     FileStorageMutation: {
       clearCache: GraphQLFieldResolver<unknown, Context>;
@@ -30,20 +28,18 @@ declare module '@via-profit-services/file-storage' {
       }>;
       update: GraphQLFieldResolver<unknown, Context, {
         info: UpdateFileInput[];
-        transform?: ImageTransform[];
       }>;
       upload: GraphQLFieldResolver<unknown, Context, {
         files: File[];
         info: UploadFileInput[];
-        transform?: ImageTransform[];
       }>;
       uploadTemporary: GraphQLFieldResolver<unknown, Context, {
         files: File[];
         info: UploadFileInput[];
-        transform?: ImageTransform[];
       }>;
     };
     File: FileResolver;
+    TransformedFile: TransformedFileResolver;
     TemporaryFile: TemporaryFileResolver;
   }
 
@@ -52,21 +48,43 @@ declare module '@via-profit-services/file-storage' {
     transform?: ImageTransform;
   }
 
+  export type FileResolver = Record<
+    | 'id'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'owner'
+    | 'category'
+    | 'mimeType'
+    | 'url'
+    | 'type'
+    | 'description'
+    | 'metaData'
+    | 'transform'
+    , GraphQLFieldResolver<{ id: string }, Context>>;
 
-  export type FileResolver = {
-    id: GraphQLFieldResolver<FileResolverParent, Context>;
-    createdAt: GraphQLFieldResolver<FileResolverParent, Context>;
-    updatedAt: GraphQLFieldResolver<FileResolverParent, Context>;
-    owner: GraphQLFieldResolver<FileResolverParent, Context>;
-    category: GraphQLFieldResolver<FileResolverParent, Context>;
-    mimeType: GraphQLFieldResolver<FileResolverParent, Context>;
-    url: GraphQLFieldResolver<FileResolverParent, Context>;
-    type: GraphQLFieldResolver<FileResolverParent, Context>;
-    description: GraphQLFieldResolver<FileResolverParent, Context>;
-    metaData: GraphQLFieldResolver<FileResolverParent, Context>;
-  };
+    export type TransformedFileResolver = Record<
+    | 'id'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'owner'
+    | 'category'
+    | 'mimeType'
+    | 'url'
+    | 'type'
+    | 'description'
+    | 'metaData'
+    | 'referense'
+    , GraphQLFieldResolver<{
+      originalFile: Omit<FileResolver, 'transform'>;
+      id: string;
+      transformedURL: string;
+      transformedID: string;
+      originalID: string;
+      transform: {options: ImageTransform};
+    }, Context>>;
 
-  export type TemporaryFileResolver = FileResolver & {
+
+  export type TemporaryFileResolver = Omit<FileResolver, 'transform'> & {
     expiredAt: GraphQLFieldResolver<FileResolverParent, Context>;
   };
 
