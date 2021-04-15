@@ -3,9 +3,9 @@ import type { Resolvers } from '@via-profit-services/file-storage';
 
 
 const updateResolver: Resolvers['FileStorageMutation']['update'] = async (
-  parent, args, context,
+  _parent, args, context,
 ) => {
-  const { info, transform } = args;
+  const { info } = args;
   const { dataloader, services } = context;
 
   await info.reduce(async (prev, fileInfo, index) => {
@@ -25,14 +25,6 @@ const updateResolver: Resolvers['FileStorageMutation']['update'] = async (
       throw new ServerError('Failed to update file info', { err, id });
     }
 
-    if (transform && transform[index] && file.type === 'image') {
-      try {
-        const { resolveAbsolutePath } = services.files.resolveFile(file);
-        await services.files.applyTransform(resolveAbsolutePath, transform[index]);
-      } catch (err) {
-        throw new ServerError('Failed to apply transformations', { err, id });
-      }
-    }
   }, Promise.resolve());
 
   return info.map((file) => ({

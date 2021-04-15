@@ -7,10 +7,12 @@ import Mutation from './Mutation';
 import Query from './Query';
 import scalars from './scalars';
 import TemporaryFile from './TemporaryFile';
+import TransformedFile from './TransformedFile';
 
 
 const resolvers: Resolvers = {
   File,
+  TransformedFile,
   FileStorageQuery,
   FileStorageMutation,
   Mutation,

@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import Knex from 'knex';
+import { Knex } from 'knex';
 
 const env = dotenv.config().parsed as NodeJS.ProcessEnv;
 

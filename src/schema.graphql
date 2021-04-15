@@ -20,25 +20,14 @@ type FileStorageMutation {
     """
     GraphQL multipart request specification: https://github.com/jaydenseric/graphql-multipart-request-spec#graphql-multipart-request-specification
     For example `curl` request will be:
-    curl localhost:9000/graphql \
-    -F operations='{ "query": "mutation($files: [FileUpload!]! $info: [FileUploadInfo!]!) { multipleUpload(files: $files info: $info) { id url } }", "variables": { "files": [null, null] }, "info": [{"owner": "xxxx-xxx-xxx", "category": "Avatar"{"owner": "xxxx-xxx-xxx", "category": "Avatar"}] }' \
-    -F map='{ "0": ["variables.files.0"], "1": ["variables.files.1"] }' \
-    -F 0=@b.txt \
-    -F 1=@c.txt
+    curl --request POST \
+      --url http://localhost:8000/graphql \
+      --form 'operations={ "query": "mutation uploadFiles($files: [FileUpload!]!, $info: [FileUploadInfo!]!) {fileStorage {upload(files: $files info: $info) {id url}}}", "variables": { "files": [ null ], "info": [ { "owner": "8cd48386-ff44-4d67-b1a6-0d7b0f94aec4", "category": "Avatar" } ] } }' \
+      --form 'map={ "0": ["variables.files.0"] }' \
+      --form 0=@/path/to/file.jpg
     """
     files: [FileUpload!]!
     info: [FileUploadInfo!]!
-    """
-    Only for images and only for local images
-    Image transform options
-    """
-    transform: [ImageTransformInput!]
-    """
-    Only for images and only for local images
-    If true, the image will not be compressed
-    If transform is used then props noCompress will be true permanently
-    """
-    noCompress: Boolean
 
   ): [File!]!
 
@@ -48,17 +37,6 @@ type FileStorageMutation {
   uploadTemporary (
     files: [FileUpload!]!
     info: [FileUploadInfo!]!
-    """
-    Only for images and only for local images
-    Image transform options
-    """
-    transform: [ImageTransformInput!]
-    """
-    Only for images and only for local images
-    If true, the image will not be compressed
-    If transform is used then props noCompress will be true permanently
-    """
-    noCompress: Boolean
   ): [TemporaryFile!]
 
   """
@@ -74,12 +52,9 @@ type FileStorageMutation {
   """
   update (
     info: [FileUpdateInfo!]!
-    """
-    Only for images and only for local images
-    Image transform options
-    """
-    transform: [ImageTransformInput!]
   ): [File!]
+
+  clearCache: Void
 }
 
 type FileStorageDeleteResponse {
@@ -152,29 +127,12 @@ type FileStorageQuery {
     after: String
     orderBy: [FilesOrderBy!]
     filter: FilesListFilter
-
-    """
-    Only for images and only for local images
-    Image transform options
-    """
-    transform: ImageTransformInput
   ): FilesListConnection!
 
   """
   Returns single file
   """
-  file(
-    """
-    File ID
-    """
-    id: ID!
-    
-    """
-    Only for images and only for local images
-    Image transform options
-    """
-    transform: ImageTransformInput
-  ): File
+  file(id: ID!): File
 }
 
 
@@ -251,9 +209,35 @@ type File implements FileNode & Node {
   category: FileCategory!
   mimeType: String!
   url: URL!
+  transform(
+    resize: ImageTransformInputResize
+    cover: ImageTransformInputCover
+    contain: ImageTransformInputContain
+    scaleToFit: ImageTransformInputScaleToFit
+    crop: ImageTransformInputCrop
+    gaussian: Int
+    blur: Int
+    quality: Int
+    greyscale: Boolean
+  ): TransformedFile
   description: String
   metaData: JSON
 }
+
+type TransformedFile implements FileNode & Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  owner: ID!
+  type: FileType!
+  category: FileCategory!
+  mimeType: String!
+  url: URL!
+  reference: File!
+  description: String
+  metaData: JSON
+}
+
 
 type TemporaryFile implements FileNode & Node {
   id: ID!
@@ -269,18 +253,6 @@ type TemporaryFile implements FileNode & Node {
   metaData: JSON
 }
 
-
-input ImageTransformInput {
-  resize: ImageTransformInputResize
-  cover: ImageTransformInputCover
-  contain: ImageTransformInputContain
-  scaleToFit: ImageTransformInputScaleToFit
-  crop: ImageTransformInputCrop
-  gaussian: Int
-  blur: Int
-  quality: Int
-  greyscale: Boolean
-}
 
 input ImageTransformInputResize {
   w: Int!

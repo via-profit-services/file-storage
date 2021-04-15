@@ -30,28 +30,32 @@ function seed(knex) {
             .then(() => {
             const files = [
                 {
+                    id: uuid_1.v4(),
+                    owner: uuid_1.v4(),
                     category: 'items',
                     mimeType: 'image/jpeg',
                     url: 'https://i.picsum.photos/id/873/400/400.jpg',
                     isLocalFile: false,
                     type: FileType.image,
-                    metaData: {
+                    metaData: JSON.stringify({
                         alt: 'Item alt attribute',
                         title: 'Item title attribute',
-                    },
+                    }),
                 },
                 {
+                    id: uuid_1.v4(),
+                    owner: uuid_1.v4(),
                     category: 'items',
                     mimeType: 'image/jpeg',
                     url: 'https://i.picsum.photos/id/521/400/400.jpg',
                     isLocalFile: false,
                     type: FileType.image,
-                    metaData: {
+                    metaData: JSON.stringify({
                         alt: 'Item alt attribute',
-                    },
+                    }),
                 },
             ];
-            return knex('fileStorage').insert(files.map((fileData) => (Object.assign(Object.assign({ id: uuid_1.v4(), owner: uuid_1.v4() }, fileData), { metaData: JSON.stringify(fileData.metaData || {}) }))));
+            return knex('fileStorage').insert(files);
         });
     });
 }

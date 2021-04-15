@@ -2,20 +2,17 @@
 import { ListResponse, OutputFilter, ServerError } from '@via-profit-services/core';
 import type {
   FileBag, FileBagTable, FileBagTableInput, FileType, ImageTransform, TransformUrlPayload,
-  ImgeData, RedisFileValue, RedisTemporaryValue, FileStorageServiceProps, FileStorageParams,
-  UploadFileInput, FileBagCreate, TemporaryFileBag, CompressImageStats,
+  RedisFileValue, RedisTemporaryValue, FileStorageServiceProps, FileStorageParams,
+  UploadFileInput, FileBagCreate, TemporaryFileBag,
+  FileStorageService as FileStorageServiceInterface,
 } from '@via-profit-services/file-storage';
 import { convertOrderByToKnex, convertWhereToKnex, extractTotalCountPropOfNode } from '@via-profit-services/knex';
 import fs, { ReadStream } from 'fs';
-import imagemin from 'imagemin';
-import imageminMozjpeg from 'imagemin-mozjpeg';
-import imageminOptipng from 'imagemin-optipng';
-import imageminPngquant from 'imagemin-pngquant';
 import Jimp from 'jimp';
 import mime from 'mime-types';
 import moment from 'moment-timezone';
 import path from 'path';
-import { performance } from 'perf_hooks';
+import { URL } from 'url';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
@@ -27,8 +24,6 @@ import {
   IMAGE_TRANSFORM_MAX_WITH,
   CACHE_FILES_DEFAULT_TTL,
   TEMPORARY_FILES_DEFAULT_TTL,
-  DEFAULT_IMAGE_OPTIM_MAX_WIDTH,
-  DEFAULT_IMAGE_OPTIM_MAX_HEIGHT,
   DEFAULT_STORAGE_PATH,
   DEFAULT_CACHE_PATH,
   DEFAULT_TEMPORARY_PATH,
@@ -43,12 +38,12 @@ import {
 } from './constants';
 
 
-class FileStorageService {
+class FileStorageService implements FileStorageServiceInterface {
   public props: FileStorageParams;
 
   public constructor(props: FileStorageServiceProps) {
     const { configuration, context } = props;
-    const { cacheTTL, temporaryTTL, compressionOptions, categories } = configuration;
+    const { cacheTTL, temporaryTTL, categories } = configuration;
 
 
     this.props = {
@@ -60,8 +55,6 @@ class FileStorageService {
       temporaryTTL: Math.min(
         TIMEOUT_MAX_VALUE / 1000, temporaryTTL || TEMPORARY_FILES_DEFAULT_TTL,
       ),
-      imageOptimMaxWidth: DEFAULT_IMAGE_OPTIM_MAX_WIDTH,
-      imageOptimMaxHeight: DEFAULT_IMAGE_OPTIM_MAX_HEIGHT,
       hostname: '',
       storagePath: DEFAULT_STORAGE_PATH,
       cachePath: DEFAULT_CACHE_PATH,
@@ -71,20 +64,6 @@ class FileStorageService {
       maxFileSize: DEFAULT_MAX_FILE_SIZE,
       maxFiles: DEFAULT_MAX_FILES,
       ...configuration,
-      compressionOptions: {
-        mozJpeg: {
-          quality: 70,
-          ...compressionOptions?.mozJpeg || {},
-        },
-        pngQuant: {
-          quality: [0.8, 0.8],
-          ...compressionOptions?.pngQuant || {},
-        },
-        optiPng: {
-          optimizationLevel: 3,
-          ...compressionOptions?.optiPng || {},
-        },
-      },
     };
   }
 
@@ -114,9 +93,10 @@ class FileStorageService {
       }
 
       try {
-        const { exp, filename } = payload;
+        const { exp, id, ext } = payload;
         if (new Date().getTime() > exp) {
-          const fullFilenamePath = path.join(cacheAbsolutePath, filename);
+          const filename = this.getPathFromUuid(id);
+          const fullFilenamePath = path.join(cacheAbsolutePath, `${filename}.${ext}`);
           const dirname = path.dirname(fullFilenamePath);
 
           if (fs.existsSync(fullFilenamePath)) {
@@ -144,7 +124,7 @@ class FileStorageService {
     }
   }
 
-  public async clearExpiredTemporaryFiles() {
+  /*public async clearExpiredTemporaryFiles() {
     const { context } = this.props;
     const { redis, logger } = context;
     const { temporaryAbsolutePath } = this.getTemporaryPath();
@@ -195,7 +175,7 @@ class FileStorageService {
     } else {
       logger.files.info('Temporary clean. There are no files to delete');
     }
-  }
+  }*/
 
   public async clearCache() {
     const { context } = this.props;
@@ -267,109 +247,6 @@ class FileStorageService {
     return null;
   }
 
-  public async makeImageCache(imageData: ImgeData, imageBuffer: Buffer) {
-    const { context } = this.props;
-    const { redis } = context;
-    const { payload, token } = imageData;
-    const { cacheAbsolutePath } = this.getCachePath();
-
-    const filename = this.getPathFromUuid(uuidv4());
-    const pathToSave = path.join(cacheAbsolutePath, filename);
-    const absoluteFilename = `${pathToSave}.${payload.ext}`;
-    const dirname = path.dirname(pathToSave);
-
-
-    if (!fs.existsSync(dirname)) {
-      fs.mkdirSync(dirname, { recursive: true });
-    }
-    fs.writeFileSync(absoluteFilename, imageBuffer);
-    await redis.hset(
-      REDIS_CACHE_NAME,
-      token,
-      this.compilePayloadCache(payload.id, absoluteFilename),
-    );
-  }
-
-
-  public compilePayloadCache(id: string, filename: string) {
-    const { cacheTTL } = this.props;
-    const exp = (new Date().getTime() + (cacheTTL * 1000));
-    const payload: RedisFileValue = {
-      id,
-      filename,
-      exp,
-    };
-
-    return JSON.stringify(payload);
-  }
-
-  public async getUrlWithTransform(
-    imageData: Pick<FileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>,
-    transform: ImageTransform,
-  ) {
-    const { context, hostname, staticPrefix } = this.props;
-    const { redis, logger } = context;
-    const { url, id, mimeType, isLocalFile } = imageData;
-    const { storageAbsolutePath } = this.getStoragePath();
-    const { cacheAbsolutePath } = this.getCachePath();
-
-    const type = this.getFileTypeByMimeType(mimeType);
-    const ext = this.getExtensionByMimeType(mimeType);
-
-    const hashPayload: TransformUrlPayload = {
-      id,
-      ext,
-      transform,
-    };
-
-    if (!isLocalFile || type !== 'image') {
-      return url;
-    }
-
-
-    const imageUrlHash = Buffer.from(JSON.stringify(hashPayload), 'utf8').toString('base64');
-
-    // check redis cache
-    const inCache = await this.checkFileInCache(imageUrlHash);
-
-    if (inCache) {
-      return [
-        `${hostname}${staticPrefix}`,
-        CACHE_DELIMITER,
-        `${inCache.filename}`,
-      ].join('/');
-    }
-
-    const originalFilename = `${this.getPathFromUuid(id)}.${ext}`;
-    const newFilename = `${this.getPathFromUuid(uuidv4())}.${ext}`;
-    const absoluteOriginalFilename = path.join(storageAbsolutePath, originalFilename);
-    const absoluteFilename = path.join(cacheAbsolutePath, newFilename);
-    const dirname = path.dirname(absoluteFilename);
-
-    if (!fs.existsSync(absoluteOriginalFilename)) {
-      throw new ServerError(`File ${originalFilename} with id ${id} not exists`);
-    }
-
-    if (!fs.existsSync(dirname)) {
-      fs.mkdirSync(dirname, { recursive: true });
-    }
-
-    // copy file for transform operation
-    fs.copyFileSync(absoluteOriginalFilename, absoluteFilename);
-    redis.hset(REDIS_CACHE_NAME, imageUrlHash, this.compilePayloadCache(id, newFilename));
-
-    try {
-      this.applyTransform(absoluteFilename, transform);
-    } catch (err) {
-      logger.files.error(`Failed to apply transformation with file ${newFilename}`, { err, transform });
-    }
-
-    return [
-      `${hostname}${staticPrefix}`,
-      CACHE_DELIMITER,
-      `${newFilename}`,
-    ].join('/');
-  }
 
   /**
    * Returns Full filename without extension (e.g. /path/to/file)
@@ -382,134 +259,132 @@ class FileStorageService {
     ].join('/');
   }
 
-  public resolveFile(filedata: Pick<FileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>) {
-    const { mimeType, isLocalFile, url, id } = filedata;
-    if (!isLocalFile) {
-      return {
-        resolveAbsolutePath: url,
-        resolvePath: url,
-      };
-    }
-
-    const { storageAbsolutePath, storagePath } = this.getStoragePath();
-    const ext = this.getExtensionByMimeType(mimeType);
-    const fileLocation = this.getPathFromUuid(id);
-
-    return {
-      resolvePath: path.join(storagePath, `${fileLocation}.${ext}`),
-      resolveAbsolutePath: path.join(storageAbsolutePath, `${fileLocation}.${ext}`),
-    };
-  }
-
-  public async applyTransform(filepath: string, transform: ImageTransform) {
+  public async applyTransform(
+    filepath: string,
+    transform: Partial<ImageTransform>,
+  ): Promise<string> {
     const { context } = this.props;
     const { logger } = context;
 
     if (!fs.existsSync(filepath)) {
       logger.files.error(`Transform error. File «${filepath}» not found`);
 
-      return;
+      return filepath;
     }
 
     if (!fs.readFileSync(filepath)) {
       logger.files.error(`Transform error. File «${filepath}» not readable`);
 
-      return;
+      return filepath;
     }
 
-    let jimpHandle = await Jimp.read(filepath);
+    const jimpHandle = await Jimp.read(filepath);
 
-    Object.entries(transform).forEach(([method, options]) => {
-      if (method === 'resize') {
-        const { w, h } = options as ImageTransform['resize'];
-        jimpHandle = jimpHandle.resize(
+    if ('resize' in transform) {
+      const { w, h } = transform.resize;
+      try {
+        jimpHandle.resize(
           Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
           Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
         );
+      } catch (err) {
+        logger.files.error('Transform «resize» error', { err });
       }
 
-      if (method === 'cover') {
-        const { w, h } = options as ImageTransform['cover'];
-        jimpHandle = jimpHandle.cover(
-          Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
-          Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
-        );
-      }
+    }
 
-      if (method === 'contain') {
-        const { w, h } = options as ImageTransform['contain'];
-        jimpHandle = jimpHandle.contain(
-          Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
-          Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
-        );
-      }
-
-      if (method === 'scaleToFit') {
-        const { w, h } = options as ImageTransform['scaleToFit'];
-        jimpHandle = jimpHandle.scaleToFit(
-          Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
-          Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
-        );
-      }
-
-      if (method === 'gaussian') {
-        const gaussian = options as ImageTransform['gaussian'];
-        jimpHandle = jimpHandle.gaussian(
-          Math.min(gaussian, IMAGE_TRANSFORM_MAX_GAUSSIAN),
-        );
-      }
-
-      if (method === 'blur') {
-        const blur = options as ImageTransform['blur'];
-        jimpHandle = jimpHandle.blur(
-          Math.min(blur, IMAGE_TRANSFORM_MAX_BLUR),
-        );
-      }
-
-      if (method === 'greyscale') {
-        const greyscale = options as ImageTransform['greyscale'];
-        if (greyscale === true) {
-          jimpHandle = jimpHandle.grayscale();
-        }
-      }
-
-      if (method === 'crop') {
-        const {
-          x, y, w, h,
-        } = options as ImageTransform['crop'];
-        jimpHandle = jimpHandle.crop(
+    if ('crop' in transform) {
+      const { x, y, w, h } = transform.crop;
+      try {
+        jimpHandle.crop(
           Math.min(x, IMAGE_TRANSFORM_MAX_WITH),
           Math.min(y, IMAGE_TRANSFORM_MAX_HEIGHT),
           Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
           Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
         );
+      } catch (err) {
+        logger.files.error('Transform «crop» error', { err });
       }
-    });
-    await jimpHandle.writeAsync(filepath);
-
-    // do not wait this operation
-    this.compressImage(filepath, true);
-  }
-
-  /**
-   * Returns filename at static prefix root (e.g. /static/path/to/file.ext)
-   */
-  public getFilenameFromUuid(guid: string, delimiter = 's') {
-    const { storagePath, cachePath, temporaryPath } = this.props;
-    const localPath = this.getPathFromUuid(guid);
-
-    switch (delimiter) {
-      case CACHE_DELIMITER:
-        return path.join('/', cachePath, localPath);
-
-      case TEMPORARY_DELIMITER:
-        return path.join('/', temporaryPath, localPath);
-
-      case STATIC_DELIMITER:
-      default:
-        return path.join('/', storagePath, localPath);
     }
+
+    if ('cover' in transform) {
+      const { w, h } = transform.cover;
+      try {
+        jimpHandle.cover(
+          Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
+          Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
+        );
+      } catch (err) {
+        logger.files.error('Transform «cover» error', { err });
+      }
+    }
+
+    if ('contain' in transform) {
+      const { w, h } = transform.contain;
+      try {
+        jimpHandle.contain(
+          Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
+          Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
+        );
+      } catch (err) {
+        logger.files.error('Transform «contain» error', { err });
+      }
+    }
+
+    if ('scaleToFit' in transform) {
+      const { w, h } = transform.scaleToFit;
+      try {
+        jimpHandle.scaleToFit(
+          Math.min(w, IMAGE_TRANSFORM_MAX_WITH),
+          Math.min(h, IMAGE_TRANSFORM_MAX_HEIGHT),
+        );
+      } catch (err) {
+        logger.files.error('Transform «scaleToFit» error', { err });
+      }
+    }
+
+
+    if ('gaussian' in transform) {
+      const gaussian = transform.gaussian;
+      try {
+        jimpHandle.gaussian(
+          Math.min(gaussian, IMAGE_TRANSFORM_MAX_GAUSSIAN),
+        );
+      } catch (err) {
+        logger.files.error('Transform «gaussian» error', { err });
+      }
+    }
+
+    if ('blur' in transform) {
+      const blur = transform.blur;
+      try {
+        jimpHandle.blur(
+          Math.min(blur, IMAGE_TRANSFORM_MAX_BLUR),
+        );
+      } catch (err) {
+        logger.files.error('Transform «blur» error', { err });
+      }
+    }
+
+    if ('greyscale' in transform) {
+      const greyscale = transform.greyscale;
+      try {
+        if (greyscale === true) {
+          jimpHandle.grayscale();
+        }
+      } catch (err) {
+        logger.files.error('Transform «greyscale» error', { err });
+      }
+    }
+
+    const bufferPath = `${filepath}.transform`;
+    await jimpHandle.writeAsync(bufferPath);
+    await this.copyFile(bufferPath, filepath);
+    fs.rmSync(bufferPath);
+
+    return filepath;
   }
+
 
   public getStoragePath() {
     const { storagePath } = this.props;
@@ -699,13 +574,16 @@ class FileStorageService {
     }
 
     const { fileInfo, exp } = payload;
+    const { mimeType } = fileInfo;
+
+    const ext =this.getExtensionByMimeType(mimeType);
 
     return {
       id,
       expiredAt: moment.tz(exp, timezone).toDate(),
       createdAt: moment.tz(timezone).toDate(),
       updatedAt: moment.tz(timezone).toDate(),
-      url: `${hostname}${staticPrefix}/${TEMPORARY_DELIMITER}/${payload.filename}`,
+      url: `${hostname}${staticPrefix}/${TEMPORARY_DELIMITER}/${payload.id}.${ext}`,
       ...fileInfo,
     };
   }
@@ -726,12 +604,19 @@ class FileStorageService {
       .offset(offset || 0)
       .where((builder) => convertWhereToKnex(builder, where))
       .orderBy(convertOrderByToKnex(orderBy))
-      .then((nodes) => nodes.map((node) => ({
-        ...node,
-        url: node.isLocalFile
-          ? `${hostname}${staticPrefix}/${STATIC_DELIMITER}/${node.url}`
-          : node.url,
-      })))
+      .then((nodes) => nodes.map((node) => {
+
+        const { isLocalFile, id, url, mimeType } = node;
+        const ext = this.getExtensionByMimeType(mimeType);
+        const encodedID = this.encodeFileID(id);
+
+        return {
+          ...node,
+          url: isLocalFile
+            ? `${hostname}${staticPrefix}/${STATIC_DELIMITER}/${encodedID}.${ext}`
+            : url,
+        }
+      }))
       .then((nodes) => ({
         ...extractTotalCountPropOfNode(nodes),
           offset,
@@ -872,96 +757,43 @@ class FileStorageService {
     });
   }
 
-
-  public async compressImage(
-    absoluteFilename: string,
-    skipResize?: boolean,
-  ): Promise<CompressImageStats> {
-    const { imageOptimMaxWidth, imageOptimMaxHeight, compressionOptions, context } = this.props;
+  public async copyFile(from: string, to: string): Promise<void> {
+    const { context } = this.props;
     const { logger } = context;
 
-    const originalFileSize = fs.lstatSync(absoluteFilename).size;
-    const stats: CompressImageStats = {
-      filename: absoluteFilename,
-      size: {
-        original: originalFileSize,
-        scaled: originalFileSize,
-        compressed: originalFileSize,
-      },
-      time: {
-        scaled: 0,
-        compressed: 0,
-        total: 0,
-      },
-      profit: {
-        scaled: 0,
-        compressed: 0,
-        total: 0,
-      },
-    };
-
-    if (!skipResize) {
-      stats.time.scaled = performance.now();
-      const jimpHandle = await Jimp.read(absoluteFilename);
-      if (
-        jimpHandle.getWidth() > imageOptimMaxWidth
-        || jimpHandle.getHeight() > imageOptimMaxHeight
-      ) {
-
-        jimpHandle.scaleToFit(imageOptimMaxWidth, imageOptimMaxHeight);
-        jimpHandle.writeAsync(absoluteFilename);
+    return new Promise((resolve) => {
+      const dirname = path.dirname(to);
+      if (!fs.existsSync(dirname)) {
+        try {
+          fs.mkdirSync(dirname, { recursive: true });
+        } catch (err) {
+          throw new ServerError('Failed to create destination directory', { err });
+        }
       }
 
-      stats.time.scaled = performance.now() - stats.time.scaled;
-      stats.size.scaled = fs.lstatSync(absoluteFilename).size;
-      stats.profit.scaled = Math.floor(
-        (stats.size.scaled * 100) / stats.size.original,
-      );
-
-      if (stats.size.scaled >= stats.size.original) {
-        stats.profit.scaled = 100 - stats.profit.scaled;
-      }
-    }
+      const read = fs.createReadStream(from);
+      const write = fs.createWriteStream(to);
 
 
-    stats.time.compressed = performance.now();
-    const optimizad = await imagemin([absoluteFilename], {
-      plugins: [
-        imageminMozjpeg(compressionOptions.mozJpeg),
-        imageminOptipng(compressionOptions.optiPng),
-        imageminPngquant(compressionOptions.pngQuant),
-      ],
+      write.on('close', () => {
+        resolve();
+      });
+
+      read.on('error', (err) => {
+        logger.files.error('Read file error', { err });
+      });
+
+      write.on('error', (err) => {
+        logger.files.error('Write file error', { err });
+      });
+
+      read.pipe(write);
     });
-    fs.writeFileSync(absoluteFilename, optimizad[0].data);
-
-    stats.time.compressed = performance.now() - stats.time.compressed;
-    stats.size.compressed = fs.lstatSync(absoluteFilename).size;
-    stats.profit.compressed = Math.floor(
-      (stats.size.compressed * 100) / stats.size.scaled,
-    );
-
-    if (stats.size.compressed >= stats.size.scaled) {
-      stats.size.compressed = 100 - stats.size.compressed;
-    }
-
-    stats
-      .profit
-      .total = stats.profit.compressed + stats.profit.scaled;
-
-    stats
-      .time
-      .total = stats.time.compressed + stats.time.scaled;
-
-    logger.files.info(
-      `File optimization profit: ${stats.profit.total}% in ${(stats.time.total / 1000).toFixed(2)}sec.`,
-      stats,
-    );
-
-    return stats;
   }
 
+
   public async createFile(
-    fileStream: ReadStream | null,
+    fileReadStream: ReadStream | null,
     fileInfo: FileBagCreate,
   ): Promise<{id: string; absoluteFilename: string; }> {
     const { context } = this.props;
@@ -972,6 +804,7 @@ class FileStorageService {
     const ext = this.getExtensionByMimeType(fileInfo.mimeType);
     const localFilename = `${this.getPathFromUuid(id)}.${ext}`;
     const url = (fileInfo.isLocalFile || !fileInfo.url) ? localFilename : fileInfo.url;
+
 
     try {
       await knex<FileBagTableInput>('fileStorage')
@@ -1001,18 +834,18 @@ class FileStorageService {
         }
       }
 
-      const wrStream = fs.createWriteStream(absoluteFilename);
-      wrStream.on('close', async () => {
+      const writeStream = fs.createWriteStream(absoluteFilename);
+      writeStream.on('close', async () => {
         resolve({
           id,
           absoluteFilename,
         });
       });
 
-      if (fileStream) {
-        fileStream.pipe(wrStream);
+      if (fileReadStream) {
+        fileReadStream.pipe(writeStream);
       } else {
-        wrStream.end();
+        writeStream.end();
       }
     });
   }
@@ -1110,15 +943,18 @@ class FileStorageService {
   public async deleteStaticFiles(ids: string[]): Promise<string[]> {
     const { context } = this.props;
     const { knex, logger } = context;
+    const { storageAbsolutePath } = this.getStoragePath();
+
     const filesList = await this.getFilesByIds(ids);
 
     if (filesList.length) {
       filesList.forEach((fileData) => {
         // if is local file
         if (fileData.isLocalFile || fileData.url.match(/^\/[a-z0-9]+/i)) {
-          const filename = this.getFilenameFromUuid(fileData.id, STATIC_DELIMITER);
+
+          const filename = this.getPathFromUuid(fileData.id);
           const ext = this.getExtensionByMimeType(fileData.mimeType);
-          const fullFilenamePath = path.resolve(__dirname, '..', `${filename}.${ext}`);
+          const fullFilenamePath = path.resolve(storageAbsolutePath, `${filename}.${ext}`);
           const dirname = path.dirname(fullFilenamePath);
 
           // remove file
@@ -1188,13 +1024,79 @@ class FileStorageService {
     const { knex } = context;
 
     const payload = categories.map((category) => ({ category }));
-    await knex
-      .raw(`${knex('fileStorageCategories')
-      .insert(payload).toString()} on conflict ("category") do nothing;`);
+    await knex('fileStorageCategories')
+      .insert(payload)
+      .onConflict('category')
+      .ignore();
 
     await knex('fileStorageCategories')
       .del()
       .whereNotIn('category', categories);
+  }
+
+  public transformPayloadToUrl(data: TransformUrlPayload) {
+    const { staticPrefix, hostname } = this.props;
+    const encodedData = Buffer.from(JSON.stringify(data), 'utf8').toString('hex');
+
+    return `${hostname}${staticPrefix}/${CACHE_DELIMITER}/${encodedData}.${data.ext}`;
+  }
+
+  public urlToTransformPayload(url: string): TransformUrlPayload | false {
+    const { hostname } = this.props;
+    const urlData = new URL(url, hostname);
+
+    if (!urlData) {
+      return false;
+    }
+
+    const { pathname } = urlData;
+    const payloadStr = pathname.split('/').reverse()[0].replace(/\..*$/, '');
+
+    try {
+      const data = Buffer.from(payloadStr, 'hex').toString('utf8');
+
+      return JSON.parse(data);
+    } catch (err) {
+      return false;
+    }
+  }
+
+  public encodeFileID(id: string) {
+    return id;
+  }
+
+  public decodeFileID (url: string) {
+    return url;
+  }
+
+  public async setFileCache(id: string, ext: string) {
+    const { context, cacheTTL } = this.props;
+    const { redis } = context;
+
+    const exp = (new Date().getTime() + (cacheTTL * 1000));
+    const payload: RedisFileValue = {
+      id,
+      ext,
+      exp,
+    };
+
+    await redis.hset(
+      REDIS_CACHE_NAME,
+      id,
+      JSON.stringify(payload),
+    );
+  }
+
+  public resolveFile({ id, mimeType }: {id: string; mimeType: string}) {
+
+    const { storageAbsolutePath, storagePath } = this.getStoragePath();
+    const ext = this.getExtensionByMimeType(mimeType);
+    const fileLocation = this.getPathFromUuid(id);
+
+    return {
+      resolvePath: path.join(storagePath, `${fileLocation}.${ext}`),
+      resolveAbsolutePath: path.join(storageAbsolutePath, `${fileLocation}.${ext}`),
+    };
   }
 }
 

@@ -1,5 +1,4 @@
 import type { TemporaryFileResolver } from '@via-profit-services/file-storage';
-// import fs from 'fs';
 
 const temporaryFileResolver = new Proxy<TemporaryFileResolver>({
   id: () => ({}),
@@ -14,14 +13,14 @@ const temporaryFileResolver = new Proxy<TemporaryFileResolver>({
   description: () => ({}),
   metaData: () => ({}),
 }, {
-  get: (target, prop: keyof TemporaryFileResolver) => {
+  get: (_target, prop: keyof TemporaryFileResolver) => {
     const resolver: TemporaryFileResolver[keyof TemporaryFileResolver] = async (
       parent,
       args,
       context,
     ) => {
-      const { id, transform } = parent;
-      const { dataloader, services } = context;
+      const { id } = parent;
+      const { dataloader } = context;
 
       const file = await dataloader.tremporaryFiles.load(id);
 
@@ -30,18 +29,6 @@ const temporaryFileResolver = new Proxy<TemporaryFileResolver>({
       }
 
       // if is image
-      if (file.type === 'image') {
-        if (prop === 'url' && transform) {
-          return services.files.getUrlWithTransform(file, transform);
-        }
-      }
-
-      // if (prop === 'size') {
-      //   const { resolveAbsolutePath } = services.files.resolveFile(file);
-
-      //   return fs.lstatSync(resolveAbsolutePath).size;
-      // }
-
       return file[prop];
     };
 
