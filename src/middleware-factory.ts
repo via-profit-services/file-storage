@@ -6,7 +6,7 @@ import DataLoader from 'dataloader';
 import fs from 'fs';
 import path from 'path';
 
-import { DEFAULT_STATIC_PREFIX, CACHE_DELIMITER, STATIC_DELIMITER } from './constants';
+import { DEFAULT_STATIC_PREFIX, CACHE_DELIMITER, STATIC_DELIMITER, TEMPORARY_DELIMITER } from './constants';
 import expressMiddlewareFactory from './express-upload-middleware';
 import filesLogger from './files-logger';
 import FileStorageService from './FileStorageService';
@@ -40,6 +40,11 @@ const middlewareFactory: FileStorageMiddlewareFactory = async (configuration) =>
     ext: string;
   }
 
+  type TemporaryRouteParams = {
+    id: string;
+    ext: string;
+  }
+
   const cache: Cache = {
     cacheTimer: null,
     temporaryTimer: null,
@@ -55,6 +60,10 @@ const middlewareFactory: FileStorageMiddlewareFactory = async (configuration) =>
       configuration,
     });
 
+
+    /**
+     * Static files
+     */
     context.request.app.use<StaticRouteParams>(`${prefix}/${STATIC_DELIMITER}/:id.:ext`, async (req, res, next) => {
       const { params } = req;
       const { id, ext } = params;
@@ -71,6 +80,28 @@ const middlewareFactory: FileStorageMiddlewareFactory = async (configuration) =>
 
     });
 
+    /**
+     * Temporary files
+     */
+    context.request.app.use<TemporaryRouteParams>(`${prefix}/${TEMPORARY_DELIMITER}/:id.:ext`, async (req, res, next) => {
+      const { params } = req;
+      const { id, ext } = params;
+
+      const filename = context.services.files.getPathFromUuid(id);
+      const { temporaryAbsolutePath } = context.services.files.getTemporaryPath();
+      const absoluteFilename = path.resolve(temporaryAbsolutePath, `${filename}.${ext}`);
+
+      if (!fs.existsSync(absoluteFilename)) {
+        return next();
+      }
+
+      return res.sendFile(absoluteFilename);
+
+    });
+
+    /**
+     * Cached files (transformed)
+     */
     context.request.app.use<TransformedRouteParams>(`${prefix}/${CACHE_DELIMITER}/:transformUrlPayload.:ext`, async (req, res, next) => {
       const { params } = req;
       const { transformUrlPayload } = params;

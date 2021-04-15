@@ -574,13 +574,16 @@ class FileStorageService implements FileStorageServiceInterface {
     }
 
     const { fileInfo, exp } = payload;
+    const { mimeType } = fileInfo;
+
+    const ext =this.getExtensionByMimeType(mimeType);
 
     return {
       id,
       expiredAt: moment.tz(exp, timezone).toDate(),
       createdAt: moment.tz(timezone).toDate(),
       updatedAt: moment.tz(timezone).toDate(),
-      url: `${hostname}${staticPrefix}/${TEMPORARY_DELIMITER}/${payload.filename}`,
+      url: `${hostname}${staticPrefix}/${TEMPORARY_DELIMITER}/${payload.id}.${ext}`,
       ...fileInfo,
     };
   }
