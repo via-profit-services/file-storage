@@ -43,7 +43,7 @@ declare module '@via-profit-services/file-storage' {
     TemporaryFile: TemporaryFileResolver;
   }
 
-  type FileResolverParent = {
+  export type FileResolverParent = {
     id: string;
     transform?: ImageTransform;
   }
@@ -60,7 +60,9 @@ declare module '@via-profit-services/file-storage' {
     | 'description'
     | 'metaData'
     | 'transform'
-    , GraphQLFieldResolver<{ id: string }, Context>>;
+    , GraphQLFieldResolver<FileResolverParent, Context, {
+      transform: ImageTransform;
+    }>>;
 
     export type TransformedFileResolver = Record<
     | 'id'
@@ -73,29 +75,31 @@ declare module '@via-profit-services/file-storage' {
     | 'type'
     | 'description'
     | 'metaData'
-    | 'referense'
+    | 'reference'
     , GraphQLFieldResolver<{
-      originalFile: Omit<FileResolver, 'transform'>;
-      id: string;
-      transformedURL: string;
-      transformedID: string;
-      originalID: string;
-      transform: {options: ImageTransform};
+      reference: FileBag;
+      transform: ImageTransform;
     }, Context>>;
 
-
-  export type TemporaryFileResolver = Omit<FileResolver, 'transform'> & {
-    expiredAt: GraphQLFieldResolver<FileResolverParent, Context>;
-  };
+  export type TemporaryFileResolver = Record<
+    | 'id'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'owner'
+    | 'category'
+    | 'mimeType'
+    | 'url'
+    | 'type'
+    | 'description'
+    | 'metaData'
+    | 'expiredAt'
+    , GraphQLFieldResolver<{ id: string }, Context>>;
 
   export type FileType = 'image' | 'document' | 'template';
 
   export type ExpressMiddlewareFactory = (props: {
     configuration: Configuration;
-  }) => {
-    graphQLFilesUploadExpress: RequestHandler;
-    graphQLFilesStaticExpress: RequestHandler;
-  }
+  }) => RequestHandler
 
   export type ContextMiddlewareFactory = (props: {
     context: Context;
@@ -267,12 +271,6 @@ declare module '@via-profit-services/file-storage' {
   }
 
 
-  export interface ImgeData {
-    payload: TransformUrlPayload;
-    token: string;
-  }
-
-
   export interface FilePayload {
     filename: string;
     mimeType: string;
@@ -285,14 +283,14 @@ declare module '@via-profit-services/file-storage' {
 
   export interface RedisFileValue {
     id: string;
-    filename: string;
+    ext: string;
     exp: number;
   }
 
   export interface RedisTemporaryValue {
     id: string;
-    filename: string;
     exp: number;
+    filename: string;
     fileInfo: UploadFileInput;
   }
 
@@ -300,7 +298,6 @@ declare module '@via-profit-services/file-storage' {
   export type FileStorageMiddlewareFactory = (configuration: Configuration) => Promise<{
     fileStorageMiddleware: Middleware;
     graphQLFilesUploadExpress: RequestHandler;
-    graphQLFilesStaticExpress: RequestHandler;
     resolvers: Resolvers;
     typeDefs: string;
   }>;
@@ -319,27 +316,17 @@ declare module '@via-profit-services/file-storage' {
     constructor(props: FileStorageServiceProps);
     getProps(): FileStorageParams;
     clearExpiredCacheFiles(): Promise<void>;
-    clearExpiredTemporaryFiles(): Promise<void>;
+    // clearExpiredTemporaryFiles(): Promise<void>;
     clearCache(): Promise<void>;
     clearTemporary(): Promise<void>;
     checkFileInCache(imageDataHash: string): Promise<RedisFileValue | null>;
-    makeImageCache(imageData: ImgeData, imageBuffer: Buffer): Promise<void>;
-    compilePayloadCache(id: string, filename: string): string;
-    getUrlWithTransform(imageData: Pick<FileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>, transform: ImageTransform): Promise<string>;
     copyFile(from: string, to: string): Promise<void>;
     /**
      * Returns Full filename without extension (e.g. /path/to/file)
      */
     getPathFromUuid(guid: string): string;
-    resolveFile(filedata: Pick<FileBag, 'id' | 'url' | 'mimeType' | 'isLocalFile'>): {
-        resolveAbsolutePath: string;
-        resolvePath: string;
-    };
-    applyTransform(filepath: string, transform: ImageTransform): Promise<string>;
-    /**
-     * Returns filename at static prefix root (e.g. /static/path/to/file.ext)
-     */
-    getFilenameFromUuid(guid: string, delimiter?: string): string;
+    applyTransform(filepath: string, transform: Partial<ImageTransform>): Promise<string>;
+
     getStoragePath(): {
         storagePath: string;
         storageAbsolutePath: string;
@@ -423,6 +410,15 @@ declare module '@via-profit-services/file-storage' {
     flush(): Promise<void>;
     deleteStaticFiles(ids: string[]): Promise<string[]>;
     rebaseCategories(categories: string[]): Promise<void>;
+    transformPayloadToUrl(data: TransformUrlPayload): string;
+    urlToTransformPayload(url: string): TransformUrlPayload | false;
+    encodeFileID(id: string): string;
+    decodeFileID(url: string): string;
+    setFileCache(id: string, filename: string): Promise<void>;
+    resolveFile(params: {id: string, mimeType: string}): {
+      resolvePath: string;
+      resolveAbsolutePath: string;
+    }
   }
 
   export const factory: FileStorageMiddlewareFactory;

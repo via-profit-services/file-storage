@@ -1,7 +1,8 @@
-import type Knex from 'knex';
+/* eslint-disable import/prefer-default-export */
+import type { FileBagTableInput } from '@via-profit-services/file-storage';
+import { Knex } from 'knex';
 import { v4 as uuidv4 } from 'uuid';
 
-import type { FileBagTableInput } from '@via-profit-services/file-storage';
 
 enum FileType {
   image = 'image',

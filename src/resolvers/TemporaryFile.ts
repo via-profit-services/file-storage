@@ -13,14 +13,14 @@ const temporaryFileResolver = new Proxy<TemporaryFileResolver>({
   description: () => ({}),
   metaData: () => ({}),
 }, {
-  get: (target, prop: keyof TemporaryFileResolver) => {
+  get: (_target, prop: keyof TemporaryFileResolver) => {
     const resolver: TemporaryFileResolver[keyof TemporaryFileResolver] = async (
-      parent: any,
-      args: any,
-      context: any,
+      parent,
+      args,
+      context,
     ) => {
-      const { id, transform } = parent;
-      const { dataloader, services } = context;
+      const { id } = parent;
+      const { dataloader } = context;
 
       const file = await dataloader.tremporaryFiles.load(id);
 

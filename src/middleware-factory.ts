@@ -1,16 +1,22 @@
+/* eslint-disable import/max-dependencies */
 import { Middleware, collateForDataloader } from '@via-profit-services/core';
 import { FileStorageMiddlewareFactory } from '@via-profit-services/file-storage';
+import crypto from 'crypto';
 import DataLoader from 'dataloader';
-import express from 'express';
+import fs from 'fs';
+import path from 'path';
 
-import FileStorageService from './FileStorageService';
-import expressMiddlewareFactory from './express-middleware';
+import { DEFAULT_STATIC_PREFIX, CACHE_DELIMITER, STATIC_DELIMITER } from './constants';
+import expressMiddlewareFactory from './express-upload-middleware';
 import filesLogger from './files-logger';
+import FileStorageService from './FileStorageService';
 import resolvers from './resolvers';
 import typeDefs from './schema.graphql';
 
+
 const middlewareFactory: FileStorageMiddlewareFactory = async (configuration) => {
-  const { categories } = configuration;
+  const { categories, staticPrefix } = configuration;
+  const prefix = staticPrefix || DEFAULT_STATIC_PREFIX;
 
   const categoriesList = new Set(
     [...categories || []].map((category) => category.replace(/[^a-zA-Z]/g, '')),
@@ -22,6 +28,16 @@ const middlewareFactory: FileStorageMiddlewareFactory = async (configuration) =>
     cacheTimer: NodeJS.Timeout;
     temporaryTimer: NodeJS.Timeout;
     initDatabase: boolean;
+  }
+
+  type TransformedRouteParams = {
+    transformUrlPayload: string;
+    ext: string;
+  }
+
+  type StaticRouteParams = {
+    id: string;
+    ext: string;
   }
 
   const cache: Cache = {
@@ -39,7 +55,61 @@ const middlewareFactory: FileStorageMiddlewareFactory = async (configuration) =>
       configuration,
     });
 
-    
+    context.request.app.use<StaticRouteParams>(`${prefix}/${STATIC_DELIMITER}/:id.:ext`, async (req, res, next) => {
+      const { params } = req;
+      const { id, ext } = params;
+
+      const filename = context.services.files.getPathFromUuid(id);
+      const { storageAbsolutePath } = context.services.files.getStoragePath();
+      const absoluteFilename = path.resolve(storageAbsolutePath, `${filename}.${ext}`);
+
+      if (!fs.existsSync(absoluteFilename)) {
+        return next();
+      }
+
+      return res.sendFile(absoluteFilename);
+
+    });
+
+    context.request.app.use<TransformedRouteParams>(`${prefix}/${CACHE_DELIMITER}/:transformUrlPayload.:ext`, async (req, res, next) => {
+      const { params } = req;
+      const { transformUrlPayload } = params;
+
+      // try to parse trannsform from url
+      const data = context.services.files.urlToTransformPayload(transformUrlPayload);
+
+      if (!data) {
+        return next();
+      }
+
+      const { id, transform, ext } = data;
+
+      // get transformed filename
+      const transformedID = crypto.createHash('md5').update(JSON.stringify(transformUrlPayload)).digest('hex');
+      const transformedFilename = context.services.files.getPathFromUuid(transformedID);
+      const { cacheAbsolutePath } = context.services.files.getCachePath();
+      const transformedAbsoluteFilename = path.resolve(cacheAbsolutePath, `${transformedFilename}.${ext}`);
+
+      if (fs.existsSync(transformedAbsoluteFilename)) {
+        return res.sendFile(transformedAbsoluteFilename);
+      }
+
+
+      const originalFilename = context.services.files.getPathFromUuid(id);
+      const { storageAbsolutePath } = context.services.files.getStoragePath();
+      const originalAbsoluteFilename = path.resolve(storageAbsolutePath, `${originalFilename}.${ext}`);
+
+      if (!fs.existsSync(originalAbsoluteFilename)) {
+        return next();
+      }
+
+      await context.services.files.copyFile(originalAbsoluteFilename, transformedAbsoluteFilename);
+      await context.services.files.applyTransform(transformedAbsoluteFilename, transform);
+
+      return res.sendFile(transformedAbsoluteFilename);
+
+    });
+
     // Files logger Logger
     context.logger.files = filesLogger({ logDir });
 
@@ -82,10 +152,10 @@ const middlewareFactory: FileStorageMiddlewareFactory = async (configuration) =>
 
     // setup it once
     if (!cache.temporaryTimer) {
+      // context.services.files.clearExpiredTemporaryFiles();
       cache.temporaryTimer = setInterval(() => {
-        context.services.files.clearExpiredTemporaryFiles();
         try {
-          context.services.files.clearExpiredTemporaryFiles();
+          // context.services.files.clearExpiredTemporaryFiles();
         } catch (err) {
           context.logger.files.error('Failed to clear expired temporary files by interval', { err });
         }
@@ -98,14 +168,10 @@ const middlewareFactory: FileStorageMiddlewareFactory = async (configuration) =>
     };
   }
 
-  const {
-    graphQLFilesStaticExpress,
-    graphQLFilesUploadExpress,
-  } = expressMiddlewareFactory({ configuration });
+  const graphQLFilesUploadExpress = expressMiddlewareFactory({ configuration });
 
   return {
     fileStorageMiddleware,
-    graphQLFilesStaticExpress,
     graphQLFilesUploadExpress,
     resolvers,
     typeDefs: `${typeDefs}

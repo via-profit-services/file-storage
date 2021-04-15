@@ -21,7 +21,7 @@ const redisConfig = {
 (async () => {
 
 
-  const files = await filesFactory({
+  const { fileStorageMiddleware, graphQLFilesUploadExpress, ...files } = await filesFactory({
     hostname: `http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}`,
   });
 
@@ -55,15 +55,28 @@ const redisConfig = {
     middleware: [
       knexMiddleware,
       redisMiddleware,
-      files.fileStorageMiddleware,
+      fileStorageMiddleware,
     ],
   });
 
-  app.use(process.env.GRAPHQL_ENDPOINT, files.graphQLFilesUploadExpress); // <-- First
-  app.use(files.graphQLFilesStaticExpress); // < -- Second
+  app.use(process.env.GRAPHQL_ENDPOINT, graphQLFilesUploadExpress); // <-- First
   app.use(process.env.GRAPHQL_ENDPOINT, graphQLExpress); // <-- Last
 
   server.listen(Number(process.env.SERVER_PORT), process.env.SERVER_HOST, () => {
+
+    const request = http.request({
+      method: 'POST',
+      port: process.env.SERVER_PORT,
+      path: process.env.GRAPHQL_ENDPOINT,
+      host: process.env.SERVER_HOST,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    request.write(JSON.stringify({ query: 'query{core}' }));
+    request.end();
+
+
     console.log(`GraphQL Server started at http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/graphql`);
   });
 

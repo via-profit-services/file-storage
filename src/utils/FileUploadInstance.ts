@@ -16,8 +16,7 @@ class FileUploadInstance {
       this.reject = reject;
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    this.promise.catch(() => {});
+    this.promise.catch(() => {/* do nothing */});
   }
 }
 

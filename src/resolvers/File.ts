@@ -13,10 +13,10 @@ const fileResolver = new Proxy<FileResolver>({
   metaData: () => ({}),
   transform: () => ({}),
 }, {
-  get: (target, prop: keyof FileResolver) => {
+  get: (_target, prop: keyof FileResolver) => {
     const resolver: FileResolver[keyof FileResolver] = async (parent, args, context) => {
       const { id } = parent;
-      const { dataloader, services } = context;
+      const { dataloader } = context;
 
       const file = await dataloader.files.load(id);
 
@@ -24,36 +24,17 @@ const fileResolver = new Proxy<FileResolver>({
         return null;
       }
 
-
-      // if is image
-      if (prop === 'transform' && args.options) {
-
-        // console.log({args, parent })
-        const transformedURL = await services.files.getUrlWithTransform(file, args.options);
-        const transformedID = transformedURL.split('/').reverse()[0].replace(/\..*$/, '');
-
+      if (prop === 'transform') {
         return {
-          originalFile: file,
-          originalID: id,
-          transformedID,
-          transformedURL,
-          transform: args,
-        };
-        // if (prop === 'id' && transform) {
-        //   const fakeID = Buffer.from(JSON.stringify({ id, transform })).toString('base64');
-
-        //   return `fakeID:${fakeID}`;
-        // }
-
-        // if (prop === 'url' && transform) {
-        //   const url = await services.files.getUrlWithTransform(file, transform);
-
-        //   return url;
-        // }
+          reference: file,
+          transform: {
+            ...args,
+            ...parent.transform,
+          },
+        }
       }
 
-
-      return (file as any)[prop];
+      return file[prop];
     };
 
     return resolver;
