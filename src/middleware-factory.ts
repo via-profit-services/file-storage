@@ -9,9 +9,9 @@ import path from 'path';
 import { DEFAULT_STATIC_PREFIX, CACHE_DELIMITER, STATIC_DELIMITER, TEMPORARY_DELIMITER } from './constants';
 import expressMiddlewareFactory from './express-upload-middleware';
 import filesLogger from './files-logger';
-import FileStorageService from './FileStorageService';
 import resolvers from './resolvers';
 import typeDefs from './schema.graphql';
+import FileStorageService from './services/FileStorageService';
 
 
 const middlewareFactory: FileStorageMiddlewareFactory = async (configuration) => {
@@ -69,10 +69,12 @@ const middlewareFactory: FileStorageMiddlewareFactory = async (configuration) =>
       const { id, ext } = params;
 
       const filename = context.services.files.getPathFromUuid(id);
-      const { storageAbsolutePath } = context.services.files.getStoragePath();
+      const storageAbsolutePath = context.services.files.getStoragePath();
       const absoluteFilename = path.resolve(storageAbsolutePath, `${filename}.${ext}`);
 
       if (!fs.existsSync(absoluteFilename)) {
+        context.logger.files.error(`Static file «${id}» not found in path ${absoluteFilename}`);
+
         return next();
       }
 
@@ -88,10 +90,12 @@ const middlewareFactory: FileStorageMiddlewareFactory = async (configuration) =>
       const { id, ext } = params;
 
       const filename = context.services.files.getPathFromUuid(id);
-      const { temporaryAbsolutePath } = context.services.files.getTemporaryPath();
+      const temporaryAbsolutePath = context.services.files.getTemporaryPath();
       const absoluteFilename = path.resolve(temporaryAbsolutePath, `${filename}.${ext}`);
 
       if (!fs.existsSync(absoluteFilename)) {
+        context.logger.files.error(`Temporary file «${id}» not found in path ${absoluteFilename}`);
+
         return next();
       }
 
@@ -110,6 +114,8 @@ const middlewareFactory: FileStorageMiddlewareFactory = async (configuration) =>
       const data = context.services.files.urlToTransformPayload(transformUrlPayload);
 
       if (!data) {
+        context.logger.files.error('Failed decode cache file data from URL');
+
         return next();
       }
 
@@ -118,7 +124,7 @@ const middlewareFactory: FileStorageMiddlewareFactory = async (configuration) =>
       // get transformed filename
       const transformedID = crypto.createHash('md5').update(JSON.stringify(transformUrlPayload)).digest('hex');
       const transformedFilename = context.services.files.getPathFromUuid(transformedID);
-      const { cacheAbsolutePath } = context.services.files.getCachePath();
+      const cacheAbsolutePath = context.services.files.getCachePath();
       const transformedAbsoluteFilename = path.resolve(cacheAbsolutePath, `${transformedFilename}.${ext}`);
 
       if (fs.existsSync(transformedAbsoluteFilename)) {
@@ -127,15 +133,19 @@ const middlewareFactory: FileStorageMiddlewareFactory = async (configuration) =>
 
 
       const originalFilename = context.services.files.getPathFromUuid(id);
-      const { storageAbsolutePath } = context.services.files.getStoragePath();
+      const storageAbsolutePath = context.services.files.getStoragePath();
       const originalAbsoluteFilename = path.resolve(storageAbsolutePath, `${originalFilename}.${ext}`);
 
       if (!fs.existsSync(originalAbsoluteFilename)) {
+        context.logger.files.error(`Transformed file «${id}» not found in path ${originalAbsoluteFilename}`);
+
         return next();
       }
 
       await context.services.files.copyFile(originalAbsoluteFilename, transformedAbsoluteFilename);
       await context.services.files.applyTransform(transformedAbsoluteFilename, transform);
+      await context.services.files.setFileCache(id, ext);
+
 
       return res.sendFile(transformedAbsoluteFilename);
 

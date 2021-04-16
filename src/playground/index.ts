@@ -7,6 +7,7 @@ import * as redis from '@via-profit-services/redis';
 import dotenv from 'dotenv';
 import express from 'express';
 import http from 'http';
+import path from 'path';
 
 import { factory as filesFactory } from '../index';
 
@@ -23,6 +24,9 @@ const redisConfig = {
 
   const { fileStorageMiddleware, graphQLFilesUploadExpress, ...files } = await filesFactory({
     hostname: `http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}`,
+    cachePath: path.resolve(process.cwd(), './storage/cache'),
+    temporaryPath: path.resolve(process.cwd(), './storage/tmp'),
+    storagePath: path.resolve(process.cwd(), './storage/files'),
   });
 
   const knexMiddleware = knex.factory({

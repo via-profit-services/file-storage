@@ -118,7 +118,7 @@ declare module '@via-profit-services/file-storage' {
     type: FileType;
     isLocalFile?: boolean;
     metaData?: any;
-    description?: string;
+    description: string;
   }
 
   export interface TemporaryFileBag extends FileBag {
@@ -142,7 +142,7 @@ declare module '@via-profit-services/file-storage' {
     updatedAt?: string;
     isLocalFile?: boolean;
     metaData?: string;
-    description?: string;
+    description: string;
     url?: string;
     owner?: string;
     mimeType: string;
@@ -156,7 +156,7 @@ declare module '@via-profit-services/file-storage' {
     mimeType: string;
     isLocalFile?: boolean;
     metaData?: any;
-    description?: string;
+    description: string;
   }
 
   export interface UpdateFileInput {
@@ -177,35 +177,29 @@ declare module '@via-profit-services/file-storage' {
     hostname: string;
 
     /**
+     * Static `absolute` path (e.g. `/home/user/public/fileStorage/files`).
+     */
+    storagePath: string;
+
+    /**
+     * Storage cache absolute path (e.g. `/home/user/public/fileStorage/cache`).
+     */
+    cachePath: string;
+
+    /**
+     * Storage temporary absolute path (e.g. `/home/user/public/fileStorage/temp`).
+     */
+    temporaryPath: string;
+
+    /**
      * Categories of files (e.g. «Avatar», Infoice»)
      */
     categories?: string[];
 
     /**
      * Prefix path (e.g. `/static`)
-     * @see https://expressjs.com/ru/starter/static-files.html
      */
     staticPrefix?: string;
-
-    /**
-     * Static `relative` path (e.g. `./public/fileStorage/files`).
-     * Do not set absolute path!
-     * @see https://expressjs.com/ru/starter/static-files.html
-     */
-    storagePath?: string;
-
-    /**
-     * Storage cache directory (e.g. `./public/fileStorage/cache`).
-     * Do not set absolute path!
-     */
-    cachePath?: string;
-
-    /**
-     * Storage temporary directory (e.g. `./public/fileStorage/temp`).
-     * Do not set absolute path!
-     */
-    temporaryPath?: string;
-
 
     /**
      * TTL for cache files (`in sec.`)\
@@ -311,6 +305,10 @@ declare module '@via-profit-services/file-storage' {
     configuration: Configuration;
   }
 
+  export type MimeTypes = Record<string, {
+    extensions: string[];
+  }>;
+
   class FileStorageService {
     props: FileStorageParams;
     constructor(props: FileStorageServiceProps);
@@ -327,18 +325,9 @@ declare module '@via-profit-services/file-storage' {
     getPathFromUuid(guid: string): string;
     applyTransform(filepath: string, transform: Partial<ImageTransform>): Promise<string>;
 
-    getStoragePath(): {
-        storagePath: string;
-        storageAbsolutePath: string;
-    };
-    getCachePath(): {
-        cachePath: string;
-        cacheAbsolutePath: string;
-    };
-    getTemporaryPath(): {
-        temporaryPath: string;
-        temporaryAbsolutePath: string;
-    };
+    getStoragePath(): string;
+    getCachePath(): string;
+    getTemporaryPath(): string;
     getFileTypeByMimeType(mimeType: string): FileType;
     /**
      * Resolve extension by mimeType or return default `txt` extension
@@ -414,11 +403,9 @@ declare module '@via-profit-services/file-storage' {
     urlToTransformPayload(url: string): TransformUrlPayload | false;
     encodeFileID(id: string): string;
     decodeFileID(url: string): string;
-    setFileCache(id: string, filename: string): Promise<void>;
-    resolveFile(params: {id: string, mimeType: string}): {
-      resolvePath: string;
-      resolveAbsolutePath: string;
-    }
+    setFileCache(id: string, ext: string): Promise<void>;
+    resolveFile(params: {id: string, mimeType: string}): string;
+    getMimeTypes(): MimeTypes;
   }
 
   export const factory: FileStorageMiddlewareFactory;

@@ -80,7 +80,7 @@ input FileUploadInfo {
   """
   Description of this file
   """
-  description: String
+  description: String!
 
   """
   Voluntary metadata of this file (e.g. title, alt for images)
@@ -195,7 +195,7 @@ interface FileNode {
   category: FileCategory!
   mimeType: String!
   url: URL!
-  description: String
+  description: String!
   metaData: JSON
 }
 
@@ -220,7 +220,7 @@ type File implements FileNode & Node {
     quality: Int
     greyscale: Boolean
   ): TransformedFile
-  description: String
+  description: String!
   metaData: JSON
 }
 
@@ -234,7 +234,7 @@ type TransformedFile implements FileNode & Node {
   mimeType: String!
   url: URL!
   reference: File!
-  description: String
+  description: String!
   metaData: JSON
 }
 
@@ -249,7 +249,7 @@ type TemporaryFile implements FileNode & Node {
   category: FileCategory!
   mimeType: String!
   url: URL!
-  description: String
+  description: String!
   metaData: JSON
 }
 
