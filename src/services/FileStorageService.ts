@@ -3,13 +3,12 @@ import { ListResponse, OutputFilter, ServerError } from '@via-profit-services/co
 import type {
   FileBag, FileBagTable, FileBagTableInput, FileType, ImageTransform, TransformUrlPayload,
   RedisFileValue, RedisTemporaryValue, FileStorageServiceProps, FileStorageParams,
-  UploadFileInput, FileBagCreate, TemporaryFileBag,
+  UploadFileInput, FileBagCreate, TemporaryFileBag, MimeTypes,
   FileStorageService as FileStorageServiceInterface,
 } from '@via-profit-services/file-storage';
 import { convertOrderByToKnex, convertWhereToKnex, extractTotalCountPropOfNode } from '@via-profit-services/knex';
 import fs, { ReadStream } from 'fs';
 import Jimp from 'jimp';
-import mime from 'mime-types';
 import moment from 'moment-timezone';
 import path from 'path';
 import { URL } from 'url';
@@ -24,9 +23,6 @@ import {
   IMAGE_TRANSFORM_MAX_WITH,
   CACHE_FILES_DEFAULT_TTL,
   TEMPORARY_FILES_DEFAULT_TTL,
-  DEFAULT_STORAGE_PATH,
-  DEFAULT_CACHE_PATH,
-  DEFAULT_TEMPORARY_PATH,
   DEFAULT_STATIC_PREFIX,
   CACHE_DELIMITER,
   STATIC_DELIMITER,
@@ -35,7 +31,8 @@ import {
   DEFAULT_MAX_FIELD_SIZE,
   DEFAULT_MAX_FILES,
   DEFAULT_MAX_FILE_SIZE,
-} from './constants';
+} from '../constants';
+import mimeTypesCollection from '../mime-types.json';
 
 
 class FileStorageService implements FileStorageServiceInterface {
@@ -55,10 +52,6 @@ class FileStorageService implements FileStorageServiceInterface {
       temporaryTTL: Math.min(
         TIMEOUT_MAX_VALUE / 1000, temporaryTTL || TEMPORARY_FILES_DEFAULT_TTL,
       ),
-      hostname: '',
-      storagePath: DEFAULT_STORAGE_PATH,
-      cachePath: DEFAULT_CACHE_PATH,
-      temporaryPath: DEFAULT_TEMPORARY_PATH,
       staticPrefix: DEFAULT_STATIC_PREFIX,
       maxFieldSize: DEFAULT_MAX_FIELD_SIZE,
       maxFileSize: DEFAULT_MAX_FILE_SIZE,
@@ -74,7 +67,7 @@ class FileStorageService implements FileStorageServiceInterface {
   public async clearExpiredCacheFiles() {
     const { context } = this.props;
     const { redis, logger } = context;
-    const { cacheAbsolutePath } = this.getCachePath();
+    const cacheAbsolutePath = this.getCachePath();
 
     const counter = {
       allFiles: 0,
@@ -94,6 +87,7 @@ class FileStorageService implements FileStorageServiceInterface {
 
       try {
         const { exp, id, ext } = payload;
+
         if (new Date().getTime() > exp) {
           const filename = this.getPathFromUuid(id);
           const fullFilenamePath = path.join(cacheAbsolutePath, `${filename}.${ext}`);
@@ -103,13 +97,14 @@ class FileStorageService implements FileStorageServiceInterface {
             // remove file from fs
             fs.unlinkSync(fullFilenamePath);
 
-            // remove file from redis
-            redis.hdel(REDIS_CACHE_NAME, hash);
-
             counter.deletedFiles += 1;
 
             // remove directory if is empty
             this.removeEmptyDirectories(dirname);
+          } else {
+            // remove file from redis
+            logger.files.debug(`Cache clean. File ${id} not found in cache. Redis record will be removed`);
+            redis.hdel(REDIS_CACHE_NAME, hash);
           }
         }
       } catch (err) {
@@ -180,7 +175,7 @@ class FileStorageService implements FileStorageServiceInterface {
   public async clearCache() {
     const { context } = this.props;
     const { redis, logger } = context;
-    const { cacheAbsolutePath } = this.getCachePath();
+    const cacheAbsolutePath = this.getCachePath();
 
     if (fs.existsSync(cacheAbsolutePath)) {
       // clear Redis data
@@ -208,7 +203,7 @@ class FileStorageService implements FileStorageServiceInterface {
     const { context } = this.props;
     const { logger } = context;
 
-    const { temporaryAbsolutePath } = this.getTemporaryPath();
+    const temporaryAbsolutePath = this.getTemporaryPath();
 
     if (fs.existsSync(temporaryAbsolutePath)) {
       try {
@@ -387,30 +382,15 @@ class FileStorageService implements FileStorageServiceInterface {
 
 
   public getStoragePath() {
-    const { storagePath } = this.props;
-
-    return {
-      storagePath,
-      storageAbsolutePath: path.resolve(__dirname, '..', storagePath),
-    };
+    return this.props.storagePath;
   }
 
   public getCachePath() {
-    const { cachePath } = this.props;
-
-    return {
-      cachePath,
-      cacheAbsolutePath: path.resolve(__dirname, '..', cachePath),
-    };
+    return this.props.cachePath;
   }
 
   public getTemporaryPath() {
-    const { temporaryPath } = this.props;
-
-    return {
-      temporaryPath,
-      temporaryAbsolutePath: path.resolve(__dirname, '..', temporaryPath),
-    };
+    return this.props.temporaryPath;
   }
 
 
@@ -432,7 +412,10 @@ class FileStorageService implements FileStorageServiceInterface {
    * Resolve extension by mimeType or return default `txt` extension
    */
   public getExtensionByMimeType(mimeType: string) {
-    return mime.extension(mimeType) || 'txt';
+    const mimeTypes = this.getMimeTypes();
+    const data = mimeTypes[mimeType] || false;
+
+    return data ? data.extensions[0] : 'txt';
   }
 
 
@@ -440,7 +423,11 @@ class FileStorageService implements FileStorageServiceInterface {
    * Resolve mimeType by mime database or return default `text/plain` mimeType
    */
   public getMimeTypeByExtension(extension: string) {
-    return mime.lookup(extension) || 'text/plain';
+    const mimeTypes = this.getMimeTypes();
+    const record = Object.entries(mimeTypes)
+      .find(([_mimeType, data]) => data.extensions.includes(extension));
+
+    return record ? record[0] : 'text/plain';
   }
 
   /**
@@ -469,7 +456,7 @@ class FileStorageService implements FileStorageServiceInterface {
    */
   public resolveMimeType(filename: string, mimeType: string) {
     const ext = this.extractExtensionFromFilename(filename);
-    const extFromMimeType = mime.extension(mimeType);
+    const extFromMimeType = this.getExtensionByMimeType(mimeType);
 
     if (ext === extFromMimeType) {
       return mimeType;
@@ -517,7 +504,7 @@ class FileStorageService implements FileStorageServiceInterface {
     const { context, temporaryTTL } = this.props;
     const { timezone } = context;
     const id = fileInfo.id || uuidv4();
-    const { temporaryAbsolutePath } = this.getTemporaryPath();
+    const temporaryAbsolutePath = this.getTemporaryPath();
 
     const expireAt = fileInfo.expireAt || temporaryTTL;
     const filename = this.getPathFromUuid(id);
@@ -530,6 +517,7 @@ class FileStorageService implements FileStorageServiceInterface {
       category: 'temporary',
       type: 'document',
       owner: uuidv4(),
+      description: '',
     }, expireAt);
     const file = await this.getTemporaryFile(id);
 
@@ -553,7 +541,7 @@ class FileStorageService implements FileStorageServiceInterface {
       context,
     } = this.props;
     const { redis, logger, timezone } = context;
-    const { temporaryAbsolutePath } = this.getTemporaryPath();
+    const temporaryAbsolutePath = this.getTemporaryPath();
 
     const payloadStr = await redis.hget(REDIS_TEMPORARY_NAME, id);
     let payload: RedisTemporaryValue;
@@ -707,7 +695,7 @@ class FileStorageService implements FileStorageServiceInterface {
 
     const { temporaryTTL, context } = this.props;
     const { redis } = context;
-    const { temporaryAbsolutePath } = this.getTemporaryPath();
+    const temporaryAbsolutePath = this.getTemporaryPath();
 
     const id = fileInfo.id || uuidv4();
     const ext = this.getExtensionByMimeType(fileInfo.mimeType);
@@ -798,7 +786,7 @@ class FileStorageService implements FileStorageServiceInterface {
   ): Promise<{id: string; absoluteFilename: string; }> {
     const { context } = this.props;
     const { knex, timezone } = context;
-    const { storageAbsolutePath } = this.getStoragePath();
+    const storageAbsolutePath = this.getStoragePath();
 
     const id = fileInfo.id || uuidv4();
     const ext = this.getExtensionByMimeType(fileInfo.mimeType);
@@ -851,7 +839,7 @@ class FileStorageService implements FileStorageServiceInterface {
   }
 
   public async moveFileFromTemporary(id: string) {
-    const { temporaryAbsolutePath } = this.getTemporaryPath();
+    const temporaryAbsolutePath = this.getTemporaryPath();
     const payload = await this.getTemporaryFile(id);
     const filename = this.getPathFromUuid(id);
 
@@ -903,9 +891,9 @@ class FileStorageService implements FileStorageServiceInterface {
   public async flush() {
     const { context } = this.props;
     const { dataloader } = context;
-    const { storageAbsolutePath } = this.getStoragePath();
-    const { cacheAbsolutePath } = this.getCachePath();
-    const { temporaryAbsolutePath } = this.getTemporaryPath();
+    const storageAbsolutePath = this.getStoragePath();
+    const cacheAbsolutePath = this.getCachePath();
+    const temporaryAbsolutePath = this.getTemporaryPath();
     const { redis, knex, logger } = context;
 
     logger.files.info(
@@ -943,7 +931,7 @@ class FileStorageService implements FileStorageServiceInterface {
   public async deleteStaticFiles(ids: string[]): Promise<string[]> {
     const { context } = this.props;
     const { knex, logger } = context;
-    const { storageAbsolutePath } = this.getStoragePath();
+    const storageAbsolutePath = this.getStoragePath();
 
     const filesList = await this.getFilesByIds(ids);
 
@@ -1089,14 +1077,15 @@ class FileStorageService implements FileStorageServiceInterface {
 
   public resolveFile({ id, mimeType }: {id: string; mimeType: string}) {
 
-    const { storageAbsolutePath, storagePath } = this.getStoragePath();
+    const storageAbsolutePath = this.getStoragePath();
     const ext = this.getExtensionByMimeType(mimeType);
     const fileLocation = this.getPathFromUuid(id);
 
-    return {
-      resolvePath: path.join(storagePath, `${fileLocation}.${ext}`),
-      resolveAbsolutePath: path.join(storageAbsolutePath, `${fileLocation}.${ext}`),
-    };
+    return path.join(storageAbsolutePath, `${fileLocation}.${ext}`);
+  }
+
+  public getMimeTypes(): MimeTypes {
+    return mimeTypesCollection;
   }
 }
 
