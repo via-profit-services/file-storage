@@ -1630,7 +1630,6 @@ __metadata:
     jimp: ^0.16.1
     knex: ^0.95.4
     libphonenumber-js: ^1.9.7
-    mime-types: ^2.1.27
     moment: ^2.29.1
     moment-timezone: ^0.5.32
     nodemon: ^2.0.2
