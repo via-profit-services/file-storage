@@ -20,6 +20,7 @@ export async function seed(knex: Knex): Promise<any> {
           url: 'https://i.picsum.photos/id/873/400/400.jpg',
           isLocalFile: false,
           type: FileType.image,
+          description: '',
           metaData: JSON.stringify({
             alt: 'Item alt attribute',
             title: 'Item title attribute',
@@ -33,6 +34,7 @@ export async function seed(knex: Knex): Promise<any> {
           url: 'https://i.picsum.photos/id/521/400/400.jpg',
           isLocalFile: false,
           type: FileType.image,
+          description: '',
           metaData: JSON.stringify({
             alt: 'Item alt attribute',
           }),

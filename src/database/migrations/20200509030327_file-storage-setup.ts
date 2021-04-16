@@ -22,7 +22,7 @@ export async function up(knex: Knex): Promise<any> {
       category varchar(100) NOT NULL,
       "mimeType" varchar(255) NOT NULL,
       url varchar(255) NOT NULL,
-      description varchar(255) NULL DEFAULT NULL::character varying,
+      description varchar(255) NOT NULL,
       "isLocalFile" bool NOT NULL DEFAULT true,
       "metaData" jsonb NOT NULL DEFAULT '{}'::jsonb,
       CONSTRAINT "fileStorage_pk" PRIMARY KEY (id)
