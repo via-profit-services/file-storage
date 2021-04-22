@@ -441,5 +441,10 @@
     "extensions": [
       "avi"
     ]
+  },
+  "video/x-matroska": {
+    "extensions": [
+      "mkv"
+    ]
   }
 }
