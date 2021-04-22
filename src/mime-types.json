@@ -436,5 +436,10 @@
     "extensions": [
       "tar"
     ]
+  },
+  "text/csv": {
+    "extensions": [
+      "csv"
+    ]
   }
 }
