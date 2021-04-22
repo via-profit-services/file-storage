@@ -431,5 +431,10 @@
     "extensions": [
       "epub"
     ]
+  },
+  "application/x-tar": {
+    "extensions": [
+      "tar"
+    ]
   }
 }
