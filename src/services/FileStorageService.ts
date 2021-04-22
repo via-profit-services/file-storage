@@ -6,7 +6,7 @@ import type {
   UploadFileInput, FileBagCreate, TemporaryFileBag, MimeTypes,
   FileStorageService as FileStorageServiceInterface,
 } from '@via-profit-services/file-storage';
-import { convertOrderByToKnex, convertWhereToKnex, extractTotalCountPropOfNode } from '@via-profit-services/knex';
+import { convertOrderByToKnex, convertWhereToKnex, extractTotalCountPropOfNode, convertBetweenToKnex } from '@via-profit-services/knex';
 import fs, { ReadStream } from 'fs';
 import Jimp from 'jimp';
 import moment from 'moment-timezone';
@@ -462,7 +462,7 @@ class FileStorageService implements FileStorageServiceInterface {
       return mimeType;
     }
 
-    return this.getMimeTypeByExtension(filename);
+    return this.getMimeTypeByExtension(ext);
   }
 
   /**
@@ -579,18 +579,18 @@ class FileStorageService implements FileStorageServiceInterface {
   public async getFiles(filter: Partial<OutputFilter>): Promise<ListResponse<FileBag>> {
     const { context, staticPrefix, hostname } = this.props;
     const { knex } = context;
-    const { limit, offset, orderBy, where } = filter;
+    const { limit, offset, orderBy, where, between } = filter;
 
     const response = await knex
       .select([
         '*',
         knex.raw('count(*) over() as "totalCount"'),
       ])
-      .orderBy(convertOrderByToKnex(orderBy))
       .from<FileBagTable, FileBagTable[]>('fileStorage')
       .limit(limit || 1)
       .offset(offset || 0)
       .where((builder) => convertWhereToKnex(builder, where))
+      .where((builder) => convertBetweenToKnex(builder, between))
       .orderBy(convertOrderByToKnex(orderBy))
       .then((nodes) => nodes.map((node) => {
 

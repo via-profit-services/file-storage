@@ -22,7 +22,7 @@ type FileStorageMutation {
     For example `curl` request will be:
     curl --request POST \
       --url http://localhost:8000/graphql \
-      --form 'operations={ "query": "mutation uploadFiles($files: [FileUpload!]!, $info: [FileUploadInfo!]!) {fileStorage {upload(files: $files info: $info) {id url}}}", "variables": { "files": [ null ], "info": [ { "owner": "8cd48386-ff44-4d67-b1a6-0d7b0f94aec4", "category": "Avatar" } ] } }' \
+      --form 'operations={ "query": "mutation uploadFiles($files: [FileUpload!]!, $info: [FileUploadInfo!]!) {fileStorage {upload(files: $files info: $info) {id url}}}", "variables": { "files": [ null ], "info": [ { "owner": "8cd48386-ff44-4d67-b1a6-0d7b0f94aec4", "category": "Avatar", "description": "" } ] } }' \
       --form 'map={ "0": ["variables.files.0"] }' \
       --form 0=@/path/to/file.jpg
     """
@@ -127,6 +127,7 @@ type FileStorageQuery {
     after: String
     orderBy: [FilesOrderBy!]
     filter: FilesListFilter
+    between: FilesListBetween
   ): FilesListConnection!
 
   """
@@ -135,6 +136,13 @@ type FileStorageQuery {
   file(id: ID!): File
 }
 
+"""
+Possible data to between list of files
+"""
+input FilesListBetween {
+  updatedAt: BetweenDateTime
+  createdAt: BetweenDateTime
+}
 
 input FilesListFilter {
   id: [ID!]

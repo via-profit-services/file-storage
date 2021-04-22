@@ -10,7 +10,6 @@ const uploadResolver: Resolvers['FileStorageMutation']['upload'] = async (
 
   const savePromises = filesData.map(async (file, index) => {
     const { createReadStream, mimeType, filename } = file;
-
     const stream = createReadStream();
 
     const fileInfo: FileBagCreate = {

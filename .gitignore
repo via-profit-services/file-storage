@@ -15,7 +15,8 @@
 
 # jwt keys
 /keys
-
+/.cache
+/storage
 # Redis sump
 /dump.rdb
 /public
