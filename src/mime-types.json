@@ -232,6 +232,16 @@
       "zip"
     ]
   },
+  "application/epub+zip": {
+    "extensions": [
+      "epub"
+    ]
+  },
+  "application/x-tar": {
+    "extensions": [
+      "tar"
+    ]
+  },
   "audio/midi": {
     "extensions": [
       "mid",
@@ -364,6 +374,11 @@
       "xml"
     ]
   },
+  "text/csv": {
+    "extensions": [
+      "csv"
+    ]
+  },
   "video/3gpp": {
     "extensions": [
       "3gpp",
@@ -425,21 +440,6 @@
   "video/x-msvideo": {
     "extensions": [
       "avi"
-    ]
-  },
-  "application/epub+zip": {
-    "extensions": [
-      "epub"
-    ]
-  },
-  "application/x-tar": {
-    "extensions": [
-      "tar"
-    ]
-  },
-  "text/csv": {
-    "extensions": [
-      "csv"
     ]
   }
 }
