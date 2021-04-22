@@ -126,6 +126,7 @@ type FileStorageQuery {
     offset: Int
     after: String
     orderBy: [FilesOrderBy!]
+    search: [FilesListSearch!]
     filter: FilesListFilter
     between: FilesListBetween
   ): FilesListConnection!
@@ -135,6 +136,27 @@ type FileStorageQuery {
   """
   file(id: ID!): File
 }
+
+
+"""
+Files search filter
+"""
+input FilesListSearch {
+  field: FilesListSearchField!
+
+  """
+  Search query string
+  """
+  query: String!
+}
+
+"""
+Possible fields to search files
+"""
+enum FilesListSearchField {
+  description
+}
+
 
 """
 Possible data to between list of files
