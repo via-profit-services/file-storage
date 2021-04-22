@@ -426,5 +426,10 @@
     "extensions": [
       "avi"
     ]
+  },
+  "application/epub+zip": {
+    "extensions": [
+      "epub"
+    ]
   }
 }
