@@ -59,6 +59,7 @@ type FileStorageMutation {
 
 type FileStorageDeleteResponse {
   deletedIDs: [ID!]!
+  query: Query!
 }
 
 """

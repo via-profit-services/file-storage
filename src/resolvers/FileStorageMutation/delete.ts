@@ -45,6 +45,7 @@ const deleteResolver: Resolvers['FileStorageMutation']['delete'] = async (
 
   return {
     deletedIDs,
+    query: {/* Just empty */},
   };
 };
 
