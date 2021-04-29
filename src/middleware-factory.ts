@@ -22,6 +22,7 @@ const middlewareFactory: FileStorageMiddlewareFactory = async (configuration) =>
     [...categories || []].map((category) => category.replace(/[^a-zA-Z]/g, '')),
   );
   categoriesList.add('Avatar');
+  categoriesList.add('Document');
   configuration.categories = [...categoriesList];
 
   type Cache = {
