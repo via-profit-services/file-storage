@@ -413,19 +413,19 @@ declare module '@via-profit-services/file-storage' {
 
 declare module '@via-profit-services/core' {
   import { FileBag, TemporaryFileBag, FileStorageService } from '@via-profit-services/file-storage';
-  import DataLoader from 'dataloader';
+  import DataLoader from '@via-profit/dataloader';
 
   interface DataLoaderCollection {
 
     /**
      * File storage common files dataloader
      */
-    files: DataLoader<string, Node<FileBag>>;
+    files: DataLoader<FileBag>;
 
     /**
      * File storage temporary files dataloader
      */
-    tremporaryFiles: DataLoader<string, Node<TemporaryFileBag>>
+    tremporaryFiles: DataLoader<TemporaryFileBag>
   }
 
   interface ServicesCollection {

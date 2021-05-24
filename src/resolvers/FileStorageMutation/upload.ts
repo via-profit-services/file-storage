@@ -47,7 +47,7 @@ const uploadResolver: Resolvers['FileStorageMutation']['upload'] = async (
       { mimeType },
     );
 
-    dataloader.files.clear(id);
+    await dataloader.files.clear(id);
 
     return {
       id,

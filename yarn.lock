@@ -1602,12 +1602,12 @@ __metadata:
     "@via-profit-services/eslint-config": ^0.1.11
     "@via-profit-services/knex": ^1.1.1
     "@via-profit-services/redis": ^1.0.3
+    "@via-profit/dataloader": ^1.0.0
     "@zerollup/ts-transform-paths": ^1.7.11
     binary-loader: ^0.0.1
     busboy: ^0.3.1
     chalk: ^3.0.0
     cross-env: ^6.0.3
-    dataloader: ^2.0.0
     dotenv: ^8.2.0
     eslint: ^7.15.0
     eslint-config-prettier: ^6.15.0
@@ -1685,6 +1685,15 @@ __metadata:
     "@via-profit-services/core": ^1.0.0
     ioredis: "*"
   checksum: d8815faf22f839f47b1b37e135e2216e5c2b8ed6799ff9a1073d117de6b1d3c9f04fd4858e8cc34e63b74e9ab569d7a7311613c235a338723d14c6fcd8c78c48
+  languageName: node
+  linkType: hard
+
+"@via-profit/dataloader@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@via-profit/dataloader@npm:1.0.0"
+  peerDependencies:
+    ioredis: ^4.27.2
+  checksum: b2d9436ed6c0ab2f785b1401928089f084e0e2c88a215ac295db09d59a562a25891b5b632e9b9f9f0adc13eb05ede9b14bda5bbfdbb7e3160cc96ae144b9f95f
   languageName: node
   linkType: hard
 
@@ -3543,13 +3552,6 @@ __metadata:
     whatwg-mimetype: ^2.2.0
     whatwg-url: ^7.0.0
   checksum: 04d211e1e9f83bab75450487da34b124b32beacd1ad0df96e3a747b705c24c65579833a04a6ea30a528ea5b99d5247660408c513b38905bf855f2de585b9e91c
-  languageName: node
-  linkType: hard
-
-"dataloader@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "dataloader@npm:2.0.0"
-  checksum: 0165c2e80751d269c33d2a14b0078a4f3853cb010e2531e7aa99523aba8d0cdc922b9ad67e4c2bb9074c90e0ee0a41b6e7f5f63c40d31224a71c8a0b703f4be3
   languageName: node
   linkType: hard
 

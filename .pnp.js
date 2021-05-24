@@ -65,12 +65,12 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@via-profit-services/eslint-config", "npm:0.1.11"],
             ["@via-profit-services/knex", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.1.1"],
             ["@via-profit-services/redis", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.3"],
+            ["@via-profit/dataloader", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.0"],
             ["@zerollup/ts-transform-paths", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.7.17"],
             ["binary-loader", "npm:0.0.1"],
             ["busboy", "npm:0.3.1"],
             ["chalk", "npm:3.0.0"],
             ["cross-env", "npm:6.0.3"],
-            ["dataloader", "npm:2.0.0"],
             ["dotenv", "npm:8.2.0"],
             ["eslint", "npm:7.15.0"],
             ["eslint-config-prettier", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:6.15.0"],
@@ -2290,7 +2290,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/winston-daily-rotate-file", null],
             ["bufferutil", "npm:4.0.2"],
             ["content-type", "npm:1.0.4"],
-            ["dataloader", "npm:2.0.0"],
+            ["dataloader", null],
             ["express", "npm:4.17.1"],
             ["graphql", "npm:15.4.0"],
             ["moment", "npm:2.29.1"],
@@ -2361,12 +2361,12 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@via-profit-services/eslint-config", "npm:0.1.11"],
             ["@via-profit-services/knex", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.1.1"],
             ["@via-profit-services/redis", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.3"],
+            ["@via-profit/dataloader", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.0"],
             ["@zerollup/ts-transform-paths", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.7.17"],
             ["binary-loader", "npm:0.0.1"],
             ["busboy", "npm:0.3.1"],
             ["chalk", "npm:3.0.0"],
             ["cross-env", "npm:6.0.3"],
-            ["dataloader", "npm:2.0.0"],
             ["dotenv", "npm:8.2.0"],
             ["eslint", "npm:7.15.0"],
             ["eslint-config-prettier", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:6.15.0"],
@@ -2467,6 +2467,28 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             "@types/ioredis",
             "@types/via-profit-services__core",
             "@via-profit-services/core",
+            "ioredis"
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["@via-profit/dataloader", [
+        ["npm:1.0.0", {
+          "packageLocation": "./.yarn/cache/@via-profit-dataloader-npm-1.0.0-86223586d1-b2d9436ed6.zip/node_modules/@via-profit/dataloader/",
+          "packageDependencies": [
+            ["@via-profit/dataloader", "npm:1.0.0"]
+          ],
+          "linkType": "SOFT",
+        }],
+        ["virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.0", {
+          "packageLocation": "./.yarn/$$virtual/@via-profit-dataloader-virtual-38bbbdc237/0/cache/@via-profit-dataloader-npm-1.0.0-86223586d1-b2d9436ed6.zip/node_modules/@via-profit/dataloader/",
+          "packageDependencies": [
+            ["@via-profit/dataloader", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.0"],
+            ["@types/ioredis", "npm:4.16.1"],
+            ["ioredis", "npm:4.19.4"]
+          ],
+          "packagePeers": [
+            "@types/ioredis",
             "ioredis"
           ],
           "linkType": "HARD",
@@ -4641,15 +4663,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["abab", "npm:2.0.3"],
             ["whatwg-mimetype", "npm:2.3.0"],
             ["whatwg-url", "npm:7.1.0"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["dataloader", [
-        ["npm:2.0.0", {
-          "packageLocation": "./.yarn/cache/dataloader-npm-2.0.0-216fa8d208-0165c2e807.zip/node_modules/dataloader/",
-          "packageDependencies": [
-            ["dataloader", "npm:2.0.0"]
           ],
           "linkType": "HARD",
         }]

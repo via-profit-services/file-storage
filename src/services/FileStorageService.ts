@@ -879,9 +879,7 @@ class FileStorageService implements FileStorageServiceInterface {
     const idsByOwner = files.nodes.map((node) => node.id);
     if (idsByOwner.length) {
       const deletedIds = await this.deleteStaticFiles(idsByOwner);
-      deletedIds.forEach((deletedId) => {
-        dataloader.files.clear(deletedId);
-      });
+      await dataloader.files.clearMany(deletedIds);
 
       return deletedIds;
     }
@@ -901,8 +899,8 @@ class FileStorageService implements FileStorageServiceInterface {
       '!!! WARNING. All files will be deleted permanently !!!',
     );
 
-    dataloader.files.clearAll();
-    dataloader.tremporaryFiles.clearAll();
+    await dataloader.files.clearAll();
+    await dataloader.tremporaryFiles.clearAll();
 
     try {
       await redis.del(REDIS_CACHE_NAME);
