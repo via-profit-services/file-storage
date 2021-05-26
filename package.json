@@ -1,7 +1,7 @@
 {
     "name": "@via-profit-services/file-storage",
     "support": "https://via-profit.ru",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "Via Profit File Storage Schema",
     "main": "dist/index.js",
     "engines": {
@@ -57,7 +57,7 @@
     "peerDependencies": {
         "@via-profit-services/core": "^1.1.1",
         "@via-profit-services/knex": "^1.1.1",
-        "@via-profit/dataloader": "^1.0.0",
+        "@via-profit/dataloader": "^1.0.3",
         "graphql": "*",
         "jimp": "^0.16.1",
         "moment": "*",
@@ -96,7 +96,7 @@
         "@via-profit-services/eslint-config": "^0.1.11",
         "@via-profit-services/knex": "^1.1.1",
         "@via-profit-services/redis": "^1.0.3",
-        "@via-profit/dataloader": "^1.0.0",
+        "@via-profit/dataloader": "^1.0.3",
         "@zerollup/ts-transform-paths": "^1.7.11",
         "binary-loader": "^0.0.1",
         "chalk": "^3.0.0",

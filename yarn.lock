@@ -1602,7 +1602,7 @@ __metadata:
     "@via-profit-services/eslint-config": ^0.1.11
     "@via-profit-services/knex": ^1.1.1
     "@via-profit-services/redis": ^1.0.3
-    "@via-profit/dataloader": ^1.0.0
+    "@via-profit/dataloader": ^1.0.3
     "@zerollup/ts-transform-paths": ^1.7.11
     binary-loader: ^0.0.1
     busboy: ^0.3.1
@@ -1656,6 +1656,7 @@ __metadata:
   peerDependencies:
     "@via-profit-services/core": ^1.1.1
     "@via-profit-services/knex": ^1.1.1
+    "@via-profit/dataloader": ^1.0.0
     graphql: "*"
     jimp: ^0.16.1
     moment: "*"
@@ -1688,12 +1689,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@via-profit/dataloader@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "@via-profit/dataloader@npm:1.0.0"
+"@via-profit/dataloader@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "@via-profit/dataloader@npm:1.0.3"
   peerDependencies:
     ioredis: ^4.27.2
-  checksum: b2d9436ed6c0ab2f785b1401928089f084e0e2c88a215ac295db09d59a562a25891b5b632e9b9f9f0adc13eb05ede9b14bda5bbfdbb7e3160cc96ae144b9f95f
+  checksum: 7113190b8519a435777a975f4969e68a64cece3204c8b03d55e8e1c68d122fed6e7150c5cde7d94d93a3a0573514c3bd57f0261fffd32310aa7ffe98cc55e381
   languageName: node
   linkType: hard
 

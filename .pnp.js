@@ -65,7 +65,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@via-profit-services/eslint-config", "npm:0.1.11"],
             ["@via-profit-services/knex", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.1.1"],
             ["@via-profit-services/redis", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.3"],
-            ["@via-profit/dataloader", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.0"],
+            ["@via-profit/dataloader", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.3"],
             ["@zerollup/ts-transform-paths", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.7.17"],
             ["binary-loader", "npm:0.0.1"],
             ["busboy", "npm:0.3.1"],
@@ -2361,7 +2361,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@via-profit-services/eslint-config", "npm:0.1.11"],
             ["@via-profit-services/knex", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.1.1"],
             ["@via-profit-services/redis", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.3"],
-            ["@via-profit/dataloader", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.0"],
+            ["@via-profit/dataloader", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.3"],
             ["@zerollup/ts-transform-paths", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.7.17"],
             ["binary-loader", "npm:0.0.1"],
             ["busboy", "npm:0.3.1"],
@@ -2473,17 +2473,17 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["@via-profit/dataloader", [
-        ["npm:1.0.0", {
-          "packageLocation": "./.yarn/cache/@via-profit-dataloader-npm-1.0.0-86223586d1-b2d9436ed6.zip/node_modules/@via-profit/dataloader/",
+        ["npm:1.0.3", {
+          "packageLocation": "./.yarn/cache/@via-profit-dataloader-npm-1.0.3-03904c1f5d-7113190b85.zip/node_modules/@via-profit/dataloader/",
           "packageDependencies": [
-            ["@via-profit/dataloader", "npm:1.0.0"]
+            ["@via-profit/dataloader", "npm:1.0.3"]
           ],
           "linkType": "SOFT",
         }],
-        ["virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.0", {
-          "packageLocation": "./.yarn/$$virtual/@via-profit-dataloader-virtual-38bbbdc237/0/cache/@via-profit-dataloader-npm-1.0.0-86223586d1-b2d9436ed6.zip/node_modules/@via-profit/dataloader/",
+        ["virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.3", {
+          "packageLocation": "./.yarn/$$virtual/@via-profit-dataloader-virtual-f1b552d79a/0/cache/@via-profit-dataloader-npm-1.0.3-03904c1f5d-7113190b85.zip/node_modules/@via-profit/dataloader/",
           "packageDependencies": [
-            ["@via-profit/dataloader", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.0"],
+            ["@via-profit/dataloader", "virtual:025a9b4304d4558440ed181faa031653b513619216787426b6bb44a519af16e550cf59378e691bd72f4d8325351e0915751a321b0088fbb4ce4e647284a489e5#npm:1.0.3"],
             ["@types/ioredis", "npm:4.16.1"],
             ["ioredis", "npm:4.19.4"]
           ],
