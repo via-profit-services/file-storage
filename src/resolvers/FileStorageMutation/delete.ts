@@ -38,9 +38,9 @@ const deleteResolver: Resolvers['FileStorageMutation']['delete'] = async (
     }
   }
 
+  await dataloader.files.clearMany(deletedIDs);
   deletedIDs.forEach((id) => {
-    dataloader.files.clear(id);
-    logger.files.debug('File ${id} was deleted.');
+    logger.files.debug(`File ${id} was deleted.`);
   });
 
   return {

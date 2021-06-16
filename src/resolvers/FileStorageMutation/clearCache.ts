@@ -5,7 +5,9 @@ import type { Resolvers } from '@via-profit-services/file-storage';
 const clearCache: Resolvers['FileStorageMutation']['clearCache'] = async (
   _parent, _args, context,
 ) => {
-  const { services } = context;
+  const { services, dataloader } = context;
+
+  await dataloader.files.clearAll();
 
   try {
     await services.files.clearCache();

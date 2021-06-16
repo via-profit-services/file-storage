@@ -1,8 +1,8 @@
 /* eslint-disable import/max-dependencies */
-import { Middleware, collateForDataloader } from '@via-profit-services/core';
+import { Middleware } from '@via-profit-services/core';
 import { FileStorageMiddlewareFactory } from '@via-profit-services/file-storage';
+import DataLoader from '@via-profit/dataloader';
 import crypto from 'crypto';
-import DataLoader from 'dataloader';
 import fs from 'fs';
 import path from 'path';
 
@@ -159,14 +159,22 @@ const middlewareFactory: FileStorageMiddlewareFactory = async (configuration) =>
     context.dataloader.files = new DataLoader(async (ids: string[]) => {
       const nodes = await context.services.files.getFilesByIds(ids);
 
-      return collateForDataloader(ids, nodes);
+      return nodes;
+    }, {
+      redis: context.redis,
+      defaultExpiration: '2d',
+      cacheName: 'files.persistent',
     });
 
     // Users Dataloader
     context.dataloader.tremporaryFiles = new DataLoader(async (ids: string[]) => {
       const nodes = await context.services.files.getTemporaryFilesByIds(ids);
 
-      return collateForDataloader(ids, nodes);
+      return nodes;
+    }, {
+      redis: context.redis,
+      defaultExpiration: '30min',
+      cacheName: 'files.temporary',
     });
 
 

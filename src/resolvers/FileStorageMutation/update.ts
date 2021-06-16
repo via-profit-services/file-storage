@@ -8,7 +8,7 @@ const updateResolver: Resolvers['FileStorageMutation']['update'] = async (
   const { info } = args;
   const { dataloader, services } = context;
 
-  await info.reduce(async (prev, fileInfo, index) => {
+  await info.reduce(async (prev, fileInfo) => {
     await prev;
     const { id, ...otherFileData } = fileInfo;
 
@@ -17,7 +17,7 @@ const updateResolver: Resolvers['FileStorageMutation']['update'] = async (
       throw new ServerError(`File with id ${id} not found`);
     }
 
-    dataloader.files.clear(id);
+    await dataloader.files.clear(id);
 
     try {
       await services.files.updateFile(id, otherFileData);

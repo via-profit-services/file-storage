@@ -12,9 +12,6 @@ const webpackProdConfig: Configuration = merge(webpackBaseConfig, {
     index: path.resolve(__dirname, '../src/index.ts'),
     schema: path.resolve(__dirname, '../src/schema.graphql'),
   },
-  optimization: {
-    minimize: false,
-  },
   output: {
     path: path.join(__dirname, '../dist/'),
     filename: '[name].js',
