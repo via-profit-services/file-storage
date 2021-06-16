@@ -29,3 +29,7 @@
 !.yarn/plugins
 !.yarn/sdks
 !.yarn/versions
+
+/.env
+/.knex/.env
+/.knex/knexfile.js
